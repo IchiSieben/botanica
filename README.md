@@ -1,78 +1,118 @@
 # Atlas Botánico del Perú
 
-Plataforma web de **biodiversidad vegetal centrada en el Perú**: dashboards de
-infografías + un mapa filogenético interactivo, sobre una **capa analítica**
-(índices de diversidad, completitud de muestreo, comparativo Perú vs. mundo).
+A static atlas of Peru's vascular flora and mycobiota, built from open biodiversity data.
+21,585 accepted plant species and 1,802 fungal species, mapped across 25 departments, with a
+navigable taxonomic tree and per-department richness.
 
-**Estático-first:** un ETL reproducible baja todo una sola vez → DuckDB →
-pre-agrega → exporta JSON/Parquet. El sitio (Astro) lee solo de esos exports.
-Las APIs en vivo (POWO, Pl@ntNet) se usan únicamente para detalle por especie
-e identificación por foto.
+**Everything is computed ahead of time.** A reproducible ETL turns raw downloads into a handful
+of small JSON "marts"; the site reads those at build time and ships as plain files. No backend,
+no API calls at runtime, no per-visit cost.
 
-## Fuentes y licencia
+## Why it exists
 
-| Fuente | Nivel | Uso | Licencia |
-|---|---|---|---|
-| WCVP (World Checklist of Vascular Plants) | especie | backbone taxonómico + distribución | CC BY 4.0 |
-| IPNI | nombre | año de descripción (curva temporal) | CC BY 4.0 |
-| GBIF (occurrences, country=PE) | registro | mapas, esfuerzo, gradientes | ver dataset |
-| Kew Tree of Life / PAFTOL | género | filogenia (Newick) | CC BY 4.0 |
-| POWO / Pl@ntNet | — | ficha en vivo / ID por foto | API |
+Species checklists and occurrence records live in different places, use different name
+authorities, and disagree with each other. The interesting engineering problem is not drawing
+charts — it is deciding, defensibly, that two records refer to the same species, and then being
+honest about what the resulting numbers can and cannot support.
 
-Atribución **CC BY** visible en la UI y aquí (principio no negociable).
+Two decisions shape every figure on the site:
 
-## Principios (no negociables)
+- **Accepted names only.** Synonyms are resolved against the WCVP backbone before counting, so
+  totals are lower than sources that count raw names. That is the point.
+- **Occurrence counts measure collection effort as much as biodiversity.** Departments with
+  more records are the ones that were sampled more. The site says so where it matters, rather
+  than presenting sampling bias as ecology.
 
-1. **Estático-first.** El sitio nunca consulta fuentes masivas en vivo.
-2. **Resolver sinonimia antes de contar.** Todo conteo sobre `taxon_status='Accepted'`.
-3. **Esfuerzo de muestreo ≠ riqueza.** Registros y especies se reportan por separado; Chao1 antes de afirmar riqueza.
-4. **Granularidades distintas.** WCVP = país botánico (WGSRPD L3, Perú=`PER`); subnacional solo desde puntos GBIF; filogenia a nivel género.
-5. **Atribución CC BY** visible.
+## Data sources
 
-## Quickstart
+| Source | What it provides | Attribution |
+|---|---|---|
+| **GBIF** | Occurrence records for Peru | Plantae `10.15468/dl.x4m2bc` · Fungi `10.15468/dl.uh7bd4` (CC BY) |
+| **WCVP** (Kew) | Accepted-name backbone for vascular plants | [World Checklist of Vascular Plants](https://powo.science.kew.org/about-wcvp) |
+| **Index Fungorum** (Kew, via GBIF Backbone) | Accepted-name backbone for fungi | [indexfungorum.org](https://www.indexfungorum.org) |
+| **APG IV** | Order-level classification for flowering plants | Angiosperm Phylogeny Group IV |
+| **Open Tree of Life / PAFTOL** | Reference topology | [treeoflife.kew.org](https://treeoflife.kew.org) |
+| **geoBoundaries** | Department boundaries (PER ADM1) | [geoboundaries.org](https://www.geoboundaries.org), gbOpen |
+
+Every GBIF download is DOI-stamped, so any figure on the site traces back to an exact,
+citable extract.
+
+## Stack
+
+| Layer | Tool |
+|---|---|
+| Pipeline | Python 3.11 · DuckDB · `uv` |
+| Exports | JSON (versioned) + Parquet (gitignored) |
+| Site | Astro 5 · ECharts · zero runtime dependencies |
+| Tutorial | `shared/tutorial` — vanilla JS, vendored into `web/public/` |
+
+## Running it
 
 ```bash
-# 1. Entorno reproducible (uv)
-python -m uv sync
+# 1. Pipeline (Python 3.11+, uv)
+uv sync
+cp .env.example .env          # GBIF credentials: needed only for --full
+uv run atlas data             # all 10 stages, using cached raw data
+uv run atlas data --full      # re-downloads from GBIF; slow, needs credentials
 
-# 2. Credenciales (GBIF para la descarga reproducible por DOI)
-cp .env.example .env   # completar GBIF_USER / GBIF_PWD / GBIF_EMAIL
-
-# 3a. Validación rápida con muestras (sin GBs en disco)
-uv run atlas data            # download(muestra) -> ... -> export -> profile
-
-# 3b. Pipeline completo reproducible
-uv run atlas data --full     # WCVP completo + GBIF download (DOI)
+# 2. Site
+cd web
+npm install
+npm run build                 # -> web/dist/
+npm run dev                   # http://localhost:4321
 ```
 
-Pasos individuales: `uv run atlas <download|load|clean|match|aggregate|analyze|export|profile>`.
-El CLI `atlas` reemplaza a `make` (multiplataforma). Ver `etl/cli.py`.
+**`--sample` only skips the download.** If raw files are already cached in `data/raw/`, the
+pipeline still processes the full volume — 1.4M WCVP rows, 1.29M GBIF occurrences. Sample mode
+is not a fast mode.
 
-## Arquitectura
-
-```
-[WCVP][IPNI][GBIF][Tree of Life]
-   │  ETL Python (download → load → clean → match a nombres aceptados)
-   ▼
-[DuckDB] ──agregados + análisis──► [JSON/Parquet + stats] ──► [Astro + ECharts/D3]
-   │
-   └──(en vivo)──► [POWO][Pl@ntNet] ──► ficha / ID por foto
+```bash
+python -m unittest discover -s tests -v    # stdlib only, no pytest needed
 ```
 
-## Estructura
+## Structure
 
 ```
-/etl        download · load_duckdb · clean · match_names · aggregate · analyze · export · profile · cli
-/data       atlas.duckdb (gitignored) + /exports (JSON versionados, Parquet gitignored) + /raw (gitignored)
-/web        Astro (F1+) · /prototypes (filodendro.html, mapa-filogenetico.html)
-/docs       data_dictionary.md · perfilamiento.md · /adr · /licencias
-/notebooks  perfilamiento + EDA estadístico
+etl/            10 pipeline stages: download → load → clean → build_apg →
+                match → match_fungi → model → aggregate → analyze → export → profile
+data/
+  raw/          Source downloads (gitignored — regenerated by the ETL)
+  atlas.duckdb  Working database (gitignored, ~1 GB)
+  exports/      The contract between pipeline and site:
+                8 marts as JSON (versioned) + Parquet (gitignored)
+web/
+  src/pages/    / (Plantae) · /fungi/ · /filogenia/
+  src/lib/      data.ts reads the marts with readFileSync at BUILD time
+  public/       Static assets + the vendored tutorial
+tests/          Unit tests for export ordering
+docs/           ADRs, data dictionary, profiling notes
 ```
 
-## Estado
+`data/exports/` is the seam. The site never reads the database, only these marts — which is
+what makes the published output pure static files.
 
-- **F0 — Tubería:** esqueleto ETL + CLI + entorno uv. ✅ corre de punta a punta (modo muestra).
-- **F0.5 — Perfilamiento:** `atlas profile` genera `docs/data_dictionary.md` y `docs/perfilamiento.md`. ⏳ requiere descarga `--full` para conteos base completos.
-- **F1+ — Dashboards / mapa filogenético / ficha / comparativo / ID por foto:** pendientes.
+## Deployment
 
-Ver `docs/adr/` para decisiones de arquitectura.
+The site is served from a **subfolder**, not a domain root: `astro.config.mjs` sets
+`base: '/botanica/'`, and the kingdom selector navigates through `import.meta.env.BASE_URL`.
+Building for a different path means changing `base` — nothing else hardcodes it.
+
+## Known gaps
+
+Honest ones, not roadmap filler:
+
+- **`mart_described_per_year` is empty.** The description-year curve needs IPNI `published`
+  data, fetched on demand to avoid inflating the base download. The chart renders an explicit
+  "pendiente IPNI" state rather than a blank panel.
+- **`/filogenia/` is taxonomic, not phylogenetic.** It shows APG IV ranks (order → family), not
+  branch lengths. The Open Tree topology exists in `data/raw/` but is not versioned, so using
+  it would require an ETL run to build the site. The page states this.
+- **Fungi are far less inventoried than plants** — 1,802 species against 21,585. That gap is
+  real, not a data bug, and the site says so.
+- 4 npm advisories remain that need breaking major bumps (ECharts XSS; every label here comes
+  from our own build-time marts, so exposure is low).
+
+## License
+
+Code: MIT. Data belongs to its sources and keeps their terms — GBIF downloads are CC BY and
+must be cited by DOI.
