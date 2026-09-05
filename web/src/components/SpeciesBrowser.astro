@@ -1,0 +1,256 @@
+---
+/**
+ * Buscador de especies. Una sola pagina para 23 387 especies.
+ *
+ * Por que asi y no 23 387 paginas estaticas: generarlas tardaria minutos, pesaria
+ * cientos de MB y nadie navega un atlas asi. El indice columnar (1.17 MB Plantae,
+ * 0.09 MB Fungi) se baja UNA vez y toda la busqueda ocurre en el cliente, sin
+ * backend y sin costo por consulta.
+ *
+ * El indice lo genera `etl/build_species_index.py` (lectura read-only de la
+ * DuckDB) y vive en `public/data/`.
+ */
+---
+
+<div class="sp" data-species-root>
+  <header class="sp-head">
+    <div class="sp-search">
+      <input
+        type="search"
+        id="sp-q"
+        placeholder="Buscar especie, género o familia…"
+        autocomplete="off"
+        spellcheck="false"
+        aria-label="Buscar especies"
+      />
+      <span class="sp-count" id="sp-count">cargando índice…</span>
+    </div>
+    <div class="sp-kingdoms" role="group" aria-label="Reino">
+      <button type="button" data-kingdom="plantae" class="on">Plantas</button>
+      <button type="button" data-kingdom="fungi">Hongos</button>
+    </div>
+  </header>
+
+  <div class="sp-body">
+    <ol class="sp-list" id="sp-list" aria-label="Resultados"></ol>
+    <aside class="sp-detail" id="sp-detail">
+      <p class="sp-empty">Elegí una especie de la lista.</p>
+    </aside>
+  </div>
+</div>
+
+<script>
+  interface Index {
+    meta: { kingdom: string; species: number; flags: Record<string, number> };
+    families: string[];
+    orders: string[];
+    depts: string[];
+    lifeforms: string[];
+    rows: [string, number, number, number, [number, number][], number, number][];
+  }
+
+  const root = document.querySelector<HTMLElement>('[data-species-root]');
+  if (root) {
+    const $q = document.getElementById('sp-q') as HTMLInputElement;
+    const $list = document.getElementById('sp-list')!;
+    const $detail = document.getElementById('sp-detail')!;
+    const $count = document.getElementById('sp-count')!;
+
+    const cache = new Map<string, Index>();
+    let idx: Index | null = null;
+    let kingdom = 'plantae';
+    let shown: number[] = [];
+
+    const n = (v: number) => v.toLocaleString('es-PE');
+    const esc = (s: string) =>
+      s.replace(/[<>&]/g, (c) => ({ '<': '&lt;', '>': '&gt;', '&': '&amp;' })[c] as string);
+
+    // Tope de nodos en el DOM. Con 21 585 resultados pintar todo congela la
+    // pagina; el buscador se usa escribiendo, no scrolleando 21k filas.
+    const CAP = 200;
+
+    async function load(k: string) {
+      if (cache.has(k)) return cache.get(k)!;
+      // BASE_URL: el sitio vive en /botanica/, una ruta absoluta daria 404.
+      const url = `${import.meta.env.BASE_URL}data/species-${k}.json`;
+      const data: Index = await fetch(url).then((r) => {
+        if (!r.ok) throw new Error(`${r.status} ${url}`);
+        return r.json();
+      });
+      cache.set(k, data);
+      return data;
+    }
+
+    function match(q: string): number[] {
+      if (!idx) return [];
+      if (!q) return idx.rows.map((_, i) => i);
+      const t = q.toLowerCase();
+      const out: number[] = [];
+      for (let i = 0; i < idx.rows.length; i++) {
+        const r = idx.rows[i];
+        if (r[0].toLowerCase().includes(t)) { out.push(i); continue; }
+        const fam = r[1] >= 0 ? idx.families[r[1]] : '';
+        if (fam && fam.toLowerCase().includes(t)) out.push(i);
+      }
+      return out;
+    }
+
+    function renderList() {
+      if (!idx) return;
+      const slice = shown.slice(0, CAP);
+      $list.innerHTML = slice
+        .map((i) => {
+          const r = idx!.rows[i];
+          const fam = r[1] >= 0 ? idx!.families[r[1]] : '—';
+          return `<li><button type="button" data-i="${i}">
+            <span class="sp-name">${esc(r[0])}</span>
+            <span class="sp-fam">${esc(fam)}</span>
+            <span class="sp-occ">${r[3] ? n(r[3]) : '·'}</span>
+          </button></li>`;
+        })
+        .join('');
+      const extra = shown.length > CAP ? ` · mostrando ${CAP}` : '';
+      $count.textContent = `${n(shown.length)} de ${n(idx.rows.length)}${extra}`;
+    }
+
+    function renderDetail(i: number) {
+      if (!idx) return;
+      const r = idx.rows[i];
+      const fam = r[1] >= 0 ? idx.families[r[1]] : null;
+      const ord = r[2] >= 0 ? idx.orders[r[2]] : null;
+      const life = r[6] >= 0 ? idx.lifeforms[r[6]] : null;
+      const F = idx.meta.flags;
+      const tags = [
+        r[5] & F.endemic ? '<span class="tag endem">endémica</span>' : '',
+        r[5] & F.native ? '<span class="tag">nativa</span>' : '',
+        r[5] & F.introduced ? '<span class="tag intro">introducida</span>' : '',
+      ].join('');
+      const max = r[4][0]?.[1] ?? 1;
+
+      $detail.innerHTML = `
+        <h3>${esc(r[0])}</h3>
+        <p class="sp-rank">${esc(ord ?? '—')} › ${esc(fam ?? '—')}</p>
+        ${tags ? `<div class="sp-tags">${tags}</div>` : ''}
+        <dl>
+          <div><dt>Registros</dt><dd>${r[3] ? n(r[3]) : 'sin ocurrencias'}</dd></div>
+          ${life ? `<div><dt>Forma de vida</dt><dd>${esc(life)}</dd></div>` : ''}
+        </dl>
+        ${
+          r[4].length
+            ? `<p class="sp-lbl">Departamentos con más registros</p>
+               <ul class="sp-bars">${r[4]
+                 .map(
+                   ([d, c]) => `<li><span>${esc(idx!.depts[d])}</span>
+                     <i style="width:${Math.max(4, (c / max) * 100)}%"></i><b>${n(c)}</b></li>`,
+                 )
+                 .join('')}</ul>`
+            : `<p class="sp-lbl">Sin ocurrencias georreferenciadas.
+               La especie está en el checklist, pero no hay registros con coordenadas en Perú.</p>`
+        }`;
+    }
+
+    async function switchKingdom(k: string) {
+      kingdom = k;
+      $count.textContent = 'cargando índice…';
+      $detail.innerHTML = '<p class="sp-empty">Elegí una especie de la lista.</p>';
+      try {
+        idx = await load(k);
+        shown = match($q.value.trim());
+        renderList();
+      } catch (e) {
+        $count.textContent = 'no se pudo cargar el índice';
+        $list.innerHTML = `<li class="sp-err">${esc(String(e))}</li>`;
+      }
+    }
+
+    let t: number | undefined;
+    $q.addEventListener('input', () => {
+      // La busqueda recorre 21k filas: sin debounce se dispara en cada tecla.
+      window.clearTimeout(t);
+      t = window.setTimeout(() => {
+        shown = match($q.value.trim());
+        renderList();
+      }, 120);
+    });
+
+    $list.addEventListener('click', (e) => {
+      const b = (e.target as HTMLElement).closest<HTMLElement>('[data-i]');
+      if (!b) return;
+      for (const el of $list.querySelectorAll('.is-sel')) el.classList.remove('is-sel');
+      b.classList.add('is-sel');
+      renderDetail(Number(b.dataset.i));
+    });
+
+    root.querySelectorAll<HTMLButtonElement>('[data-kingdom]').forEach((b) =>
+      b.addEventListener('click', () => {
+        root.querySelectorAll('[data-kingdom]').forEach((x) => x.classList.toggle('on', x === b));
+        switchKingdom(b.dataset.kingdom!);
+      }),
+    );
+
+    switchKingdom('plantae');
+  }
+</script>
+
+<style>
+  .sp { display: flex; flex-direction: column; gap: 12px; }
+  .sp-head { display: flex; flex-wrap: wrap; gap: 12px; align-items: center; justify-content: space-between; }
+  .sp-search { display: flex; align-items: baseline; gap: 10px; flex: 1; min-width: 260px; }
+  #sp-q {
+    flex: 1; font: inherit; font-size: 13px; padding: 7px 11px; border-radius: 8px;
+    border: 1px solid var(--line); background: transparent; color: inherit;
+  }
+  #sp-q:focus { outline: none; border-color: #e3b23c; }
+  .sp-count { font-family: 'IBM Plex Mono', monospace; font-size: 11px; color: var(--txt-dim); white-space: nowrap; }
+  .sp-kingdoms { display: flex; gap: 6px; }
+  .sp-kingdoms button {
+    font: inherit; font-size: 11.5px; padding: 5px 11px; border-radius: 6px;
+    border: 1px solid var(--line); background: transparent; color: inherit; cursor: pointer;
+  }
+  .sp-kingdoms button.on { border-color: #e3b23c; color: #e3b23c; }
+
+  .sp-body { display: grid; grid-template-columns: 1fr; gap: 12px; }
+  @media (min-width: 900px) { .sp-body { grid-template-columns: 1fr 300px; } }
+
+  .sp-list {
+    list-style: none; margin: 0; padding: 0; max-height: min(66vh, 560px); overflow-y: auto;
+    border: 1px solid var(--line); border-radius: 10px;
+  }
+  .sp-list li { border-bottom: 1px solid color-mix(in srgb, var(--line) 55%, transparent); }
+  .sp-list li:last-child { border-bottom: 0; }
+  .sp-list button {
+    display: grid; grid-template-columns: 1fr auto 62px; gap: 10px; align-items: baseline;
+    width: 100%; text-align: left; font: inherit; font-size: 12.5px; padding: 7px 12px;
+    background: transparent; border: 0; color: inherit; cursor: pointer;
+  }
+  .sp-list button:hover { background: color-mix(in srgb, #e3b23c 8%, transparent); }
+  .sp-list button.is-sel { background: color-mix(in srgb, #e3b23c 14%, transparent); }
+  .sp-name { font-style: italic; }
+  .sp-fam { font-size: 11px; color: var(--txt-dim); }
+  .sp-occ { font-family: 'IBM Plex Mono', monospace; font-size: 11px; color: var(--txt-dim); text-align: right; }
+  .sp-err { padding: 12px; font-size: 12px; color: #d08a8a; }
+
+  .sp-detail {
+    border: 1px solid var(--line); border-radius: 10px; padding: 14px; font-size: 12.5px;
+    max-height: min(66vh, 560px); overflow-y: auto;
+  }
+  .sp-detail h3 { margin: 0 0 2px; font-size: 15px; font-style: italic; }
+  .sp-rank { margin: 0 0 10px; font-size: 11px; color: var(--txt-dim); }
+  .sp-empty { color: var(--txt-dim); font-size: 11.5px; margin: 0; }
+  .sp-tags { display: flex; flex-wrap: wrap; gap: 5px; margin-bottom: 10px; }
+  .tag {
+    font-family: 'IBM Plex Mono', monospace; font-size: 10px; text-transform: uppercase;
+    letter-spacing: 0.06em; padding: 2px 7px; border-radius: 999px;
+    border: 1px solid var(--line); color: var(--txt-dim);
+  }
+  .tag.endem { border-color: #e3b23c; color: #e3b23c; }
+  .tag.intro { border-color: #8a7fb5; color: #a99bd6; }
+  .sp-detail dl { display: grid; gap: 6px; margin: 0 0 4px; }
+  .sp-detail dl div { display: flex; justify-content: space-between; border-bottom: 1px dotted var(--line); padding-bottom: 3px; }
+  .sp-detail dt { color: var(--txt-dim); }
+  .sp-lbl { margin: 12px 0 6px; font-size: 10.5px; text-transform: uppercase; letter-spacing: 0.08em; color: var(--txt-dim); }
+  .sp-bars { list-style: none; margin: 0; padding: 0; display: grid; gap: 5px; }
+  .sp-bars li { display: grid; grid-template-columns: 88px 1fr auto; align-items: center; gap: 6px; font-size: 11px; }
+  .sp-bars i { height: 7px; border-radius: 3px; display: block; background: #5f8f6d; }
+  .sp-bars b { font-variant-numeric: tabular-nums; font-weight: 500; }
+</style>
