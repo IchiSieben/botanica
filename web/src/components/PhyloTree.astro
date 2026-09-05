@@ -1,0 +1,282 @@
+---
+/**
+ * Árbol taxonómico navegable: reino → orden (APG IV) → familia.
+ *
+ * DATOS REALES. El prototipo (`web/prototypes/mapa-filogenetico.html`) traía un
+ * Newick de ~20 especies escritas a mano y fabricaba la presencia por departamento
+ * con un PRNG sembrado (`hashStr` + LCG). Servía para probar la interacción, no
+ * para publicar: aquí se reemplaza por los marts del ETL.
+ *
+ *   - topología y tamaño   ← mart_family_composition (order_apg → family, species)
+ *   - color por clado      ← mart_clade_by_department (columna `color`, del ETL)
+ *   - presencia geográfica ← mart_clade_by_department (species/records por depto)
+ *
+ * La topología es TAXONÓMICA (rangos APG IV), no una filogenia con longitudes de
+ * rama: el árbol de Open Tree (`data/raw/treeoflife.tree`) no está versionado y
+ * usarlo exigiría correr el ETL. La UI lo dice explícitamente para no prometer
+ * lo que no es.
+ *
+ * Se usa ECharts (ya es dependencia y está vendoreado) en vez de D3: `roam: true`
+ * da zoom y paneo sin sumar una librería nueva al bundle.
+ */
+import { getFamilies, getCladeByDept } from '../lib/data';
+
+interface Props {
+  kingdom?: string;
+}
+const { kingdom = 'Plantae' } = Astro.props;
+
+const families = getFamilies(kingdom);
+const cladeRows = getCladeByDept(kingdom);
+
+// El ETL ya asignó un color estable a cada clado; reutilizarlo mantiene la
+// coherencia con la coropleta de la portada.
+const cladeColor = new Map<string, string>();
+for (const r of cladeRows) if (!cladeColor.has(r.clade)) cladeColor.set(r.clade, r.color);
+
+const deptsByClade = new Map<string, { department: string; species: number }[]>();
+for (const r of cladeRows) {
+  const list = deptsByClade.get(r.clade) ?? [];
+  list.push({ department: r.department, species: r.species });
+  deptsByClade.set(r.clade, list);
+}
+for (const [k, v] of deptsByClade) {
+  v.sort((a, b) => b.species - a.species);
+  deptsByClade.set(k, v.slice(0, 6));
+}
+
+// Las familias sin orden APG van a un cajón explícito: esconderlas falsearía
+// el total de especies del árbol.
+const UNPLACED = '(sin orden APG)';
+const byOrder = new Map<string, { family: string; species: number; genera: number }[]>();
+for (const f of families) {
+  const key = f.order_apg ?? UNPLACED;
+  const list = byOrder.get(key) ?? [];
+  list.push({ family: f.family, species: f.species, genera: f.genera });
+  byOrder.set(key, list);
+}
+
+const orders = [...byOrder.entries()]
+  .map(([order, fams]) => {
+    const color = cladeColor.get(order) ?? '#566b61';
+    const species = fams.reduce((s, f) => s + f.species, 0);
+    return {
+      name: order,
+      value: species,
+      itemStyle: { color },
+      meta: {
+        rank: 'orden',
+        color,
+        species,
+        families: fams.length,
+        depts: deptsByClade.get(order) ?? [],
+      },
+      children: fams
+        .sort((a, b) => b.species - a.species)
+        .map((f) => ({
+          name: f.family,
+          value: f.species,
+          itemStyle: { color },
+          meta: { rank: 'familia', color, species: f.species, genera: f.genera, parent: order },
+        })),
+    };
+  })
+  .sort((a, b) => b.value - a.value);
+
+const totals = {
+  orders: orders.length,
+  families: families.length,
+  species: families.reduce((s, f) => s + f.species, 0),
+};
+
+const tree = [{ name: kingdom, value: totals.species, meta: { rank: 'reino', species: totals.species }, children: orders }];
+---
+
+<div class="phylo">
+  <header class="phylo-head">
+    <div>
+      <h3>Árbol taxonómico · {kingdom}</h3>
+      <p class="phylo-sub">
+        {totals.orders} órdenes · {totals.families} familias ·
+        {totals.species.toLocaleString('es-PE')} especies
+        <span class="src">mart_family_composition + mart_clade_by_department</span>
+      </p>
+    </div>
+    <div class="phylo-tools">
+      <button type="button" data-layout="radial" class="on">Radial</button>
+      <button type="button" data-layout="orthogonal">Lineal</button>
+      <button type="button" id="phylo-reset">Reencuadrar</button>
+    </div>
+  </header>
+
+  <div class="phylo-body">
+    <div class="phylo-pane">
+      <div id="chart-phylo" class="chart-phylo"></div>
+      <div class="phylo-hint">Rueda para acercar · arrastrar para desplazar · clic en un nodo para plegarlo</div>
+    </div>
+    <aside class="phylo-side" id="phylo-side">
+      <div class="phylo-empty">Pasá por un orden o una familia para ver su detalle.</div>
+    </aside>
+  </div>
+
+  <p class="phylo-note">
+    Jerarquía taxonómica APG IV (orden → familia), no una filogenia con longitudes de rama.
+    El tamaño del nodo es proporcional al número de especies registradas en Perú.
+  </p>
+</div>
+
+<script type="application/json" id="data-phylo" set:html={JSON.stringify(tree)} />
+
+<script>
+  import { echarts, makeChart, readJSON, tooltipStyle, T } from '../lib/echarts-client';
+  import { TreeChart } from 'echarts/charts';
+  echarts.use([TreeChart]);
+
+  interface Meta {
+    rank: string;
+    color?: string;
+    species: number;
+    families?: number;
+    genera?: number;
+    parent?: string;
+    depts?: { department: string; species: number }[];
+  }
+  interface Node { name: string; value: number; meta: Meta; children?: Node[] }
+
+  const data = readJSON<Node[]>('data-phylo');
+  const side = document.getElementById('phylo-side');
+  const n = (v: number) => v.toLocaleString('es-PE');
+  const esc = (s: string) => s.replace(/[<>&]/g, (c) => ({ '<': '&lt;', '>': '&gt;', '&': '&amp;' })[c]!);
+
+  // Radio por raíz cuadrada: una familia enorme no debe aplastar al resto.
+  const maxV = Math.max(...data[0].children!.map((c) => c.value));
+  const radius = (v: number) => 3 + Math.sqrt(v / maxV) * 9;
+
+  function optionFor(layout: 'radial' | 'orthogonal') {
+    return {
+      tooltip: {
+        ...tooltipStyle,
+        trigger: 'item',
+        formatter: (p: { name: string; data: Node }) =>
+          `<b>${esc(p.name)}</b><br/>${n(p.data.value)} especies`,
+      },
+      series: [
+        {
+          type: 'tree',
+          data,
+          layout,
+          // roam = zoom + paneo. Es lo que pedía el scope guard, sin librería extra.
+          roam: true,
+          symbol: 'circle',
+          symbolSize: (_: unknown, p: { data: Node }) => radius(p.data?.value ?? 1),
+          initialTreeDepth: 1,
+          top: layout === 'radial' ? '6%' : '2%',
+          bottom: layout === 'radial' ? '6%' : '2%',
+          left: layout === 'radial' ? '6%' : '12%',
+          right: layout === 'radial' ? '6%' : '22%',
+          lineStyle: { color: T.line, width: 1, curveness: 0.45, opacity: 0.7 },
+          label: {
+            color: T.txt,
+            fontSize: 10,
+            fontFamily: T.font,
+            position: layout === 'radial' ? 'right' : 'left',
+            rotate: layout === 'radial' ? undefined : 0,
+            align: layout === 'radial' ? undefined : 'right',
+          },
+          leaves: {
+            label: { position: layout === 'radial' ? 'right' : 'right', align: 'left', fontSize: 9 },
+          },
+          emphasis: { focus: 'descendant', itemStyle: { borderColor: T.gold, borderWidth: 2 } },
+          expandAndCollapse: true,
+          animationDuration: 400,
+          animationDurationUpdate: 400,
+        },
+      ],
+    };
+  }
+
+  let chart = makeChart('chart-phylo', optionFor('radial'));
+
+  function detail(d: Node) {
+    if (!side) return;
+    const m = d.meta;
+    if (!m || m.rank === 'reino') {
+      side.innerHTML = `<div class="phylo-empty">Pasá por un orden o una familia para ver su detalle.</div>`;
+      return;
+    }
+    if (m.rank === 'familia') {
+      side.innerHTML = `
+        <h4 style="color:${m.color}">${esc(d.name)}</h4>
+        <p class="phylo-rank">familia · ${esc(m.parent ?? '')}</p>
+        <dl><div><dt>Especies</dt><dd>${n(m.species)}</dd></div>
+            <div><dt>Géneros</dt><dd>${n(m.genera ?? 0)}</dd></div></dl>`;
+      return;
+    }
+    const depts = m.depts ?? [];
+    const max = depts[0]?.species ?? 1;
+    side.innerHTML = `
+      <h4 style="color:${m.color}">${esc(d.name)}</h4>
+      <p class="phylo-rank">orden · ${n(m.families ?? 0)} familias · ${n(m.species)} especies</p>
+      ${
+        depts.length
+          ? `<p class="phylo-lbl">Departamentos con más especies</p>
+             <ul class="phylo-bars">${depts
+               .map(
+                 (x) => `<li><span>${esc(x.department)}</span>
+                   <i style="width:${Math.max(4, (x.species / max) * 100)}%;background:${m.color}"></i>
+                   <b>${n(x.species)}</b></li>`,
+               )
+               .join('')}</ul>`
+          : `<p class="phylo-lbl">Sin ocurrencias georreferenciadas para este orden.</p>`
+      }`;
+  }
+
+  chart?.on('mouseover', (p: { data: Node }) => detail(p.data));
+
+  document.querySelectorAll<HTMLButtonElement>('[data-layout]').forEach((b) =>
+    b.addEventListener('click', () => {
+      document.querySelectorAll('[data-layout]').forEach((x) => x.classList.toggle('on', x === b));
+      chart?.dispose();
+      chart = makeChart('chart-phylo', optionFor(b.dataset.layout as 'radial' | 'orthogonal'));
+      chart?.on('mouseover', (p: { data: Node }) => detail(p.data));
+    }),
+  );
+  document.getElementById('phylo-reset')?.addEventListener('click', () => {
+    const on = document.querySelector<HTMLElement>('[data-layout].on');
+    chart?.dispose();
+    chart = makeChart('chart-phylo', optionFor((on?.dataset.layout as 'radial' | 'orthogonal') ?? 'radial'));
+    chart?.on('mouseover', (p: { data: Node }) => detail(p.data));
+  });
+</script>
+
+<style>
+  .phylo { display: flex; flex-direction: column; gap: 10px; }
+  .phylo-head { display: flex; flex-wrap: wrap; gap: 12px; align-items: flex-start; justify-content: space-between; }
+  .phylo-head h3 { margin: 0; font-size: 15px; }
+  .phylo-sub { margin: 2px 0 0; font-size: 11.5px; color: var(--txt-dim); }
+  .phylo-sub .src { margin-left: 8px; font-family: 'IBM Plex Mono', monospace; font-size: 10px; opacity: 0.7; }
+  .phylo-tools { display: flex; gap: 6px; flex-wrap: wrap; }
+  .phylo-tools button {
+    font: inherit; font-size: 11.5px; padding: 4px 9px; border-radius: 6px;
+    border: 1px solid var(--line); background: transparent; color: inherit; cursor: pointer;
+  }
+  .phylo-tools button.on { border-color: currentColor; background: rgba(255, 255, 255, 0.06); }
+  .phylo-body { display: grid; grid-template-columns: 1fr; gap: 12px; }
+  @media (min-width: 900px) { .phylo-body { grid-template-columns: 1fr 250px; } }
+  .phylo-pane { position: relative; border: 1px solid var(--line); border-radius: 10px; overflow: hidden; }
+  .chart-phylo { width: 100%; height: min(72vh, 620px); }
+  .phylo-hint { position: absolute; left: 10px; bottom: 8px; font-size: 10.5px; color: var(--txt-dim); pointer-events: none; }
+  .phylo-side { border: 1px solid var(--line); border-radius: 10px; padding: 12px; font-size: 12px; overflow-y: auto; max-height: min(72vh, 620px); }
+  .phylo-side h4 { margin: 0 0 2px; font-size: 14px; }
+  .phylo-rank { margin: 0 0 10px; font-size: 11px; color: var(--txt-dim); }
+  .phylo-lbl { margin: 10px 0 6px; font-size: 10.5px; text-transform: uppercase; letter-spacing: 0.08em; color: var(--txt-dim); }
+  .phylo-empty { color: var(--txt-dim); font-size: 11.5px; }
+  .phylo-side dl { display: grid; gap: 6px; margin: 0; }
+  .phylo-side dl div { display: flex; justify-content: space-between; border-bottom: 1px dotted var(--line); padding-bottom: 3px; }
+  .phylo-side dt { color: var(--txt-dim); }
+  .phylo-bars { list-style: none; margin: 0; padding: 0; display: grid; gap: 5px; }
+  .phylo-bars li { display: grid; grid-template-columns: 80px 1fr auto; align-items: center; gap: 6px; font-size: 11px; }
+  .phylo-bars i { height: 7px; border-radius: 3px; display: block; }
+  .phylo-bars b { font-variant-numeric: tabular-nums; font-weight: 500; }
+  .phylo-note { margin: 0; font-size: 10.5px; color: var(--txt-dim); }
+</style>

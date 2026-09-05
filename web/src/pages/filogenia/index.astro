@@ -1,0 +1,42 @@
+---
+/**
+ * /filogenia/ — árbol taxonómico navegable.
+ *
+ * Promoción del prototipo `web/prototypes/mapa-filogenetico.html` a página real.
+ * El prototipo probaba la interacción con datos inventados; esta página se
+ * alimenta de los marts del ETL. Ver la cabecera de PhyloTree.astro.
+ */
+import Base from '../../layouts/Base.astro';
+import PhyloTree from '../../components/PhyloTree.astro';
+import { availableKingdoms } from '../../lib/data';
+
+// Plantae primero: es el reino principal del atlas (21 585 especies frente a 1 802
+// de Fungi). `availableKingdoms` devuelve el orden del mart, que no es el editorial.
+const ORDER = ['Plantae', 'Fungi'];
+const kingdoms = availableKingdoms().sort(
+  (a, b) => (ORDER.indexOf(a) + 1 || 99) - (ORDER.indexOf(b) + 1 || 99),
+);
+---
+
+<Base title="Filogenia — Atlas Botánico del Perú" kingdomCode="Plantae">
+  <section class="filo">
+    <header class="filo-head">
+      <h2>Filogenia</h2>
+      <p>
+        Cómo se reparten las especies registradas en Perú entre los grandes grupos
+        taxonómicos. Cada nodo es un orden o una familia; el tamaño es el número de
+        especies y el color, el clado al que pertenece.
+      </p>
+    </header>
+
+    {kingdoms.map((k) => <div class="filo-block"><PhyloTree kingdom={k} /></div>)}
+  </section>
+</Base>
+
+<style>
+  .filo { display: flex; flex-direction: column; gap: 26px; }
+  .filo-head h2 { margin: 0 0 6px; font-family: 'Fraunces', Georgia, serif; font-size: 26px; }
+  .filo-head p { margin: 0; max-width: 62ch; font-size: 13px; color: var(--txt-dim); line-height: 1.6; }
+  .filo-block { padding-top: 18px; border-top: 1px solid var(--line); }
+  .filo-block:first-of-type { border-top: 0; padding-top: 0; }
+</style>
