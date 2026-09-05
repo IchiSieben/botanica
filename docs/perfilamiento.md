@@ -1,6 +1,6 @@
 # Perfilamiento — conteos base y cruces viables (auto-generado)
 
-> Generado: 2026-06-22T09:51:34+00:00
+> Generado: 2026-09-05T22:25:28+00:00
 
 
 ## Conteos base de Peru

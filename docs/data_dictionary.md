@@ -1,6 +1,6 @@
 # Diccionario de datos (auto-generado)
 
-> Generado: 2026-06-22T09:51:30+00:00 · pais L3 = `PER`
+> Generado: 2026-09-05T22:25:25+00:00 · pais L3 = `PER`
 
 > Una fila por columna: tipo, cobertura (% no nulos) y cardinalidad.
 
