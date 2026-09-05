@@ -1,0 +1,78 @@
+---
+/**
+ * Envoltorio del tutorial compartido (`public/tutorial/`, upstream en
+ * Portfolio/shared/tutorial/).
+ *
+ * Recibe los pasos y los pasa al modulo. La ruta del import lleva BASE_URL
+ * porque el sitio vive en /botanica/, no en la raiz del dominio.
+ */
+interface Step {
+  target?: string;
+  title: string;
+  body: string;
+  placement?: 'top' | 'bottom' | 'left' | 'right';
+}
+interface Props {
+  id: string;
+  steps: Step[];
+}
+const { id, steps } = Astro.props;
+const base = import.meta.env.BASE_URL;
+---
+
+<link rel="stylesheet" href={`${base}tutorial/tutorial.css`} />
+
+<button type="button" id="tut-open" class="tut-open" aria-label="Ver el tutorial de esta página">
+  ? Cómo se usa
+</button>
+
+<script type="module" define:vars={{ id, steps, base }}>
+  const { createTutorial } = await import(`${base}tutorial/tutorial.js`);
+  const tour = createTutorial({
+    id,
+    steps,
+    labels: { next: 'Siguiente', prev: 'Atrás', done: 'Entendido', skip: 'Saltar', of: 'de' },
+  });
+  // Reapertura manual: el tutorial se descarta para siempre, pero tiene que
+  // poder volver a verse sin borrar el localStorage a mano.
+  document.getElementById('tut-open')?.addEventListener('click', () => tour.open());
+</script>
+
+<style is:global>
+  /* Paleta del atlas para el tutorial compartido. */
+  .ic7-tutorial-root {
+    --tut-bg: #12201b;
+    --tut-fg: #cdd9d2;
+    --tut-dim: #7f968b;
+    --tut-line: #33473e;
+    --tut-accent: #e3b23c;
+    --tut-font: 'IBM Plex Mono', ui-monospace, monospace;
+    --tut-mono: 'IBM Plex Mono', ui-monospace, monospace;
+  }
+  .ic7-tutorial-next {
+    color: #16241d !important;
+  }
+</style>
+
+<style>
+  .tut-open {
+    position: fixed;
+    right: 16px;
+    bottom: 16px;
+    z-index: 60;
+    font: inherit;
+    font-size: 11.5px;
+    font-family: 'IBM Plex Mono', ui-monospace, monospace;
+    padding: 7px 12px;
+    border-radius: 999px;
+    border: 1px solid var(--line);
+    background: var(--ink2, #13201b);
+    color: var(--txt-dim);
+    cursor: pointer;
+    box-shadow: 0 4px 16px rgb(0 0 0 / 0.4);
+  }
+  .tut-open:hover {
+    color: var(--txt);
+    border-color: #e3b23c;
+  }
+</style>

@@ -90,9 +90,13 @@ const totals = {
 };
 
 const tree = [{ name: kingdom, value: totals.species, meta: { rank: 'reino', species: totals.species }, children: orders }];
+
+// La pagina monta un PhyloTree por reino. Con ids fijos, el segundo choca con
+// el primero: getElementById devuelve solo uno y el arbol de Fungi queda muerto.
+const uid = `phylo-${kingdom.toLowerCase()}`;
 ---
 
-<div class="phylo">
+<div class="phylo" id={uid} data-phylo-root>
   <header class="phylo-head">
     <div>
       <h3>Árbol taxonómico · {kingdom}</h3>
@@ -105,16 +109,16 @@ const tree = [{ name: kingdom, value: totals.species, meta: { rank: 'reino', spe
     <div class="phylo-tools">
       <button type="button" data-layout="radial" class="on">Radial</button>
       <button type="button" data-layout="orthogonal">Lineal</button>
-      <button type="button" id="phylo-reset">Reencuadrar</button>
+      <button type="button" data-reset>Reencuadrar</button>
     </div>
   </header>
 
   <div class="phylo-body">
     <div class="phylo-pane">
-      <div id="chart-phylo" class="chart-phylo"></div>
+      <div id={`${uid}-chart`} class="chart-phylo"></div>
       <div class="phylo-hint">Rueda para acercar · arrastrar para desplazar · clic en un nodo para plegarlo</div>
     </div>
-    <aside class="phylo-side" id="phylo-side">
+    <aside class="phylo-side" id={`${uid}-side`}>
       <div class="phylo-empty">Pasá por un orden o una familia para ver su detalle.</div>
     </aside>
   </div>
@@ -125,9 +129,13 @@ const tree = [{ name: kingdom, value: totals.species, meta: { rank: 'reino', spe
   </p>
 </div>
 
-<script type="application/json" id="data-phylo" set:html={JSON.stringify(tree)} />
+<script type="application/json" id={`${uid}-data`} set:html={JSON.stringify(tree)} />
 
 <script>
+  /* Un solo script bundleado para TODAS las instancias de la pagina.
+     No se usa `define:vars` a proposito: eso vuelve el script inline y los
+     imports con nombre de paquete ('echarts/charts') dejan de resolverse.
+     El identificador de cada instancia viaja en el DOM, no en el script. */
   import { echarts, makeChart, readJSON, tooltipStyle, T } from '../lib/echarts-client';
   import { TreeChart } from 'echarts/charts';
   echarts.use([TreeChart]);
@@ -143,17 +151,20 @@ const tree = [{ name: kingdom, value: totals.species, meta: { rank: 'reino', spe
   }
   interface Node { name: string; value: number; meta: Meta; children?: Node[] }
 
-  const data = readJSON<Node[]>('data-phylo');
-  const side = document.getElementById('phylo-side');
   const n = (v: number) => v.toLocaleString('es-PE');
-  const esc = (s: string) => s.replace(/[<>&]/g, (c) => ({ '<': '&lt;', '>': '&gt;', '&': '&amp;' })[c]!);
+  const esc = (s: string) =>
+    s.replace(/[<>&]/g, (c) => ({ '<': '&lt;', '>': '&gt;', '&': '&amp;' })[c] as string);
 
-  // Radio por raíz cuadrada: una familia enorme no debe aplastar al resto.
-  const maxV = Math.max(...data[0].children!.map((c) => c.value));
-  const radius = (v: number) => 3 + Math.sqrt(v / maxV) * 9;
+  for (const root of document.querySelectorAll<HTMLElement>('[data-phylo-root]')) {
+    const uid = root.id;
+    const data = readJSON<Node[]>(`${uid}-data`);
+    const side = document.getElementById(`${uid}-side`);
 
-  function optionFor(layout: 'radial' | 'orthogonal') {
-    return {
+    // Radio por raiz cuadrada: una familia enorme no debe aplastar al resto.
+    const maxV = Math.max(...(data[0].children ?? []).map((c) => c.value));
+    const radius = (v: number) => 3 + Math.sqrt(v / maxV) * 9;
+
+    const optionFor = (layout: 'radial' | 'orthogonal') => ({
       tooltip: {
         ...tooltipStyle,
         trigger: 'item',
@@ -165,14 +176,14 @@ const tree = [{ name: kingdom, value: totals.species, meta: { rank: 'reino', spe
           type: 'tree',
           data,
           layout,
-          // roam = zoom + paneo. Es lo que pedía el scope guard, sin librería extra.
+          // roam = zoom + paneo, sin sumar una libreria al bundle.
           roam: true,
           symbol: 'circle',
           symbolSize: (_: unknown, p: { data: Node }) => radius(p.data?.value ?? 1),
           initialTreeDepth: 1,
-          // El anillo de etiquetas vive FUERA del radio del arbol: si el padding
-          // solo deja sitio para los nodos, los nombres de abajo se cortan contra
-          // el borde del contenedor. 18% deja sitio para la etiqueta mas larga.
+          // El anillo de etiquetas vive FUERA del radio del arbol: con un padding
+          // pensado solo para los nodos, los nombres de abajo se cortan contra el
+          // borde del contenedor.
           top: layout === 'radial' ? '18%' : '3%',
           bottom: layout === 'radial' ? '18%' : '3%',
           left: layout === 'radial' ? '16%' : '12%',
@@ -185,16 +196,12 @@ const tree = [{ name: kingdom, value: totals.species, meta: { rank: 'reino', spe
             position: layout === 'radial' ? 'right' : 'left',
             rotate: layout === 'radial' ? undefined : 0,
             align: layout === 'radial' ? undefined : 'right',
-            // Los nombres de orden mas largos ("Lichenostigmatales",
-            // "Entomophthorales") desbordan aun con el padding: elipsis en vez
-            // de recorte duro. El nombre completo sigue en el tooltip.
+            // Elipsis en vez de recorte duro; el nombre completo va en el tooltip.
             overflow: 'truncate',
             width: 108,
             ellipsis: '…',
           },
           leaves: {
-            // Las familias solo se rotulan al desplegar un orden; a esa altura
-            // hay sitio, pero se truncan igual por si el orden trae 24 familias.
             label: { position: 'right', align: 'left', fontSize: 9, overflow: 'truncate', width: 92, ellipsis: '…' },
           },
           emphasis: { focus: 'descendant', itemStyle: { borderColor: T.gold, borderWidth: 2 } },
@@ -203,63 +210,65 @@ const tree = [{ name: kingdom, value: totals.species, meta: { rank: 'reino', spe
           animationDurationUpdate: 400,
         },
       ],
-    };
-  }
+    });
 
-  let chart = makeChart('chart-phylo', optionFor('radial'));
-
-  function detail(d: Node) {
-    if (!side) return;
-    const m = d.meta;
-    if (!m || m.rank === 'reino') {
-      side.innerHTML = `<div class="phylo-empty">Pasá por un orden o una familia para ver su detalle.</div>`;
-      return;
-    }
-    if (m.rank === 'familia') {
+    function detail(d: Node) {
+      if (!side) return;
+      const m = d.meta;
+      if (!m || m.rank === 'reino') {
+        side.innerHTML = '<div class="phylo-empty">Pasá por un orden o una familia para ver su detalle.</div>';
+        return;
+      }
+      if (m.rank === 'familia') {
+        side.innerHTML = `
+          <h4 style="color:${m.color}">${esc(d.name)}</h4>
+          <p class="phylo-rank">familia · ${esc(m.parent ?? '')}</p>
+          <dl><div><dt>Especies</dt><dd>${n(m.species)}</dd></div>
+              <div><dt>Géneros</dt><dd>${n(m.genera ?? 0)}</dd></div></dl>`;
+        return;
+      }
+      const depts = m.depts ?? [];
+      const max = depts[0]?.species ?? 1;
       side.innerHTML = `
         <h4 style="color:${m.color}">${esc(d.name)}</h4>
-        <p class="phylo-rank">familia · ${esc(m.parent ?? '')}</p>
-        <dl><div><dt>Especies</dt><dd>${n(m.species)}</dd></div>
-            <div><dt>Géneros</dt><dd>${n(m.genera ?? 0)}</dd></div></dl>`;
-      return;
+        <p class="phylo-rank">orden · ${n(m.families ?? 0)} familias · ${n(m.species)} especies</p>
+        ${
+          depts.length
+            ? `<p class="phylo-lbl">Departamentos con más especies</p>
+               <ul class="phylo-bars">${depts
+                 .map(
+                   (x) => `<li><span>${esc(x.department)}</span>
+                     <i style="width:${Math.max(4, (x.species / max) * 100)}%;background:${m.color}"></i>
+                     <b>${n(x.species)}</b></li>`,
+                 )
+                 .join('')}</ul>`
+            : '<p class="phylo-lbl">Sin ocurrencias georreferenciadas para este orden.</p>'
+        }`;
     }
-    const depts = m.depts ?? [];
-    const max = depts[0]?.species ?? 1;
-    side.innerHTML = `
-      <h4 style="color:${m.color}">${esc(d.name)}</h4>
-      <p class="phylo-rank">orden · ${n(m.families ?? 0)} familias · ${n(m.species)} especies</p>
-      ${
-        depts.length
-          ? `<p class="phylo-lbl">Departamentos con más especies</p>
-             <ul class="phylo-bars">${depts
-               .map(
-                 (x) => `<li><span>${esc(x.department)}</span>
-                   <i style="width:${Math.max(4, (x.species / max) * 100)}%;background:${m.color}"></i>
-                   <b>${n(x.species)}</b></li>`,
-               )
-               .join('')}</ul>`
-          : `<p class="phylo-lbl">Sin ocurrencias georreferenciadas para este orden.</p>`
-      }`;
-  }
 
-  chart?.on('mouseover', (p: { data: Node }) => detail(p.data));
-
-  document.querySelectorAll<HTMLButtonElement>('[data-layout]').forEach((b) =>
-    b.addEventListener('click', () => {
-      document.querySelectorAll('[data-layout]').forEach((x) => x.classList.toggle('on', x === b));
-      chart?.dispose();
-      chart = makeChart('chart-phylo', optionFor(b.dataset.layout as 'radial' | 'orthogonal'));
-      chart?.on('mouseover', (p: { data: Node }) => detail(p.data));
-    }),
-  );
-  document.getElementById('phylo-reset')?.addEventListener('click', () => {
-    const on = document.querySelector<HTMLElement>('[data-layout].on');
-    chart?.dispose();
-    chart = makeChart('chart-phylo', optionFor((on?.dataset.layout as 'radial' | 'orthogonal') ?? 'radial'));
+    let chart = makeChart(`${uid}-chart`, optionFor('radial'));
     chart?.on('mouseover', (p: { data: Node }) => detail(p.data));
-  });
-</script>
 
+    const remount = (layout: 'radial' | 'orthogonal') => {
+      chart?.dispose();
+      chart = makeChart(`${uid}-chart`, optionFor(layout));
+      chart?.on('mouseover', (p: { data: Node }) => detail(p.data));
+    };
+
+    // Los controles se buscan DENTRO de la instancia: con dos arboles en la
+    // pagina, un querySelector global movia siempre el primero.
+    root.querySelectorAll<HTMLButtonElement>('[data-layout]').forEach((b) =>
+      b.addEventListener('click', () => {
+        root.querySelectorAll('[data-layout]').forEach((x) => x.classList.toggle('on', x === b));
+        remount(b.dataset.layout as 'radial' | 'orthogonal');
+      }),
+    );
+    root.querySelector('[data-reset]')?.addEventListener('click', () => {
+      const on = root.querySelector<HTMLElement>('[data-layout].on');
+      remount((on?.dataset.layout as 'radial' | 'orthogonal') ?? 'radial');
+    });
+  }
+</script>
 <style>
   .phylo { display: flex; flex-direction: column; gap: 10px; }
   .phylo-head { display: flex; flex-wrap: wrap; gap: 12px; align-items: flex-start; justify-content: space-between; }
