@@ -85,7 +85,9 @@ const chartData = { data };
   const fmt = (v: number) => v.toLocaleString('es-PE');
 
   async function init() {
-    await registerGeoMap('peru', '/data/peru_departamentos.geojson');
+    // El sitio se sirve desde /botanica/, no desde la raiz: una ruta absoluta
+    // pide el geojson al dominio y da 404. BASE_URL lo resuelve en build.
+    await registerGeoMap('peru', `${import.meta.env.BASE_URL}data/peru_departamentos.geojson`);
 
     const chart = makeChart('chart-map', baseOption('species'));
     if (!chart) return;
