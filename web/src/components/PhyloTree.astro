@@ -170,10 +170,13 @@ const tree = [{ name: kingdom, value: totals.species, meta: { rank: 'reino', spe
           symbol: 'circle',
           symbolSize: (_: unknown, p: { data: Node }) => radius(p.data?.value ?? 1),
           initialTreeDepth: 1,
-          top: layout === 'radial' ? '6%' : '2%',
-          bottom: layout === 'radial' ? '6%' : '2%',
-          left: layout === 'radial' ? '6%' : '12%',
-          right: layout === 'radial' ? '6%' : '22%',
+          // El anillo de etiquetas vive FUERA del radio del arbol: si el padding
+          // solo deja sitio para los nodos, los nombres de abajo se cortan contra
+          // el borde del contenedor. 18% deja sitio para la etiqueta mas larga.
+          top: layout === 'radial' ? '18%' : '3%',
+          bottom: layout === 'radial' ? '18%' : '3%',
+          left: layout === 'radial' ? '16%' : '12%',
+          right: layout === 'radial' ? '16%' : '24%',
           lineStyle: { color: T.line, width: 1, curveness: 0.45, opacity: 0.7 },
           label: {
             color: T.txt,
@@ -182,9 +185,17 @@ const tree = [{ name: kingdom, value: totals.species, meta: { rank: 'reino', spe
             position: layout === 'radial' ? 'right' : 'left',
             rotate: layout === 'radial' ? undefined : 0,
             align: layout === 'radial' ? undefined : 'right',
+            // Los nombres de orden mas largos ("Lichenostigmatales",
+            // "Entomophthorales") desbordan aun con el padding: elipsis en vez
+            // de recorte duro. El nombre completo sigue en el tooltip.
+            overflow: 'truncate',
+            width: 108,
+            ellipsis: '…',
           },
           leaves: {
-            label: { position: layout === 'radial' ? 'right' : 'right', align: 'left', fontSize: 9 },
+            // Las familias solo se rotulan al desplegar un orden; a esa altura
+            // hay sitio, pero se truncan igual por si el orden trae 24 familias.
+            label: { position: 'right', align: 'left', fontSize: 9, overflow: 'truncate', width: 92, ellipsis: '…' },
           },
           emphasis: { focus: 'descendant', itemStyle: { borderColor: T.gold, borderWidth: 2 } },
           expandAndCollapse: true,
