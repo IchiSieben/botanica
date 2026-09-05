@@ -1,0 +1,30 @@
+# Datos crudos y DB (no versionar; se regeneran via ETL)
+/data/raw/
+/data/*.duckdb
+/data/*.duckdb.wal
+/data/cache/
+*.zip
+*.tar.gz
+
+# Exports grandes (Parquet); los JSON chicos SI se versionan (ver .gitignore en /data/exports)
+/data/exports/**/*.parquet
+
+# Secrets
+.env
+
+# Python
+__pycache__/
+*.py[cod]
+.venv/
+.ipynb_checkpoints/
+.ruff_cache/
+
+# Node / Astro
+node_modules/
+web/dist/
+web/.astro/
+
+# OS
+Thumbs.db
+.DS_Store
+.env.example

@@ -1,0 +1,907 @@
+[
+  {
+    "kingdom": "Fungi",
+    "lifeform": "(sin dato)",
+    "species": 1802
+  },
+  {
+    "kingdom": "Plantae",
+    "lifeform": "(sin dato)",
+    "species": 5905
+  },
+  {
+    "kingdom": "Plantae",
+    "lifeform": "tree",
+    "species": 3075
+  },
+  {
+    "kingdom": "Plantae",
+    "lifeform": "epiphyte",
+    "species": 1916
+  },
+  {
+    "kingdom": "Plantae",
+    "lifeform": "perennial",
+    "species": 1324
+  },
+  {
+    "kingdom": "Plantae",
+    "lifeform": "shrub or tree",
+    "species": 1232
+  },
+  {
+    "kingdom": "Plantae",
+    "lifeform": "shrub",
+    "species": 923
+  },
+  {
+    "kingdom": "Plantae",
+    "lifeform": "pseudobulbous epiphyte",
+    "species": 720
+  },
+  {
+    "kingdom": "Plantae",
+    "lifeform": "subshrub",
+    "species": 717
+  },
+  {
+    "kingdom": "Plantae",
+    "lifeform": "climber",
+    "species": 697
+  },
+  {
+    "kingdom": "Plantae",
+    "lifeform": "annual",
+    "species": 522
+  },
+  {
+    "kingdom": "Plantae",
+    "lifeform": "liana",
+    "species": 488
+  },
+  {
+    "kingdom": "Plantae",
+    "lifeform": "perennial or rhizomatous geophyte",
+    "species": 401
+  },
+  {
+    "kingdom": "Plantae",
+    "lifeform": "subshrub or shrub",
+    "species": 377
+  },
+  {
+    "kingdom": "Plantae",
+    "lifeform": "tuberous geophyte",
+    "species": 261
+  },
+  {
+    "kingdom": "Plantae",
+    "lifeform": "climbing shrub",
+    "species": 224
+  },
+  {
+    "kingdom": "Plantae",
+    "lifeform": "rhizomatous geophyte",
+    "species": 189
+  },
+  {
+    "kingdom": "Plantae",
+    "lifeform": "epiphytic subshrub",
+    "species": 188
+  },
+  {
+    "kingdom": "Plantae",
+    "lifeform": "bulbous geophyte",
+    "species": 183
+  },
+  {
+    "kingdom": "Plantae",
+    "lifeform": "perennial or subshrub",
+    "species": 135
+  },
+  {
+    "kingdom": "Plantae",
+    "lifeform": "annual or perennial",
+    "species": 116
+  },
+  {
+    "kingdom": "Plantae",
+    "lifeform": "succulent subshrub",
+    "species": 106
+  },
+  {
+    "kingdom": "Plantae",
+    "lifeform": "scrambling shrub",
+    "species": 98
+  },
+  {
+    "kingdom": "Plantae",
+    "lifeform": "climbing tuberous geophyte",
+    "species": 91
+  },
+  {
+    "kingdom": "Plantae",
+    "lifeform": "annual or subshrub",
+    "species": 85
+  },
+  {
+    "kingdom": "Plantae",
+    "lifeform": "epiphytic rhizomatous subshrub",
+    "species": 78
+  },
+  {
+    "kingdom": "Plantae",
+    "lifeform": "bamboo",
+    "species": 71
+  },
+  {
+    "kingdom": "Plantae",
+    "lifeform": "scrambling shrub or tree",
+    "species": 69
+  },
+  {
+    "kingdom": "Plantae",
+    "lifeform": "epiphyte or lithophyte",
+    "species": 62
+  },
+  {
+    "kingdom": "Plantae",
+    "lifeform": "annual or biennial",
+    "species": 61
+  },
+  {
+    "kingdom": "Plantae",
+    "lifeform": "perennial or epiphyte",
+    "species": 51
+  },
+  {
+    "kingdom": "Plantae",
+    "lifeform": "climbing subshrub",
+    "species": 42
+  },
+  {
+    "kingdom": "Plantae",
+    "lifeform": "climbing perennial",
+    "species": 41
+  },
+  {
+    "kingdom": "Plantae",
+    "lifeform": "climbing shrub or liana",
+    "species": 36
+  },
+  {
+    "kingdom": "Plantae",
+    "lifeform": "climbing annual",
+    "species": 32
+  },
+  {
+    "kingdom": "Plantae",
+    "lifeform": "scrambling tree",
+    "species": 31
+  },
+  {
+    "kingdom": "Plantae",
+    "lifeform": "hydrosubshrub",
+    "species": 30
+  },
+  {
+    "kingdom": "Plantae",
+    "lifeform": "epiphyte or perennial",
+    "species": 30
+  },
+  {
+    "kingdom": "Plantae",
+    "lifeform": "perennial or lithophyte",
+    "species": 30
+  },
+  {
+    "kingdom": "Plantae",
+    "lifeform": "scrambling rhizomatous geophyte",
+    "species": 30
+  },
+  {
+    "kingdom": "Plantae",
+    "lifeform": "pseudobulbous geophyte",
+    "species": 27
+  },
+  {
+    "kingdom": "Plantae",
+    "lifeform": "helophyte",
+    "species": 27
+  },
+  {
+    "kingdom": "Plantae",
+    "lifeform": "hemiparasitic epiphyte",
+    "species": 27
+  },
+  {
+    "kingdom": "Plantae",
+    "lifeform": "pseudobulbous geophyte or epiphyte",
+    "species": 27
+  },
+  {
+    "kingdom": "Plantae",
+    "lifeform": "succulent shrub",
+    "species": 24
+  },
+  {
+    "kingdom": "Plantae",
+    "lifeform": "climbing epiphyte",
+    "species": 23
+  },
+  {
+    "kingdom": "Plantae",
+    "lifeform": "climbing shrub or tree",
+    "species": 23
+  },
+  {
+    "kingdom": "Plantae",
+    "lifeform": "perennial or annual",
+    "species": 23
+  },
+  {
+    "kingdom": "Plantae",
+    "lifeform": "scrambling subshrub or shrub",
+    "species": 23
+  },
+  {
+    "kingdom": "Plantae",
+    "lifeform": "perennial or tuberous geophyte",
+    "species": 22
+  },
+  {
+    "kingdom": "Plantae",
+    "lifeform": "scrambling subshrub",
+    "species": 22
+  },
+  {
+    "kingdom": "Plantae",
+    "lifeform": "succulent shrub or tree",
+    "species": 21
+  },
+  {
+    "kingdom": "Plantae",
+    "lifeform": "scrambling shrub or liana",
+    "species": 20
+  },
+  {
+    "kingdom": "Plantae",
+    "lifeform": "herbaceous bamboo",
+    "species": 20
+  },
+  {
+    "kingdom": "Plantae",
+    "lifeform": "pseudobulbous epiphyte or lithophyte",
+    "species": 19
+  },
+  {
+    "kingdom": "Plantae",
+    "lifeform": "holoparasitic annual",
+    "species": 18
+  },
+  {
+    "kingdom": "Plantae",
+    "lifeform": "perennial, lithophyte or epiphyte",
+    "species": 17
+  },
+  {
+    "kingdom": "Plantae",
+    "lifeform": "lithophyte",
+    "species": 17
+  },
+  {
+    "kingdom": "Plantae",
+    "lifeform": "annual, perennial or subshrub",
+    "species": 17
+  },
+  {
+    "kingdom": "Plantae",
+    "lifeform": "perennial or shrub",
+    "species": 16
+  },
+  {
+    "kingdom": "Plantae",
+    "lifeform": "scrambling tuberous geophyte",
+    "species": 16
+  },
+  {
+    "kingdom": "Plantae",
+    "lifeform": "shrub or liana",
+    "species": 15
+  },
+  {
+    "kingdom": "Plantae",
+    "lifeform": "holoparasite",
+    "species": 14
+  },
+  {
+    "kingdom": "Plantae",
+    "lifeform": "hydroannual",
+    "species": 14
+  },
+  {
+    "kingdom": "Plantae",
+    "lifeform": "succulent tree",
+    "species": 13
+  },
+  {
+    "kingdom": "Plantae",
+    "lifeform": "subshrub or epiphyte",
+    "species": 13
+  },
+  {
+    "kingdom": "Plantae",
+    "lifeform": "climbing herbaceous tree",
+    "species": 13
+  },
+  {
+    "kingdom": "Plantae",
+    "lifeform": "annual or helophyte",
+    "species": 13
+  },
+  {
+    "kingdom": "Plantae",
+    "lifeform": "holomycotrophic rhizomatous geophyte",
+    "species": 12
+  },
+  {
+    "kingdom": "Plantae",
+    "lifeform": "perennial or helophyte",
+    "species": 12
+  },
+  {
+    "kingdom": "Plantae",
+    "lifeform": "subshrub or helophyte",
+    "species": 12
+  },
+  {
+    "kingdom": "Plantae",
+    "lifeform": "holomycotroph",
+    "species": 11
+  },
+  {
+    "kingdom": "Plantae",
+    "lifeform": "biennial",
+    "species": 11
+  },
+  {
+    "kingdom": "Plantae",
+    "lifeform": "climbing annual or perennial",
+    "species": 10
+  },
+  {
+    "kingdom": "Plantae",
+    "lifeform": "hemiepiphytic subshrub",
+    "species": 9
+  },
+  {
+    "kingdom": "Plantae",
+    "lifeform": "scrambling perennial",
+    "species": 9
+  },
+  {
+    "kingdom": "Plantae",
+    "lifeform": "rhizomatous geophyte or epiphyte",
+    "species": 9
+  },
+  {
+    "kingdom": "Plantae",
+    "lifeform": "epiphytic shrub",
+    "species": 9
+  },
+  {
+    "kingdom": "Plantae",
+    "lifeform": "hemiepiphytic shrub",
+    "species": 8
+  },
+  {
+    "kingdom": "Plantae",
+    "lifeform": "rhizomatous epiphyte",
+    "species": 8
+  },
+  {
+    "kingdom": "Plantae",
+    "lifeform": "hydroperennial",
+    "species": 8
+  },
+  {
+    "kingdom": "Plantae",
+    "lifeform": "rhizomatous geophyte or lithophyte",
+    "species": 8
+  },
+  {
+    "kingdom": "Plantae",
+    "lifeform": "scrambling annual or perennial",
+    "species": 7
+  },
+  {
+    "kingdom": "Plantae",
+    "lifeform": "rhizomatous hydrogeophyte",
+    "species": 7
+  },
+  {
+    "kingdom": "Plantae",
+    "lifeform": "biennial or perennial",
+    "species": 7
+  },
+  {
+    "kingdom": "Plantae",
+    "lifeform": "climbing herbaceous tree or liana",
+    "species": 6
+  },
+  {
+    "kingdom": "Plantae",
+    "lifeform": "lithophyte or epiphyte",
+    "species": 6
+  },
+  {
+    "kingdom": "Plantae",
+    "lifeform": "succulent epiphyte",
+    "species": 6
+  },
+  {
+    "kingdom": "Plantae",
+    "lifeform": "liana or tree",
+    "species": 6
+  },
+  {
+    "kingdom": "Plantae",
+    "lifeform": "climbing subshrub or climbing shrub",
+    "species": 6
+  },
+  {
+    "kingdom": "Plantae",
+    "lifeform": "climbing rhizomatous geophyte",
+    "species": 5
+  },
+  {
+    "kingdom": "Plantae",
+    "lifeform": "pseudobulbous geophyte or lithophyte",
+    "species": 5
+  },
+  {
+    "kingdom": "Plantae",
+    "lifeform": "climbing subshrub or shrub",
+    "species": 5
+  },
+  {
+    "kingdom": "Plantae",
+    "lifeform": "scrambling epiphyte",
+    "species": 5
+  },
+  {
+    "kingdom": "Plantae",
+    "lifeform": "tuberous subshrub",
+    "species": 5
+  },
+  {
+    "kingdom": "Plantae",
+    "lifeform": "succulent perennial",
+    "species": 5
+  },
+  {
+    "kingdom": "Plantae",
+    "lifeform": "tuberous shrub",
+    "species": 5
+  },
+  {
+    "kingdom": "Plantae",
+    "lifeform": "scrambling annual",
+    "species": 5
+  },
+  {
+    "kingdom": "Plantae",
+    "lifeform": "hemiparasitic annual",
+    "species": 4
+  },
+  {
+    "kingdom": "Plantae",
+    "lifeform": "annual, subshrub or shrub",
+    "species": 4
+  },
+  {
+    "kingdom": "Plantae",
+    "lifeform": "holomycotrophic tuberous geophyte",
+    "species": 4
+  },
+  {
+    "kingdom": "Plantae",
+    "lifeform": "scrambling annual or subshrub",
+    "species": 4
+  },
+  {
+    "kingdom": "Plantae",
+    "lifeform": "climbing succulent",
+    "species": 4
+  },
+  {
+    "kingdom": "Plantae",
+    "lifeform": "annual or shrub",
+    "species": 4
+  },
+  {
+    "kingdom": "Plantae",
+    "lifeform": "liana or subshrub",
+    "species": 4
+  },
+  {
+    "kingdom": "Plantae",
+    "lifeform": "hemiparasitic shrub",
+    "species": 3
+  },
+  {
+    "kingdom": "Plantae",
+    "lifeform": "tuberous epiphyte",
+    "species": 3
+  },
+  {
+    "kingdom": "Plantae",
+    "lifeform": "hemiepiphytic shrub or tree",
+    "species": 3
+  },
+  {
+    "kingdom": "Plantae",
+    "lifeform": "climbing subshrub or epiphyte",
+    "species": 3
+  },
+  {
+    "kingdom": "Plantae",
+    "lifeform": "subshrub or climbing shrub",
+    "species": 3
+  },
+  {
+    "kingdom": "Plantae",
+    "lifeform": "rhizomatous epiphyte or lithophyte",
+    "species": 3
+  },
+  {
+    "kingdom": "Plantae",
+    "lifeform": "succulent subshrub or lithophyte",
+    "species": 3
+  },
+  {
+    "kingdom": "Plantae",
+    "lifeform": "succulent subshrub or shrub",
+    "species": 3
+  },
+  {
+    "kingdom": "Plantae",
+    "lifeform": "scrambling perennial or subshrub",
+    "species": 3
+  },
+  {
+    "kingdom": "Plantae",
+    "lifeform": "climbing perennial or subshrub",
+    "species": 3
+  },
+  {
+    "kingdom": "Plantae",
+    "lifeform": "subshrub, shrub or tree",
+    "species": 3
+  },
+  {
+    "kingdom": "Plantae",
+    "lifeform": "lithophytic subshrub",
+    "species": 3
+  },
+  {
+    "kingdom": "Plantae",
+    "lifeform": "epiphytic or lithophytic chamaephyte",
+    "species": 3
+  },
+  {
+    "kingdom": "Plantae",
+    "lifeform": "epiphyte or subshrub",
+    "species": 2
+  },
+  {
+    "kingdom": "Plantae",
+    "lifeform": "semisucculent subshrub or shrub",
+    "species": 2
+  },
+  {
+    "kingdom": "Plantae",
+    "lifeform": "perennial or bulbous geophyte",
+    "species": 2
+  },
+  {
+    "kingdom": "Plantae",
+    "lifeform": "hydrosubshrub or subshrub",
+    "species": 2
+  },
+  {
+    "kingdom": "Plantae",
+    "lifeform": "rhizomatous lithophyte",
+    "species": 2
+  },
+  {
+    "kingdom": "Plantae",
+    "lifeform": "rhizomatous geophyte or helophyte",
+    "species": 2
+  },
+  {
+    "kingdom": "Plantae",
+    "lifeform": "holomycotrophic perennial",
+    "species": 2
+  },
+  {
+    "kingdom": "Plantae",
+    "lifeform": "climbing hemiparasite",
+    "species": 2
+  },
+  {
+    "kingdom": "Plantae",
+    "lifeform": "helophyte or subshrub",
+    "species": 2
+  },
+  {
+    "kingdom": "Plantae",
+    "lifeform": "annual, biennial or perennial",
+    "species": 2
+  },
+  {
+    "kingdom": "Plantae",
+    "lifeform": "hydroannual or helophyte",
+    "species": 2
+  },
+  {
+    "kingdom": "Plantae",
+    "lifeform": "hydroannual or tuberous geophyte",
+    "species": 2
+  },
+  {
+    "kingdom": "Plantae",
+    "lifeform": "biennial or subshrub",
+    "species": 2
+  },
+  {
+    "kingdom": "Plantae",
+    "lifeform": "pseudobulbous lithophyte",
+    "species": 2
+  },
+  {
+    "kingdom": "Plantae",
+    "lifeform": "succulent epiphyte or lithophyte",
+    "species": 2
+  },
+  {
+    "kingdom": "Plantae",
+    "lifeform": "climbing perennial or shrub",
+    "species": 2
+  },
+  {
+    "kingdom": "Plantae",
+    "lifeform": "climbing helophyte",
+    "species": 2
+  },
+  {
+    "kingdom": "Plantae",
+    "lifeform": "caudex geophyte",
+    "species": 1
+  },
+  {
+    "kingdom": "Plantae",
+    "lifeform": "lithophyte or perennial",
+    "species": 1
+  },
+  {
+    "kingdom": "Plantae",
+    "lifeform": "succulent annual or subshrub",
+    "species": 1
+  },
+  {
+    "kingdom": "Plantae",
+    "lifeform": "perennial, subshrub or shrub",
+    "species": 1
+  },
+  {
+    "kingdom": "Plantae",
+    "lifeform": "hemiparasitic subshrub",
+    "species": 1
+  },
+  {
+    "kingdom": "Plantae",
+    "lifeform": "liana or shrub",
+    "species": 1
+  },
+  {
+    "kingdom": "Plantae",
+    "lifeform": "hemiepiphytic perennial",
+    "species": 1
+  },
+  {
+    "kingdom": "Plantae",
+    "lifeform": "scrambling herbaceous tree",
+    "species": 1
+  },
+  {
+    "kingdom": "Plantae",
+    "lifeform": "tuberous perennial",
+    "species": 1
+  },
+  {
+    "kingdom": "Plantae",
+    "lifeform": "climbing annual or biennial",
+    "species": 1
+  },
+  {
+    "kingdom": "Plantae",
+    "lifeform": "epiphytic shrub or tree",
+    "species": 1
+  },
+  {
+    "kingdom": "Plantae",
+    "lifeform": "hemiparasitic perennial",
+    "species": 1
+  },
+  {
+    "kingdom": "Plantae",
+    "lifeform": "epiphytic subshrub or shrub",
+    "species": 1
+  },
+  {
+    "kingdom": "Plantae",
+    "lifeform": "tuberous geophyte or epiphyte",
+    "species": 1
+  },
+  {
+    "kingdom": "Plantae",
+    "lifeform": "epiphytic scrambling subshrub",
+    "species": 1
+  },
+  {
+    "kingdom": "Plantae",
+    "lifeform": "subshrub or tuberous geophyte",
+    "species": 1
+  },
+  {
+    "kingdom": "Plantae",
+    "lifeform": "rhizomatous subshrub",
+    "species": 1
+  },
+  {
+    "kingdom": "Plantae",
+    "lifeform": "tuberous geophyte or helophyte",
+    "species": 1
+  },
+  {
+    "kingdom": "Plantae",
+    "lifeform": "subshrub or lithophyte",
+    "species": 1
+  },
+  {
+    "kingdom": "Plantae",
+    "lifeform": "hemiepiphytic subshrub or shrub",
+    "species": 1
+  },
+  {
+    "kingdom": "Plantae",
+    "lifeform": "succulent lithophyte",
+    "species": 1
+  },
+  {
+    "kingdom": "Plantae",
+    "lifeform": "monocarpic tree",
+    "species": 1
+  },
+  {
+    "kingdom": "Plantae",
+    "lifeform": "herbaceous tree",
+    "species": 1
+  },
+  {
+    "kingdom": "Plantae",
+    "lifeform": "helophyte or rhizomatous hydrogeophyte",
+    "species": 1
+  },
+  {
+    "kingdom": "Plantae",
+    "lifeform": "subshrub or perennial",
+    "species": 1
+  },
+  {
+    "kingdom": "Plantae",
+    "lifeform": "epiphytic caudex subshrub",
+    "species": 1
+  },
+  {
+    "kingdom": "Plantae",
+    "lifeform": "tuberous lithophyte or epiphyte",
+    "species": 1
+  },
+  {
+    "kingdom": "Plantae",
+    "lifeform": "climbing perennial or herbaceous tree",
+    "species": 1
+  },
+  {
+    "kingdom": "Plantae",
+    "lifeform": "semiaquatic subshrub",
+    "species": 1
+  },
+  {
+    "kingdom": "Plantae",
+    "lifeform": "tuberous lithophyte",
+    "species": 1
+  },
+  {
+    "kingdom": "Plantae",
+    "lifeform": "epiphytic rhizomatous geophyte",
+    "species": 1
+  },
+  {
+    "kingdom": "Plantae",
+    "lifeform": "hemiparasitic climber",
+    "species": 1
+  },
+  {
+    "kingdom": "Plantae",
+    "lifeform": "scrambling perennial or epiphyte",
+    "species": 1
+  },
+  {
+    "kingdom": "Plantae",
+    "lifeform": "tuberous geophyte or lithophyte",
+    "species": 1
+  },
+  {
+    "kingdom": "Plantae",
+    "lifeform": "annual or lithophyte",
+    "species": 1
+  },
+  {
+    "kingdom": "Plantae",
+    "lifeform": "tuberous hydrogeophyte",
+    "species": 1
+  },
+  {
+    "kingdom": "Plantae",
+    "lifeform": "pseudobulbous epiphyte or geophyte",
+    "species": 1
+  },
+  {
+    "kingdom": "Plantae",
+    "lifeform": "tuberous shrub or tree",
+    "species": 1
+  },
+  {
+    "kingdom": "Plantae",
+    "lifeform": "semisucculent subshrub",
+    "species": 1
+  },
+  {
+    "kingdom": "Plantae",
+    "lifeform": "climbing holoparasite",
+    "species": 1
+  },
+  {
+    "kingdom": "Plantae",
+    "lifeform": "holoparasitic tuberous geophyte",
+    "species": 1
+  },
+  {
+    "kingdom": "Plantae",
+    "lifeform": "climbing caudex geophyte",
+    "species": 1
+  },
+  {
+    "kingdom": "Plantae",
+    "lifeform": "semiaquatic annual",
+    "species": 1
+  },
+  {
+    "kingdom": "Plantae",
+    "lifeform": "holoparasitic geophyte",
+    "species": 1
+  },
+  {
+    "kingdom": "Plantae",
+    "lifeform": "monocarpic perennial",
+    "species": 1
+  },
+  {
+    "kingdom": "Plantae",
+    "lifeform": "hydrosubshrub or perennial",
+    "species": 1
+  }
+]

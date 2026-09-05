@@ -1,0 +1,3656 @@
+[
+  {
+    "kingdom": "Fungi",
+    "family": "Parmeliaceae",
+    "order_apg": "Lecanorales",
+    "species": 158,
+    "genera": 23
+  },
+  {
+    "kingdom": "Fungi",
+    "family": "Pucciniaceae",
+    "order_apg": "Pucciniales",
+    "species": 95,
+    "genera": 6
+  },
+  {
+    "kingdom": "Fungi",
+    "family": "Polyporaceae",
+    "order_apg": "Polyporales",
+    "species": 75,
+    "genera": 31
+  },
+  {
+    "kingdom": "Fungi",
+    "family": "Physciaceae",
+    "order_apg": "Caliciales",
+    "species": 70,
+    "genera": 12
+  },
+  {
+    "kingdom": "Fungi",
+    "family": "Ramalinaceae",
+    "order_apg": "Lecanorales",
+    "species": 57,
+    "genera": 15
+  },
+  {
+    "kingdom": "Fungi",
+    "family": "Cladoniaceae",
+    "order_apg": "Lecanorales",
+    "species": 50,
+    "genera": 3
+  },
+  {
+    "kingdom": "Fungi",
+    "family": "Graphidaceae",
+    "order_apg": "Ostropales",
+    "species": 38,
+    "genera": 14
+  },
+  {
+    "kingdom": "Fungi",
+    "family": "Collemataceae",
+    "order_apg": "Peltigerales",
+    "species": 37,
+    "genera": 4
+  },
+  {
+    "kingdom": "Fungi",
+    "family": "Lobariaceae",
+    "order_apg": "Peltigerales",
+    "species": 36,
+    "genera": 8
+  },
+  {
+    "kingdom": "Fungi",
+    "family": "Gomphillaceae",
+    "order_apg": "Ostropales",
+    "species": 34,
+    "genera": 14
+  },
+  {
+    "kingdom": "Fungi",
+    "family": "Nectriaceae",
+    "order_apg": "Hypocreales",
+    "species": 34,
+    "genera": 12
+  },
+  {
+    "kingdom": "Fungi",
+    "family": "Stereocaulaceae",
+    "order_apg": "Lecanorales",
+    "species": 31,
+    "genera": 2
+  },
+  {
+    "kingdom": "Fungi",
+    "family": "Teloschistaceae",
+    "order_apg": "Teloschistales",
+    "species": 31,
+    "genera": 18
+  },
+  {
+    "kingdom": "Fungi",
+    "family": "Mycosphaerellaceae",
+    "order_apg": "Mycosphaerellales",
+    "species": 30,
+    "genera": 14
+  },
+  {
+    "kingdom": "Fungi",
+    "family": "Xylariaceae",
+    "order_apg": "Xylariales",
+    "species": 28,
+    "genera": 4
+  },
+  {
+    "kingdom": "Fungi",
+    "family": "Hypocreaceae",
+    "order_apg": "Hypocreales",
+    "species": 28,
+    "genera": 5
+  },
+  {
+    "kingdom": "Fungi",
+    "family": "Byssolomataceae",
+    "order_apg": "Lecanorales",
+    "species": 25,
+    "genera": 8
+  },
+  {
+    "kingdom": "Fungi",
+    "family": "Aspergillaceae",
+    "order_apg": "Eurotiales",
+    "species": 24,
+    "genera": 6
+  },
+  {
+    "kingdom": "Fungi",
+    "family": "Agaricaceae",
+    "order_apg": "Agaricales",
+    "species": 23,
+    "genera": 12
+  },
+  {
+    "kingdom": "Fungi",
+    "family": "Hymenochaetaceae",
+    "order_apg": "Hymenochaetales",
+    "species": 23,
+    "genera": 10
+  },
+  {
+    "kingdom": "Fungi",
+    "family": "Roccellaceae",
+    "order_apg": "Arthoniales",
+    "species": 20,
+    "genera": 8
+  },
+  {
+    "kingdom": "Fungi",
+    "family": "Caliciaceae",
+    "order_apg": "Caliciales",
+    "species": 20,
+    "genera": 5
+  },
+  {
+    "kingdom": "Fungi",
+    "family": "Erysiphaceae",
+    "order_apg": "Helotiales",
+    "species": 20,
+    "genera": 6
+  },
+  {
+    "kingdom": "Fungi",
+    "family": "Ophiocordycipitaceae",
+    "order_apg": "Hypocreales",
+    "species": 17,
+    "genera": 4
+  },
+  {
+    "kingdom": "Fungi",
+    "family": "Peltigeraceae",
+    "order_apg": "Peltigerales",
+    "species": 15,
+    "genera": 1
+  },
+  {
+    "kingdom": "Fungi",
+    "family": "Arthoniaceae",
+    "order_apg": "Arthoniales",
+    "species": 15,
+    "genera": 7
+  },
+  {
+    "kingdom": "Fungi",
+    "family": "Pannariaceae",
+    "order_apg": "Peltigerales",
+    "species": 15,
+    "genera": 5
+  },
+  {
+    "kingdom": "Fungi",
+    "family": "Marasmiaceae",
+    "order_apg": "Agaricales",
+    "species": 14,
+    "genera": 6
+  },
+  {
+    "kingdom": "Fungi",
+    "family": "Mycenaceae",
+    "order_apg": "Agaricales",
+    "species": 12,
+    "genera": 7
+  },
+  {
+    "kingdom": "Fungi",
+    "family": "Meliolaceae",
+    "order_apg": "Meliolales",
+    "species": 12,
+    "genera": 4
+  },
+  {
+    "kingdom": "Fungi",
+    "family": "Coenogoniaceae",
+    "order_apg": "Ostropales",
+    "species": 11,
+    "genera": 1
+  },
+  {
+    "kingdom": "Fungi",
+    "family": "Candelariaceae",
+    "order_apg": "Candelariales",
+    "species": 11,
+    "genera": 5
+  },
+  {
+    "kingdom": "Fungi",
+    "family": "Fomitopsidaceae",
+    "order_apg": "Polyporales",
+    "species": 11,
+    "genera": 6
+  },
+  {
+    "kingdom": "Fungi",
+    "family": "Strigulaceae",
+    "order_apg": "Strigulales",
+    "species": 10,
+    "genera": 6
+  },
+  {
+    "kingdom": "Fungi",
+    "family": "Cordycipitaceae",
+    "order_apg": "Hypocreales",
+    "species": 10,
+    "genera": 5
+  },
+  {
+    "kingdom": "Fungi",
+    "family": "Hygrophoraceae",
+    "order_apg": "Agaricales",
+    "species": 10,
+    "genera": 7
+  },
+  {
+    "kingdom": "Fungi",
+    "family": "Umbilicariaceae",
+    "order_apg": "Umbilicariales",
+    "species": 10,
+    "genera": 1
+  },
+  {
+    "kingdom": "Fungi",
+    "family": "Clavicipitaceae",
+    "order_apg": "Hypocreales",
+    "species": 10,
+    "genera": 9
+  },
+  {
+    "kingdom": "Fungi",
+    "family": "Ustilaginaceae",
+    "order_apg": "Ustilaginales",
+    "species": 9,
+    "genera": 5
+  },
+  {
+    "kingdom": "Fungi",
+    "family": "Graphostromataceae",
+    "order_apg": "Xylariales",
+    "species": 9,
+    "genera": 1
+  },
+  {
+    "kingdom": "Fungi",
+    "family": "Strophariaceae",
+    "order_apg": "Agaricales",
+    "species": 9,
+    "genera": 6
+  },
+  {
+    "kingdom": "Fungi",
+    "family": "Bionectriaceae",
+    "order_apg": "Hypocreales",
+    "species": 9,
+    "genera": 7
+  },
+  {
+    "kingdom": "Fungi",
+    "family": "Hypoxylaceae",
+    "order_apg": "Xylariales",
+    "species": 9,
+    "genera": 5
+  },
+  {
+    "kingdom": "Fungi",
+    "family": "Verrucariaceae",
+    "order_apg": "Verrucariales",
+    "species": 9,
+    "genera": 5
+  },
+  {
+    "kingdom": "Fungi",
+    "family": "Phallaceae",
+    "order_apg": "Phallales",
+    "species": 9,
+    "genera": 4
+  },
+  {
+    "kingdom": "Fungi",
+    "family": "Phyllachoraceae",
+    "order_apg": "Phyllachorales",
+    "species": 9,
+    "genera": 2
+  },
+  {
+    "kingdom": "Fungi",
+    "family": "Tricholomataceae",
+    "order_apg": "Agaricales",
+    "species": 9,
+    "genera": 7
+  },
+  {
+    "kingdom": "Fungi",
+    "family": "Pertusariaceae",
+    "order_apg": "Pertusariales",
+    "species": 8,
+    "genera": 2
+  },
+  {
+    "kingdom": "Fungi",
+    "family": "Irpicaceae",
+    "order_apg": "Polyporales",
+    "species": 8,
+    "genera": 6
+  },
+  {
+    "kingdom": "Fungi",
+    "family": "Panaceae",
+    "order_apg": "Polyporales",
+    "species": 8,
+    "genera": 2
+  },
+  {
+    "kingdom": "Fungi",
+    "family": "Auriculariaceae",
+    "order_apg": "Auriculariales",
+    "species": 8,
+    "genera": 1
+  },
+  {
+    "kingdom": "Fungi",
+    "family": "Icmadophilaceae",
+    "order_apg": "Pertusariales",
+    "species": 8,
+    "genera": 3
+  },
+  {
+    "kingdom": "Fungi",
+    "family": "Lecanoraceae",
+    "order_apg": "Lecanorales",
+    "species": 7,
+    "genera": 4
+  },
+  {
+    "kingdom": "Fungi",
+    "family": "Coccocarpiaceae",
+    "order_apg": "Peltigerales",
+    "species": 7,
+    "genera": 1
+  },
+  {
+    "kingdom": "Fungi",
+    "family": "Geastraceae",
+    "order_apg": "Geastrales",
+    "species": 7,
+    "genera": 2
+  },
+  {
+    "kingdom": "Fungi",
+    "family": "Saccharomycetaceae",
+    "order_apg": "Saccharomycetales",
+    "species": 7,
+    "genera": 5
+  },
+  {
+    "kingdom": "Fungi",
+    "family": "Steccherinaceae",
+    "order_apg": "Polyporales",
+    "species": 7,
+    "genera": 6
+  },
+  {
+    "kingdom": "Fungi",
+    "family": "Opegraphaceae",
+    "order_apg": "Arthoniales",
+    "species": 7,
+    "genera": 3
+  },
+  {
+    "kingdom": "Fungi",
+    "family": "Trypetheliaceae",
+    "order_apg": "Trypetheliales",
+    "species": 7,
+    "genera": 3
+  },
+  {
+    "kingdom": "Fungi",
+    "family": "Bolbitiaceae",
+    "order_apg": "Agaricales",
+    "species": 7,
+    "genera": 4
+  },
+  {
+    "kingdom": "Fungi",
+    "family": "Hymenogastraceae",
+    "order_apg": "Agaricales",
+    "species": 6,
+    "genera": 2
+  },
+  {
+    "kingdom": "Fungi",
+    "family": "Meripilaceae",
+    "order_apg": "Polyporales",
+    "species": 6,
+    "genera": 2
+  },
+  {
+    "kingdom": "Fungi",
+    "family": "Herpotrichiellaceae",
+    "order_apg": "Chaetothyriales",
+    "species": 6,
+    "genera": 3
+  },
+  {
+    "kingdom": "Fungi",
+    "family": "Meruliaceae",
+    "order_apg": "Polyporales",
+    "species": 6,
+    "genera": 6
+  },
+  {
+    "kingdom": "Fungi",
+    "family": "Glomerellaceae",
+    "order_apg": "Glomerellales",
+    "species": 6,
+    "genera": 1
+  },
+  {
+    "kingdom": "Fungi",
+    "family": "Tremellaceae",
+    "order_apg": "Tremellales",
+    "species": 6,
+    "genera": 1
+  },
+  {
+    "kingdom": "Fungi",
+    "family": "Rhynchogastremaceae",
+    "order_apg": "Tremellales",
+    "species": 6,
+    "genera": 2
+  },
+  {
+    "kingdom": "Fungi",
+    "family": "Pleosporaceae",
+    "order_apg": "Pleosporales",
+    "species": 6,
+    "genera": 6
+  },
+  {
+    "kingdom": "Fungi",
+    "family": "Morchellaceae",
+    "order_apg": "Pezizales",
+    "species": 6,
+    "genera": 1
+  },
+  {
+    "kingdom": "Fungi",
+    "family": "Omphalotaceae",
+    "order_apg": "Agaricales",
+    "species": 5,
+    "genera": 3
+  },
+  {
+    "kingdom": "Fungi",
+    "family": "Abrothallaceae",
+    "order_apg": "Abrothallales",
+    "species": 5,
+    "genera": 1
+  },
+  {
+    "kingdom": "Fungi",
+    "family": "Leptosphaeriaceae",
+    "order_apg": "Pleosporales",
+    "species": 5,
+    "genera": 3
+  },
+  {
+    "kingdom": "Fungi",
+    "family": "Sporidiobolaceae",
+    "order_apg": "Sporidiobolales",
+    "species": 5,
+    "genera": 2
+  },
+  {
+    "kingdom": "Fungi",
+    "family": "Phakopsoraceae",
+    "order_apg": "Pucciniales",
+    "species": 5,
+    "genera": 2
+  },
+  {
+    "kingdom": "Fungi",
+    "family": "Podoscyphaceae",
+    "order_apg": "Polyporales",
+    "species": 5,
+    "genera": 2
+  },
+  {
+    "kingdom": "Fungi",
+    "family": "Acarosporaceae",
+    "order_apg": "Acarosporales",
+    "species": 5,
+    "genera": 2
+  },
+  {
+    "kingdom": "Fungi",
+    "family": "Trichosporonaceae",
+    "order_apg": "Trichosporonales",
+    "species": 5,
+    "genera": 2
+  },
+  {
+    "kingdom": "Fungi",
+    "family": "Bulleribasidiaceae",
+    "order_apg": "Tremellales",
+    "species": 5,
+    "genera": 2
+  },
+  {
+    "kingdom": "Fungi",
+    "family": "Chaetomiaceae",
+    "order_apg": "Sordariales",
+    "species": 4,
+    "genera": 2
+  },
+  {
+    "kingdom": "Fungi",
+    "family": "Asterinaceae",
+    "order_apg": "Asterinales",
+    "species": 4,
+    "genera": 2
+  },
+  {
+    "kingdom": "Fungi",
+    "family": "Phleogenaceae",
+    "order_apg": "Atractiellales",
+    "species": 4,
+    "genera": 3
+  },
+  {
+    "kingdom": "Fungi",
+    "family": "Psoraceae",
+    "order_apg": "Lecanorales",
+    "species": 4,
+    "genera": 2
+  },
+  {
+    "kingdom": "Fungi",
+    "family": "Lycoperdaceae",
+    "order_apg": "Agaricales",
+    "species": 4,
+    "genera": 3
+  },
+  {
+    "kingdom": "Fungi",
+    "family": "Chrysotrichaceae",
+    "order_apg": "Arthoniales",
+    "species": 4,
+    "genera": 1
+  },
+  {
+    "kingdom": "Fungi",
+    "family": "Botryosphaeriaceae",
+    "order_apg": "Botryosphaeriales",
+    "species": 4,
+    "genera": 2
+  },
+  {
+    "kingdom": "Fungi",
+    "family": "Cladosporiaceae",
+    "order_apg": "Capnodiales",
+    "species": 4,
+    "genera": 1
+  },
+  {
+    "kingdom": "Fungi",
+    "family": "Mucoraceae",
+    "order_apg": "Mucorales",
+    "species": 4,
+    "genera": 2
+  },
+  {
+    "kingdom": "Fungi",
+    "family": "Entolomataceae",
+    "order_apg": "Agaricales",
+    "species": 4,
+    "genera": 2
+  },
+  {
+    "kingdom": "Fungi",
+    "family": "Plectosphaerellaceae",
+    "order_apg": "Glomerellales",
+    "species": 4,
+    "genera": 4
+  },
+  {
+    "kingdom": "Fungi",
+    "family": "Pluteaceae",
+    "order_apg": "Agaricales",
+    "species": 4,
+    "genera": 3
+  },
+  {
+    "kingdom": "Fungi",
+    "family": "Phanerochaetaceae",
+    "order_apg": "Polyporales",
+    "species": 4,
+    "genera": 3
+  },
+  {
+    "kingdom": "Fungi",
+    "family": "Stereaceae",
+    "order_apg": "Russulales",
+    "species": 4,
+    "genera": 1
+  },
+  {
+    "kingdom": "Fungi",
+    "family": "Xanthopyreniaceae",
+    "order_apg": "Collemopsidiales",
+    "species": 4,
+    "genera": 4
+  },
+  {
+    "kingdom": "Fungi",
+    "family": "Sarcoscyphaceae",
+    "order_apg": "Pezizales",
+    "species": 4,
+    "genera": 2
+  },
+  {
+    "kingdom": "Fungi",
+    "family": "Didymellaceae",
+    "order_apg": "Pleosporales",
+    "species": 4,
+    "genera": 2
+  },
+  {
+    "kingdom": "Fungi",
+    "family": "Cerrenaceae",
+    "order_apg": "Polyporales",
+    "species": 4,
+    "genera": 1
+  },
+  {
+    "kingdom": "Fungi",
+    "family": "Psathyrellaceae",
+    "order_apg": "Agaricales",
+    "species": 3,
+    "genera": 3
+  },
+  {
+    "kingdom": "Fungi",
+    "family": "Sclerodermataceae",
+    "order_apg": "Boletales",
+    "species": 3,
+    "genera": 1
+  },
+  {
+    "kingdom": "Fungi",
+    "family": "Ceratobasidiaceae",
+    "order_apg": "Cantharellales",
+    "species": 3,
+    "genera": 2
+  },
+  {
+    "kingdom": "Fungi",
+    "family": "Acaulosporaceae",
+    "order_apg": "Diversisporales",
+    "species": 3,
+    "genera": 1
+  },
+  {
+    "kingdom": "Fungi",
+    "family": "Polycoccaceae",
+    "order_apg": "Trypetheliales",
+    "species": 3,
+    "genera": 2
+  },
+  {
+    "kingdom": "Fungi",
+    "family": "Anthracoideaceae",
+    "order_apg": "Ustilaginales",
+    "species": 3,
+    "genera": 2
+  },
+  {
+    "kingdom": "Fungi",
+    "family": "Porinaceae",
+    "order_apg": "Ostropales",
+    "species": 3,
+    "genera": 3
+  },
+  {
+    "kingdom": "Fungi",
+    "family": "Suillaceae",
+    "order_apg": "Boletales",
+    "species": 3,
+    "genera": 1
+  },
+  {
+    "kingdom": "Fungi",
+    "family": "Pleurotaceae",
+    "order_apg": "Agaricales",
+    "species": 3,
+    "genera": 2
+  },
+  {
+    "kingdom": "Fungi",
+    "family": "Debaryomycetaceae",
+    "order_apg": "Saccharomycetales",
+    "species": 3,
+    "genera": 2
+  },
+  {
+    "kingdom": "Fungi",
+    "family": "Phragmidiaceae",
+    "order_apg": "Pucciniales",
+    "species": 3,
+    "genera": 3
+  },
+  {
+    "kingdom": "Fungi",
+    "family": "Physalacriaceae",
+    "order_apg": "Agaricales",
+    "species": 3,
+    "genera": 2
+  },
+  {
+    "kingdom": "Fungi",
+    "family": "Raveneliaceae",
+    "order_apg": "Pucciniales",
+    "species": 3,
+    "genera": 3
+  },
+  {
+    "kingdom": "Fungi",
+    "family": "Rickenellaceae",
+    "order_apg": "Hymenochaetales",
+    "species": 3,
+    "genera": 2
+  },
+  {
+    "kingdom": "Fungi",
+    "family": "Chaetosphaeriaceae",
+    "order_apg": "Chaetosphaeriales",
+    "species": 3,
+    "genera": 2
+  },
+  {
+    "kingdom": "Fungi",
+    "family": "Pestalotiopsidaceae",
+    "order_apg": "Amphisphaeriales",
+    "species": 3,
+    "genera": 2
+  },
+  {
+    "kingdom": "Fungi",
+    "family": "Cryptococcaceae",
+    "order_apg": "Tremellales",
+    "species": 3,
+    "genera": 2
+  },
+  {
+    "kingdom": "Fungi",
+    "family": "Hydnaceae",
+    "order_apg": "Cantharellales",
+    "species": 3,
+    "genera": 1
+  },
+  {
+    "kingdom": "Fungi",
+    "family": "Dacrymycetaceae",
+    "order_apg": "Dacrymycetales",
+    "species": 3,
+    "genera": 3
+  },
+  {
+    "kingdom": "Fungi",
+    "family": "Peltulaceae",
+    "order_apg": "Lichinales",
+    "species": 3,
+    "genera": 1
+  },
+  {
+    "kingdom": "Fungi",
+    "family": "Russulaceae",
+    "order_apg": "Russulales",
+    "species": 3,
+    "genera": 1
+  },
+  {
+    "kingdom": "Fungi",
+    "family": "Lecideaceae",
+    "order_apg": "Lecideales",
+    "species": 3,
+    "genera": 2
+  },
+  {
+    "kingdom": "Fungi",
+    "family": "Coniocybaceae",
+    "order_apg": "Coniocybales",
+    "species": 3,
+    "genera": 1
+  },
+  {
+    "kingdom": "Fungi",
+    "family": "Melampsoraceae",
+    "order_apg": "Pucciniales",
+    "species": 3,
+    "genera": 1
+  },
+  {
+    "kingdom": "Fungi",
+    "family": "Elsinoaceae",
+    "order_apg": "Myriangiales",
+    "species": 2,
+    "genera": 1
+  },
+  {
+    "kingdom": "Fungi",
+    "family": "Teratosphaeriaceae",
+    "order_apg": "Mycosphaerellales",
+    "species": 2,
+    "genera": 1
+  },
+  {
+    "kingdom": "Fungi",
+    "family": "Stachybotryaceae",
+    "order_apg": "Hypocreales",
+    "species": 2,
+    "genera": 2
+  },
+  {
+    "kingdom": "Fungi",
+    "family": "Perisporiopsidaceae",
+    "order_apg": null,
+    "species": 2,
+    "genera": 1
+  },
+  {
+    "kingdom": "Fungi",
+    "family": "Lecanographaceae",
+    "order_apg": "Arthoniales",
+    "species": 2,
+    "genera": 1
+  },
+  {
+    "kingdom": "Fungi",
+    "family": "Choanephoraceae",
+    "order_apg": "Mucorales",
+    "species": 2,
+    "genera": 2
+  },
+  {
+    "kingdom": "Fungi",
+    "family": "Dacampiaceae",
+    "order_apg": "Pleosporales",
+    "species": 2,
+    "genera": 2
+  },
+  {
+    "kingdom": "Fungi",
+    "family": "Roccellographaceae",
+    "order_apg": "Arthoniales",
+    "species": 2,
+    "genera": 2
+  },
+  {
+    "kingdom": "Fungi",
+    "family": "Tephromelataceae",
+    "order_apg": "Lecanorales",
+    "species": 2,
+    "genera": 1
+  },
+  {
+    "kingdom": "Fungi",
+    "family": "Trapeliaceae",
+    "order_apg": "Baeomycetales",
+    "species": 2,
+    "genera": 1
+  },
+  {
+    "kingdom": "Fungi",
+    "family": "Sordariaceae",
+    "order_apg": "Sordariales",
+    "species": 2,
+    "genera": 1
+  },
+  {
+    "kingdom": "Fungi",
+    "family": "Phaeosphaeriaceae",
+    "order_apg": "Pleosporales",
+    "species": 2,
+    "genera": 2
+  },
+  {
+    "kingdom": "Fungi",
+    "family": "Phaeococcomycetaceae",
+    "order_apg": "Lichenostigmatales",
+    "species": 2,
+    "genera": 2
+  },
+  {
+    "kingdom": "Fungi",
+    "family": "Coleosporiaceae",
+    "order_apg": "Pucciniales",
+    "species": 2,
+    "genera": 1
+  },
+  {
+    "kingdom": "Fungi",
+    "family": "Boletinellaceae",
+    "order_apg": "Boletales",
+    "species": 2,
+    "genera": 2
+  },
+  {
+    "kingdom": "Fungi",
+    "family": "Lyophyllaceae",
+    "order_apg": "Agaricales",
+    "species": 2,
+    "genera": 2
+  },
+  {
+    "kingdom": "Fungi",
+    "family": "Ganodermataceae",
+    "order_apg": "Polyporales",
+    "species": 2,
+    "genera": 2
+  },
+  {
+    "kingdom": "Fungi",
+    "family": "Saccotheciaceae",
+    "order_apg": "Dothideales",
+    "species": 2,
+    "genera": 2
+  },
+  {
+    "kingdom": "Fungi",
+    "family": "Synchytriaceae",
+    "order_apg": "Chytridiales",
+    "species": 2,
+    "genera": 1
+  },
+  {
+    "kingdom": "Fungi",
+    "family": "Pseudoperisporiaceae",
+    "order_apg": null,
+    "species": 2,
+    "genera": 2
+  },
+  {
+    "kingdom": "Fungi",
+    "family": "Chaconiaceae",
+    "order_apg": "Pucciniales",
+    "species": 2,
+    "genera": 2
+  },
+  {
+    "kingdom": "Fungi",
+    "family": "Diaporthaceae",
+    "order_apg": "Diaporthales",
+    "species": 2,
+    "genera": 1
+  },
+  {
+    "kingdom": "Fungi",
+    "family": "Cortinariaceae",
+    "order_apg": "Agaricales",
+    "species": 2,
+    "genera": 2
+  },
+  {
+    "kingdom": "Fungi",
+    "family": "Ajellomycetaceae",
+    "order_apg": "Onygenales",
+    "species": 2,
+    "genera": 2
+  },
+  {
+    "kingdom": "Fungi",
+    "family": "Hericiaceae",
+    "order_apg": "Russulales",
+    "species": 2,
+    "genera": 2
+  },
+  {
+    "kingdom": "Fungi",
+    "family": "Cordieritidaceae",
+    "order_apg": "Helotiales",
+    "species": 2,
+    "genera": 2
+  },
+  {
+    "kingdom": "Fungi",
+    "family": "Hymeneliaceae",
+    "order_apg": "Hymeneliales",
+    "species": 2,
+    "genera": 2
+  },
+  {
+    "kingdom": "Fungi",
+    "family": "Microthyriaceae",
+    "order_apg": "Microthyriales",
+    "species": 2,
+    "genera": 1
+  },
+  {
+    "kingdom": "Fungi",
+    "family": "Pyronemataceae",
+    "order_apg": "Pezizales",
+    "species": 2,
+    "genera": 2
+  },
+  {
+    "kingdom": "Fungi",
+    "family": "Thelenellaceae",
+    "order_apg": "Ostropales",
+    "species": 2,
+    "genera": 1
+  },
+  {
+    "kingdom": "Fungi",
+    "family": "Leprocaulaceae",
+    "order_apg": "Teloschistales",
+    "species": 2,
+    "genera": 1
+  },
+  {
+    "kingdom": "Fungi",
+    "family": "Wickerhamomycetaceae",
+    "order_apg": "Saccharomycetales",
+    "species": 2,
+    "genera": 1
+  },
+  {
+    "kingdom": "Fungi",
+    "family": "Baeomycetaceae",
+    "order_apg": "Baeomycetales",
+    "species": 2,
+    "genera": 1
+  },
+  {
+    "kingdom": "Fungi",
+    "family": "Cucurbitariaceae",
+    "order_apg": "Pleosporales",
+    "species": 2,
+    "genera": 2
+  },
+  {
+    "kingdom": "Fungi",
+    "family": "Massarinaceae",
+    "order_apg": "Pleosporales",
+    "species": 2,
+    "genera": 1
+  },
+  {
+    "kingdom": "Fungi",
+    "family": "Spirographaceae",
+    "order_apg": "Ostropales",
+    "species": 2,
+    "genera": 1
+  },
+  {
+    "kingdom": "Fungi",
+    "family": "Gloeophyllaceae",
+    "order_apg": "Gloeophyllales",
+    "species": 2,
+    "genera": 2
+  },
+  {
+    "kingdom": "Fungi",
+    "family": "Clavariaceae",
+    "order_apg": "Agaricales",
+    "species": 2,
+    "genera": 2
+  },
+  {
+    "kingdom": "Fungi",
+    "family": "Incrustoporiaceae",
+    "order_apg": "Polyporales",
+    "species": 2,
+    "genera": 1
+  },
+  {
+    "kingdom": "Fungi",
+    "family": "Odontotremataceae",
+    "order_apg": "Ostropales",
+    "species": 2,
+    "genera": 2
+  },
+  {
+    "kingdom": "Fungi",
+    "family": "Crepidotaceae",
+    "order_apg": "Agaricales",
+    "species": 2,
+    "genera": 1
+  },
+  {
+    "kingdom": "Fungi",
+    "family": "Biatorellaceae",
+    "order_apg": "Lecanorales",
+    "species": 1,
+    "genera": 1
+  },
+  {
+    "kingdom": "Fungi",
+    "family": "Hydnodontaceae",
+    "order_apg": "Trechisporales",
+    "species": 1,
+    "genera": 1
+  },
+  {
+    "kingdom": "Fungi",
+    "family": "Phaffomycetaceae",
+    "order_apg": "Saccharomycetales",
+    "species": 1,
+    "genera": 1
+  },
+  {
+    "kingdom": "Fungi",
+    "family": "Coryneliaceae",
+    "order_apg": "Coryneliales",
+    "species": 1,
+    "genera": 1
+  },
+  {
+    "kingdom": "Fungi",
+    "family": "Pterulaceae",
+    "order_apg": "Agaricales",
+    "species": 1,
+    "genera": 1
+  },
+  {
+    "kingdom": "Fungi",
+    "family": "Hydnangiaceae",
+    "order_apg": "Agaricales",
+    "species": 1,
+    "genera": 1
+  },
+  {
+    "kingdom": "Fungi",
+    "family": "Botryobasidiaceae",
+    "order_apg": "Cantharellales",
+    "species": 1,
+    "genera": 1
+  },
+  {
+    "kingdom": "Fungi",
+    "family": "Orbiliaceae",
+    "order_apg": "Orbiliales",
+    "species": 1,
+    "genera": 1
+  },
+  {
+    "kingdom": "Fungi",
+    "family": "Microstromataceae",
+    "order_apg": "Microstromatales",
+    "species": 1,
+    "genera": 1
+  },
+  {
+    "kingdom": "Fungi",
+    "family": "Punctulariaceae",
+    "order_apg": "Corticiales",
+    "species": 1,
+    "genera": 1
+  },
+  {
+    "kingdom": "Fungi",
+    "family": "Boliniaceae",
+    "order_apg": "Boliniales",
+    "species": 1,
+    "genera": 1
+  },
+  {
+    "kingdom": "Fungi",
+    "family": "Phycomycetaceae",
+    "order_apg": "Mucorales",
+    "species": 1,
+    "genera": 1
+  },
+  {
+    "kingdom": "Fungi",
+    "family": "Bulleraceae",
+    "order_apg": "Tremellales",
+    "species": 1,
+    "genera": 1
+  },
+  {
+    "kingdom": "Fungi",
+    "family": "Varicellariaceae",
+    "order_apg": "Pertusariales",
+    "species": 1,
+    "genera": 1
+  },
+  {
+    "kingdom": "Fungi",
+    "family": "Stereopsidaceae",
+    "order_apg": "Stereopsidales",
+    "species": 1,
+    "genera": 1
+  },
+  {
+    "kingdom": "Fungi",
+    "family": "Bondarzewiaceae",
+    "order_apg": "Russulales",
+    "species": 1,
+    "genera": 1
+  },
+  {
+    "kingdom": "Fungi",
+    "family": "Serpulaceae",
+    "order_apg": "Boletales",
+    "species": 1,
+    "genera": 1
+  },
+  {
+    "kingdom": "Fungi",
+    "family": "Agyriaceae",
+    "order_apg": "Pertusariales",
+    "species": 1,
+    "genera": 1
+  },
+  {
+    "kingdom": "Fungi",
+    "family": "Planistromellaceae",
+    "order_apg": "Botryosphaeriales",
+    "species": 1,
+    "genera": 1
+  },
+  {
+    "kingdom": "Fungi",
+    "family": "Oxyporaceae",
+    "order_apg": "Hymenochaetales",
+    "species": 1,
+    "genera": 1
+  },
+  {
+    "kingdom": "Fungi",
+    "family": "Ectolechiaceae",
+    "order_apg": "Lecanorales",
+    "species": 1,
+    "genera": 1
+  },
+  {
+    "kingdom": "Fungi",
+    "family": "Gnomoniaceae",
+    "order_apg": "Diaporthales",
+    "species": 1,
+    "genera": 1
+  },
+  {
+    "kingdom": "Fungi",
+    "family": "Laetiporaceae",
+    "order_apg": "Polyporales",
+    "species": 1,
+    "genera": 1
+  },
+  {
+    "kingdom": "Fungi",
+    "family": "Catillariaceae",
+    "order_apg": "Lecanorales",
+    "species": 1,
+    "genera": 1
+  },
+  {
+    "kingdom": "Fungi",
+    "family": "Pezizellaceae",
+    "order_apg": "Helotiales",
+    "species": 1,
+    "genera": 1
+  },
+  {
+    "kingdom": "Fungi",
+    "family": "Corticiaceae",
+    "order_apg": "Corticiales",
+    "species": 1,
+    "genera": 1
+  },
+  {
+    "kingdom": "Fungi",
+    "family": "Ploettnerulaceae",
+    "order_apg": "Helotiales",
+    "species": 1,
+    "genera": 1
+  },
+  {
+    "kingdom": "Fungi",
+    "family": "Harknessiaceae",
+    "order_apg": "Diaporthales",
+    "species": 1,
+    "genera": 1
+  },
+  {
+    "kingdom": "Fungi",
+    "family": "Mycosyringaceae",
+    "order_apg": "Urocystidales",
+    "species": 1,
+    "genera": 1
+  },
+  {
+    "kingdom": "Fungi",
+    "family": "Sclerococcaceae",
+    "order_apg": "Sclerococcales",
+    "species": 1,
+    "genera": 1
+  },
+  {
+    "kingdom": "Fungi",
+    "family": "Neozygitaceae",
+    "order_apg": "Entomophthorales",
+    "species": 1,
+    "genera": 1
+  },
+  {
+    "kingdom": "Fungi",
+    "family": "Amylocorticiaceae",
+    "order_apg": "Amylocorticiales",
+    "species": 1,
+    "genera": 1
+  },
+  {
+    "kingdom": "Fungi",
+    "family": "Dipodascaceae",
+    "order_apg": "Saccharomycetales",
+    "species": 1,
+    "genera": 1
+  },
+  {
+    "kingdom": "Fungi",
+    "family": "Didymosphaeriaceae",
+    "order_apg": "Pleosporales",
+    "species": 1,
+    "genera": 1
+  },
+  {
+    "kingdom": "Fungi",
+    "family": "Rhizopodaceae",
+    "order_apg": "Mucorales",
+    "species": 1,
+    "genera": 1
+  },
+  {
+    "kingdom": "Fungi",
+    "family": "Uropyxidaceae",
+    "order_apg": "Pucciniales",
+    "species": 1,
+    "genera": 1
+  },
+  {
+    "kingdom": "Fungi",
+    "family": "Terramycetaceae",
+    "order_apg": "Rhizophydiales",
+    "species": 1,
+    "genera": 1
+  },
+  {
+    "kingdom": "Fungi",
+    "family": "Cyphobasidiaceae",
+    "order_apg": "Cyphobasidiales",
+    "species": 1,
+    "genera": 1
+  },
+  {
+    "kingdom": "Fungi",
+    "family": "Rhizocarpaceae",
+    "order_apg": "Rhizocarpales",
+    "species": 1,
+    "genera": 1
+  },
+  {
+    "kingdom": "Fungi",
+    "family": "Angulomycetaceae",
+    "order_apg": "Rhizophydiales",
+    "species": 1,
+    "genera": 1
+  },
+  {
+    "kingdom": "Fungi",
+    "family": "Microascaceae",
+    "order_apg": "Microascales",
+    "species": 1,
+    "genera": 1
+  },
+  {
+    "kingdom": "Fungi",
+    "family": "Megasporaceae",
+    "order_apg": "Pertusariales",
+    "species": 1,
+    "genera": 1
+  },
+  {
+    "kingdom": "Fungi",
+    "family": "Strangosporaceae",
+    "order_apg": "Lecanorales",
+    "species": 1,
+    "genera": 1
+  },
+  {
+    "kingdom": "Fungi",
+    "family": "Ascobolaceae",
+    "order_apg": "Pezizales",
+    "species": 1,
+    "genera": 1
+  },
+  {
+    "kingdom": "Fungi",
+    "family": "Arthrodermataceae",
+    "order_apg": "Onygenales",
+    "species": 1,
+    "genera": 1
+  },
+  {
+    "kingdom": "Fungi",
+    "family": "Pezizaceae",
+    "order_apg": "Pezizales",
+    "species": 1,
+    "genera": 1
+  },
+  {
+    "kingdom": "Fungi",
+    "family": "Pucciniosiraceae",
+    "order_apg": "Pucciniales",
+    "species": 1,
+    "genera": 1
+  },
+  {
+    "kingdom": "Fungi",
+    "family": "Chaetosphaerellaceae",
+    "order_apg": "Coronophorales",
+    "species": 1,
+    "genera": 1
+  },
+  {
+    "kingdom": "Fungi",
+    "family": "Schizoporaceae",
+    "order_apg": "Hymenochaetales",
+    "species": 1,
+    "genera": 1
+  },
+  {
+    "kingdom": "Fungi",
+    "family": "Torpedosporaceae",
+    "order_apg": "Torpedosporales",
+    "species": 1,
+    "genera": 1
+  },
+  {
+    "kingdom": "Fungi",
+    "family": "Phlyctidaceae",
+    "order_apg": "Ostropales",
+    "species": 1,
+    "genera": 1
+  },
+  {
+    "kingdom": "Fungi",
+    "family": "Chionosphaeraceae",
+    "order_apg": "Agaricostilbales",
+    "species": 1,
+    "genera": 1
+  },
+  {
+    "kingdom": "Fungi",
+    "family": "Macrocystidiaceae",
+    "order_apg": "Agaricales",
+    "species": 1,
+    "genera": 1
+  },
+  {
+    "kingdom": "Fungi",
+    "family": "Sistotremataceae",
+    "order_apg": "Trechisporales",
+    "species": 1,
+    "genera": 1
+  },
+  {
+    "kingdom": "Fungi",
+    "family": "Coniochaetaceae",
+    "order_apg": "Coniochaetales",
+    "species": 1,
+    "genera": 1
+  },
+  {
+    "kingdom": "Fungi",
+    "family": "Dothideaceae",
+    "order_apg": "Dothideales",
+    "species": 1,
+    "genera": 1
+  },
+  {
+    "kingdom": "Fungi",
+    "family": "Brigantiaeaceae",
+    "order_apg": "Teloschistales",
+    "species": 1,
+    "genera": 1
+  },
+  {
+    "kingdom": "Fungi",
+    "family": "Gomphaceae",
+    "order_apg": "Gomphales",
+    "species": 1,
+    "genera": 1
+  },
+  {
+    "kingdom": "Fungi",
+    "family": "Xylobotryaceae",
+    "order_apg": "Xylobotryales",
+    "species": 1,
+    "genera": 1
+  },
+  {
+    "kingdom": "Fungi",
+    "family": "Chlorociboriaceae",
+    "order_apg": "Helotiales",
+    "species": 1,
+    "genera": 1
+  },
+  {
+    "kingdom": "Fungi",
+    "family": "Sympoventuriaceae",
+    "order_apg": "Venturiales",
+    "species": 1,
+    "genera": 1
+  },
+  {
+    "kingdom": "Fungi",
+    "family": "Schizophyllaceae",
+    "order_apg": "Agaricales",
+    "species": 1,
+    "genera": 1
+  },
+  {
+    "kingdom": "Fungi",
+    "family": "Arthrorhaphidaceae",
+    "order_apg": "Umbilicariales",
+    "species": 1,
+    "genera": 1
+  },
+  {
+    "kingdom": "Fungi",
+    "family": "Natipusillaceae",
+    "order_apg": "Natipusillales",
+    "species": 1,
+    "genera": 1
+  },
+  {
+    "kingdom": "Fungi",
+    "family": "Dacryobolaceae",
+    "order_apg": "Polyporales",
+    "species": 1,
+    "genera": 1
+  },
+  {
+    "kingdom": "Fungi",
+    "family": "Taphrinaceae",
+    "order_apg": "Taphrinales",
+    "species": 1,
+    "genera": 1
+  },
+  {
+    "kingdom": "Fungi",
+    "family": "Muyocopronaceae",
+    "order_apg": "Muyocopronales",
+    "species": 1,
+    "genera": 1
+  },
+  {
+    "kingdom": "Fungi",
+    "family": "Pseudoclitocybaceae",
+    "order_apg": "Agaricales",
+    "species": 1,
+    "genera": 1
+  },
+  {
+    "kingdom": "Fungi",
+    "family": "Ramboldiaceae",
+    "order_apg": "Lecanorales",
+    "species": 1,
+    "genera": 1
+  },
+  {
+    "kingdom": "Fungi",
+    "family": "Chytridiaceae",
+    "order_apg": "Chytridiales",
+    "species": 1,
+    "genera": 1
+  },
+  {
+    "kingdom": "Fungi",
+    "family": "Nephromataceae",
+    "order_apg": "Peltigerales",
+    "species": 1,
+    "genera": 1
+  },
+  {
+    "kingdom": "Fungi",
+    "family": "Sphaerophoraceae",
+    "order_apg": "Lecanorales",
+    "species": 1,
+    "genera": 1
+  },
+  {
+    "kingdom": "Fungi",
+    "family": "Onygenaceae",
+    "order_apg": "Onygenales",
+    "species": 1,
+    "genera": 1
+  },
+  {
+    "kingdom": "Fungi",
+    "family": "Graphiolaceae",
+    "order_apg": "Exobasidiales",
+    "species": 1,
+    "genera": 1
+  },
+  {
+    "kingdom": "Fungi",
+    "family": "Malmideaceae",
+    "order_apg": "Lecanorales",
+    "species": 1,
+    "genera": 1
+  },
+  {
+    "kingdom": "Fungi",
+    "family": "Apiosporaceae",
+    "order_apg": "Xylariales",
+    "species": 1,
+    "genera": 1
+  },
+  {
+    "kingdom": "Fungi",
+    "family": "Tubeufiaceae",
+    "order_apg": "Tubeufiales",
+    "species": 1,
+    "genera": 1
+  },
+  {
+    "kingdom": "Fungi",
+    "family": "Parodiopsidaceae",
+    "order_apg": "Dothideales",
+    "species": 1,
+    "genera": 1
+  },
+  {
+    "kingdom": "Fungi",
+    "family": "Megalosporaceae",
+    "order_apg": "Teloschistales",
+    "species": 1,
+    "genera": 1
+  },
+  {
+    "kingdom": "Fungi",
+    "family": "Annulatascaceae",
+    "order_apg": "Annulatascales",
+    "species": 1,
+    "genera": 1
+  },
+  {
+    "kingdom": "Fungi",
+    "family": "Mycocaliciaceae",
+    "order_apg": "Mycocaliciales",
+    "species": 1,
+    "genera": 1
+  },
+  {
+    "kingdom": "Fungi",
+    "family": "Stictidaceae",
+    "order_apg": "Ostropales",
+    "species": 1,
+    "genera": 1
+  },
+  {
+    "kingdom": "Fungi",
+    "family": "Elaphomycetaceae",
+    "order_apg": "Eurotiales",
+    "species": 1,
+    "genera": 1
+  },
+  {
+    "kingdom": "Fungi",
+    "family": "Ceratostomataceae",
+    "order_apg": "Melanosporales",
+    "species": 1,
+    "genera": 1
+  },
+  {
+    "kingdom": "Fungi",
+    "family": "Mollisiaceae",
+    "order_apg": "Helotiales",
+    "species": 1,
+    "genera": 1
+  },
+  {
+    "kingdom": "Fungi",
+    "family": "Sphinctrinaceae",
+    "order_apg": "Mycocaliciales",
+    "species": 1,
+    "genera": 1
+  },
+  {
+    "kingdom": "Fungi",
+    "family": "Podonectriaceae",
+    "order_apg": "Pleosporales",
+    "species": 1,
+    "genera": 1
+  },
+  {
+    "kingdom": "Fungi",
+    "family": "Haematommataceae",
+    "order_apg": "Lecanorales",
+    "species": 1,
+    "genera": 1
+  },
+  {
+    "kingdom": "Fungi",
+    "family": "Cyphellophoraceae",
+    "order_apg": "Chaetothyriales",
+    "species": 1,
+    "genera": 1
+  },
+  {
+    "kingdom": "Fungi",
+    "family": "Drepanopezizaceae",
+    "order_apg": "Helotiales",
+    "species": 1,
+    "genera": 1
+  },
+  {
+    "kingdom": "Fungi",
+    "family": "Xylonaceae",
+    "order_apg": "Xylonales",
+    "species": 1,
+    "genera": 1
+  },
+  {
+    "kingdom": "Fungi",
+    "family": "Arctomiaceae",
+    "order_apg": "Arctomiales",
+    "species": 1,
+    "genera": 1
+  },
+  {
+    "kingdom": "Fungi",
+    "family": "Parodiellaceae",
+    "order_apg": "Pleosporales",
+    "species": 1,
+    "genera": 1
+  },
+  {
+    "kingdom": "Fungi",
+    "family": "Glomosporiaceae",
+    "order_apg": "Urocystidales",
+    "species": 1,
+    "genera": 1
+  },
+  {
+    "kingdom": "Fungi",
+    "family": "Helicogoniaceae",
+    "order_apg": "Phacidiales",
+    "species": 1,
+    "genera": 1
+  },
+  {
+    "kingdom": "Fungi",
+    "family": "Phyllostictaceae",
+    "order_apg": "Botryosphaeriales",
+    "species": 1,
+    "genera": 1
+  },
+  {
+    "kingdom": "Fungi",
+    "family": "Monoblastiaceae",
+    "order_apg": "Monoblastiales",
+    "species": 1,
+    "genera": 1
+  },
+  {
+    "kingdom": "Fungi",
+    "family": "Trichosphaeriaceae",
+    "order_apg": "Trichosphaeriales",
+    "species": 1,
+    "genera": 1
+  },
+  {
+    "kingdom": "Fungi",
+    "family": "Umbelopsidaceae",
+    "order_apg": "Umbelopsidales",
+    "species": 1,
+    "genera": 1
+  },
+  {
+    "kingdom": "Fungi",
+    "family": "Brachybasidiaceae",
+    "order_apg": "Exobasidiales",
+    "species": 1,
+    "genera": 1
+  },
+  {
+    "kingdom": "Fungi",
+    "family": "Trimorphomycetaceae",
+    "order_apg": "Tremellales",
+    "species": 1,
+    "genera": 1
+  },
+  {
+    "kingdom": "Fungi",
+    "family": "Cenangiaceae",
+    "order_apg": "Helotiales",
+    "species": 1,
+    "genera": 1
+  },
+  {
+    "kingdom": "Fungi",
+    "family": "Microbotryaceae",
+    "order_apg": "Microbotryales",
+    "species": 1,
+    "genera": 1
+  },
+  {
+    "kingdom": "Fungi",
+    "family": "Sarocladiaceae",
+    "order_apg": "Hypocreales",
+    "species": 1,
+    "genera": 1
+  },
+  {
+    "kingdom": "Plantae",
+    "family": "Orchidaceae",
+    "order_apg": "Asparagales",
+    "species": 2599,
+    "genera": 199
+  },
+  {
+    "kingdom": "Plantae",
+    "family": "Asteraceae",
+    "order_apg": "Asterales",
+    "species": 1598,
+    "genera": 255
+  },
+  {
+    "kingdom": "Plantae",
+    "family": "Fabaceae",
+    "order_apg": "Fabales",
+    "species": 1085,
+    "genera": 168
+  },
+  {
+    "kingdom": "Plantae",
+    "family": "Rubiaceae",
+    "order_apg": "Gentianales",
+    "species": 844,
+    "genera": 111
+  },
+  {
+    "kingdom": "Plantae",
+    "family": "Piperaceae",
+    "order_apg": "Piperales",
+    "species": 821,
+    "genera": 3
+  },
+  {
+    "kingdom": "Plantae",
+    "family": "Poaceae",
+    "order_apg": "Poales",
+    "species": 761,
+    "genera": 153
+  },
+  {
+    "kingdom": "Plantae",
+    "family": "Melastomataceae",
+    "order_apg": "Myrtales",
+    "species": 694,
+    "genera": 39
+  },
+  {
+    "kingdom": "Plantae",
+    "family": "Solanaceae",
+    "order_apg": "Solanales",
+    "species": 646,
+    "genera": 41
+  },
+  {
+    "kingdom": "Plantae",
+    "family": "Bromeliaceae",
+    "order_apg": "Poales",
+    "species": 497,
+    "genera": 24
+  },
+  {
+    "kingdom": "Plantae",
+    "family": "Araceae",
+    "order_apg": "Alismatales",
+    "species": 457,
+    "genera": 29
+  },
+  {
+    "kingdom": "Plantae",
+    "family": "Malvaceae",
+    "order_apg": "Malvales",
+    "species": 447,
+    "genera": 68
+  },
+  {
+    "kingdom": "Plantae",
+    "family": "Polypodiaceae",
+    "order_apg": "Polypodiales",
+    "species": 424,
+    "genera": 38
+  },
+  {
+    "kingdom": "Plantae",
+    "family": "Acanthaceae",
+    "order_apg": "Lamiales",
+    "species": 333,
+    "genera": 33
+  },
+  {
+    "kingdom": "Plantae",
+    "family": "Lauraceae",
+    "order_apg": "Laurales",
+    "species": 297,
+    "genera": 19
+  },
+  {
+    "kingdom": "Plantae",
+    "family": "Apocynaceae",
+    "order_apg": "Gentianales",
+    "species": 290,
+    "genera": 64
+  },
+  {
+    "kingdom": "Plantae",
+    "family": "Euphorbiaceae",
+    "order_apg": "Malpighiales",
+    "species": 277,
+    "genera": 46
+  },
+  {
+    "kingdom": "Plantae",
+    "family": "Cyperaceae",
+    "order_apg": "Poales",
+    "species": 261,
+    "genera": 26
+  },
+  {
+    "kingdom": "Plantae",
+    "family": "Aspleniaceae",
+    "order_apg": "Polypodiales",
+    "species": 252,
+    "genera": 13
+  },
+  {
+    "kingdom": "Plantae",
+    "family": "Lamiaceae",
+    "order_apg": "Lamiales",
+    "species": 241,
+    "genera": 30
+  },
+  {
+    "kingdom": "Plantae",
+    "family": "Annonaceae",
+    "order_apg": "Magnoliales",
+    "species": 230,
+    "genera": 25
+  },
+  {
+    "kingdom": "Plantae",
+    "family": "Gentianaceae",
+    "order_apg": "Gentianales",
+    "species": 206,
+    "genera": 17
+  },
+  {
+    "kingdom": "Plantae",
+    "family": "Sapindaceae",
+    "order_apg": "Sapindales",
+    "species": 198,
+    "genera": 20
+  },
+  {
+    "kingdom": "Plantae",
+    "family": "Cactaceae",
+    "order_apg": "Caryophyllales",
+    "species": 187,
+    "genera": 42
+  },
+  {
+    "kingdom": "Plantae",
+    "family": "Malpighiaceae",
+    "order_apg": "Malpighiales",
+    "species": 178,
+    "genera": 27
+  },
+  {
+    "kingdom": "Plantae",
+    "family": "Myrtaceae",
+    "order_apg": "Myrtales",
+    "species": 178,
+    "genera": 17
+  },
+  {
+    "kingdom": "Plantae",
+    "family": "Campanulaceae",
+    "order_apg": "Asterales",
+    "species": 178,
+    "genera": 9
+  },
+  {
+    "kingdom": "Plantae",
+    "family": "Gesneriaceae",
+    "order_apg": "Lamiales",
+    "species": 171,
+    "genera": 30
+  },
+  {
+    "kingdom": "Plantae",
+    "family": "Pteridaceae",
+    "order_apg": "Polypodiales",
+    "species": 160,
+    "genera": 12
+  },
+  {
+    "kingdom": "Plantae",
+    "family": "Convolvulaceae",
+    "order_apg": "Solanales",
+    "species": 157,
+    "genera": 16
+  },
+  {
+    "kingdom": "Plantae",
+    "family": "Urticaceae",
+    "order_apg": "Rosales",
+    "species": 154,
+    "genera": 13
+  },
+  {
+    "kingdom": "Plantae",
+    "family": "Bignoniaceae",
+    "order_apg": "Lamiales",
+    "species": 154,
+    "genera": 30
+  },
+  {
+    "kingdom": "Plantae",
+    "family": "Ericaceae",
+    "order_apg": "Ericales",
+    "species": 153,
+    "genera": 21
+  },
+  {
+    "kingdom": "Plantae",
+    "family": "Amaryllidaceae",
+    "order_apg": "Asparagales",
+    "species": 153,
+    "genera": 21
+  },
+  {
+    "kingdom": "Plantae",
+    "family": "Moraceae",
+    "order_apg": "Rosales",
+    "species": 152,
+    "genera": 19
+  },
+  {
+    "kingdom": "Plantae",
+    "family": "Boraginaceae",
+    "order_apg": "Boraginales",
+    "species": 146,
+    "genera": 21
+  },
+  {
+    "kingdom": "Plantae",
+    "family": "Passifloraceae",
+    "order_apg": "Malpighiales",
+    "species": 145,
+    "genera": 6
+  },
+  {
+    "kingdom": "Plantae",
+    "family": "Brassicaceae",
+    "order_apg": "Brassicales",
+    "species": 141,
+    "genera": 33
+  },
+  {
+    "kingdom": "Plantae",
+    "family": "Arecaceae",
+    "order_apg": "Arecales",
+    "species": 139,
+    "genera": 31
+  },
+  {
+    "kingdom": "Plantae",
+    "family": "Caryophyllaceae",
+    "order_apg": "Caryophyllales",
+    "species": 137,
+    "genera": 16
+  },
+  {
+    "kingdom": "Plantae",
+    "family": "Calceolariaceae",
+    "order_apg": "Lamiales",
+    "species": 128,
+    "genera": 1
+  },
+  {
+    "kingdom": "Plantae",
+    "family": "Primulaceae",
+    "order_apg": "Ericales",
+    "species": 122,
+    "genera": 10
+  },
+  {
+    "kingdom": "Plantae",
+    "family": "Marantaceae",
+    "order_apg": "Zingiberales",
+    "species": 110,
+    "genera": 7
+  },
+  {
+    "kingdom": "Plantae",
+    "family": "Amaranthaceae",
+    "order_apg": "Caryophyllales",
+    "species": 106,
+    "genera": 22
+  },
+  {
+    "kingdom": "Plantae",
+    "family": "Cyatheaceae",
+    "order_apg": "Cyatheales",
+    "species": 106,
+    "genera": 9
+  },
+  {
+    "kingdom": "Plantae",
+    "family": "Oxalidaceae",
+    "order_apg": "Oxalidales",
+    "species": 104,
+    "genera": 2
+  },
+  {
+    "kingdom": "Plantae",
+    "family": "Rosaceae",
+    "order_apg": "Rosales",
+    "species": 103,
+    "genera": 13
+  },
+  {
+    "kingdom": "Plantae",
+    "family": "Chrysobalanaceae",
+    "order_apg": "Malpighiales",
+    "species": 102,
+    "genera": 11
+  },
+  {
+    "kingdom": "Plantae",
+    "family": "Cucurbitaceae",
+    "order_apg": "Cucurbitales",
+    "species": 101,
+    "genera": 19
+  },
+  {
+    "kingdom": "Plantae",
+    "family": "Araliaceae",
+    "order_apg": "Apiales",
+    "species": 99,
+    "genera": 7
+  },
+  {
+    "kingdom": "Plantae",
+    "family": "Clusiaceae",
+    "order_apg": "Malpighiales",
+    "species": 99,
+    "genera": 10
+  },
+  {
+    "kingdom": "Plantae",
+    "family": "Verbenaceae",
+    "order_apg": "Lamiales",
+    "species": 98,
+    "genera": 15
+  },
+  {
+    "kingdom": "Plantae",
+    "family": "Sapotaceae",
+    "order_apg": "Ericales",
+    "species": 98,
+    "genera": 17
+  },
+  {
+    "kingdom": "Plantae",
+    "family": "Loasaceae",
+    "order_apg": "Cornales",
+    "species": 96,
+    "genera": 8
+  },
+  {
+    "kingdom": "Plantae",
+    "family": "Caprifoliaceae",
+    "order_apg": "Dipsacales",
+    "species": 90,
+    "genera": 2
+  },
+  {
+    "kingdom": "Plantae",
+    "family": "Meliaceae",
+    "order_apg": "Sapindales",
+    "species": 90,
+    "genera": 9
+  },
+  {
+    "kingdom": "Plantae",
+    "family": "Loranthaceae",
+    "order_apg": "Santalales",
+    "species": 89,
+    "genera": 12
+  },
+  {
+    "kingdom": "Plantae",
+    "family": "Polygalaceae",
+    "order_apg": "Fabales",
+    "species": 84,
+    "genera": 10
+  },
+  {
+    "kingdom": "Plantae",
+    "family": "Santalaceae",
+    "order_apg": "Santalales",
+    "species": 81,
+    "genera": 6
+  },
+  {
+    "kingdom": "Plantae",
+    "family": "Onagraceae",
+    "order_apg": "Myrtales",
+    "species": 80,
+    "genera": 6
+  },
+  {
+    "kingdom": "Plantae",
+    "family": "Rutaceae",
+    "order_apg": "Sapindales",
+    "species": 79,
+    "genera": 26
+  },
+  {
+    "kingdom": "Plantae",
+    "family": "Menispermaceae",
+    "order_apg": "Ranunculales",
+    "species": 78,
+    "genera": 16
+  },
+  {
+    "kingdom": "Plantae",
+    "family": "Begoniaceae",
+    "order_apg": "Cucurbitales",
+    "species": 78,
+    "genera": 1
+  },
+  {
+    "kingdom": "Plantae",
+    "family": "Polygonaceae",
+    "order_apg": "Caryophyllales",
+    "species": 76,
+    "genera": 11
+  },
+  {
+    "kingdom": "Plantae",
+    "family": "Salicaceae",
+    "order_apg": "Malpighiales",
+    "species": 75,
+    "genera": 17
+  },
+  {
+    "kingdom": "Plantae",
+    "family": "Celastraceae",
+    "order_apg": "Celastrales",
+    "species": 74,
+    "genera": 15
+  },
+  {
+    "kingdom": "Plantae",
+    "family": "Alstroemeriaceae",
+    "order_apg": "Liliales",
+    "species": 72,
+    "genera": 2
+  },
+  {
+    "kingdom": "Plantae",
+    "family": "Hymenophyllaceae",
+    "order_apg": "Hymenophyllales",
+    "species": 71,
+    "genera": 2
+  },
+  {
+    "kingdom": "Plantae",
+    "family": "Dioscoreaceae",
+    "order_apg": "Dioscoreales",
+    "species": 69,
+    "genera": 2
+  },
+  {
+    "kingdom": "Plantae",
+    "family": "Violaceae",
+    "order_apg": "Malpighiales",
+    "species": 67,
+    "genera": 12
+  },
+  {
+    "kingdom": "Plantae",
+    "family": "Lycopodiaceae",
+    "order_apg": "Lycopodiales",
+    "species": 66,
+    "genera": 3
+  },
+  {
+    "kingdom": "Plantae",
+    "family": "Apiaceae",
+    "order_apg": "Apiales",
+    "species": 64,
+    "genera": 27
+  },
+  {
+    "kingdom": "Plantae",
+    "family": "Burseraceae",
+    "order_apg": "Sapindales",
+    "species": 63,
+    "genera": 4
+  },
+  {
+    "kingdom": "Plantae",
+    "family": "Orobanchaceae",
+    "order_apg": "Lamiales",
+    "species": 62,
+    "genera": 8
+  },
+  {
+    "kingdom": "Plantae",
+    "family": "Plantaginaceae",
+    "order_apg": "Lamiales",
+    "species": 61,
+    "genera": 18
+  },
+  {
+    "kingdom": "Plantae",
+    "family": "Iridaceae",
+    "order_apg": "Asparagales",
+    "species": 55,
+    "genera": 13
+  },
+  {
+    "kingdom": "Plantae",
+    "family": "Nyctaginaceae",
+    "order_apg": "Caryophyllales",
+    "species": 52,
+    "genera": 11
+  },
+  {
+    "kingdom": "Plantae",
+    "family": "Ranunculaceae",
+    "order_apg": "Ranunculales",
+    "species": 52,
+    "genera": 7
+  },
+  {
+    "kingdom": "Plantae",
+    "family": "Geraniaceae",
+    "order_apg": "Geraniales",
+    "species": 50,
+    "genera": 3
+  },
+  {
+    "kingdom": "Plantae",
+    "family": "Crassulaceae",
+    "order_apg": "Saxifragales",
+    "species": 50,
+    "genera": 5
+  },
+  {
+    "kingdom": "Plantae",
+    "family": "Myristicaceae",
+    "order_apg": "Magnoliales",
+    "species": 48,
+    "genera": 5
+  },
+  {
+    "kingdom": "Plantae",
+    "family": "Cunoniaceae",
+    "order_apg": "Oxalidales",
+    "species": 45,
+    "genera": 1
+  },
+  {
+    "kingdom": "Plantae",
+    "family": "Commelinaceae",
+    "order_apg": "Commelinales",
+    "species": 44,
+    "genera": 11
+  },
+  {
+    "kingdom": "Plantae",
+    "family": "Selaginellaceae",
+    "order_apg": "Selaginellales",
+    "species": 44,
+    "genera": 1
+  },
+  {
+    "kingdom": "Plantae",
+    "family": "Aristolochiaceae",
+    "order_apg": "Piperales",
+    "species": 43,
+    "genera": 2
+  },
+  {
+    "kingdom": "Plantae",
+    "family": "Aquifoliaceae",
+    "order_apg": "Aquifoliales",
+    "species": 41,
+    "genera": 1
+  },
+  {
+    "kingdom": "Plantae",
+    "family": "Ochnaceae",
+    "order_apg": "Malpighiales",
+    "species": 41,
+    "genera": 10
+  },
+  {
+    "kingdom": "Plantae",
+    "family": "Vochysiaceae",
+    "order_apg": "Myrtales",
+    "species": 40,
+    "genera": 4
+  },
+  {
+    "kingdom": "Plantae",
+    "family": "Anacardiaceae",
+    "order_apg": "Sapindales",
+    "species": 39,
+    "genera": 14
+  },
+  {
+    "kingdom": "Plantae",
+    "family": "Heliconiaceae",
+    "order_apg": "Zingiberales",
+    "species": 37,
+    "genera": 1
+  },
+  {
+    "kingdom": "Plantae",
+    "family": "Phyllanthaceae",
+    "order_apg": "Malpighiales",
+    "species": 37,
+    "genera": 10
+  },
+  {
+    "kingdom": "Plantae",
+    "family": "Elaeocarpaceae",
+    "order_apg": "Oxalidales",
+    "species": 37,
+    "genera": 2
+  },
+  {
+    "kingdom": "Plantae",
+    "family": "Cyclanthaceae",
+    "order_apg": "Pandanales",
+    "species": 36,
+    "genera": 9
+  },
+  {
+    "kingdom": "Plantae",
+    "family": "Loganiaceae",
+    "order_apg": "Gentianales",
+    "species": 36,
+    "genera": 5
+  },
+  {
+    "kingdom": "Plantae",
+    "family": "Pentaphylacaceae",
+    "order_apg": "Ericales",
+    "species": 36,
+    "genera": 2
+  },
+  {
+    "kingdom": "Plantae",
+    "family": "Lecythidaceae",
+    "order_apg": "Ericales",
+    "species": 35,
+    "genera": 8
+  },
+  {
+    "kingdom": "Plantae",
+    "family": "Berberidaceae",
+    "order_apg": "Ranunculales",
+    "species": 34,
+    "genera": 1
+  },
+  {
+    "kingdom": "Plantae",
+    "family": "Hypericaceae",
+    "order_apg": "Malpighiales",
+    "species": 33,
+    "genera": 2
+  },
+  {
+    "kingdom": "Plantae",
+    "family": "Symplocaceae",
+    "order_apg": "Ericales",
+    "species": 32,
+    "genera": 1
+  },
+  {
+    "kingdom": "Plantae",
+    "family": "Marcgraviaceae",
+    "order_apg": "Ericales",
+    "species": 31,
+    "genera": 7
+  },
+  {
+    "kingdom": "Plantae",
+    "family": "Scrophulariaceae",
+    "order_apg": "Lamiales",
+    "species": 31,
+    "genera": 5
+  },
+  {
+    "kingdom": "Plantae",
+    "family": "Eriocaulaceae",
+    "order_apg": "Poales",
+    "species": 29,
+    "genera": 4
+  },
+  {
+    "kingdom": "Plantae",
+    "family": "Erythroxylaceae",
+    "order_apg": "Malpighiales",
+    "species": 29,
+    "genera": 1
+  },
+  {
+    "kingdom": "Plantae",
+    "family": "Lythraceae",
+    "order_apg": "Myrtales",
+    "species": 29,
+    "genera": 8
+  },
+  {
+    "kingdom": "Plantae",
+    "family": "Rhamnaceae",
+    "order_apg": "Rosales",
+    "species": 29,
+    "genera": 12
+  },
+  {
+    "kingdom": "Plantae",
+    "family": "Dennstaedtiaceae",
+    "order_apg": "Polypodiales",
+    "species": 28,
+    "genera": 7
+  },
+  {
+    "kingdom": "Plantae",
+    "family": "Vitaceae",
+    "order_apg": "Vitales",
+    "species": 28,
+    "genera": 4
+  },
+  {
+    "kingdom": "Plantae",
+    "family": "Costaceae",
+    "order_apg": "Zingiberales",
+    "species": 26,
+    "genera": 3
+  },
+  {
+    "kingdom": "Plantae",
+    "family": "Combretaceae",
+    "order_apg": "Myrtales",
+    "species": 26,
+    "genera": 4
+  },
+  {
+    "kingdom": "Plantae",
+    "family": "Tropaeolaceae",
+    "order_apg": "Brassicales",
+    "species": 26,
+    "genera": 1
+  },
+  {
+    "kingdom": "Plantae",
+    "family": "Siparunaceae",
+    "order_apg": "Laurales",
+    "species": 26,
+    "genera": 1
+  },
+  {
+    "kingdom": "Plantae",
+    "family": "Grossulariaceae",
+    "order_apg": "Saxifragales",
+    "species": 26,
+    "genera": 1
+  },
+  {
+    "kingdom": "Plantae",
+    "family": "Polemoniaceae",
+    "order_apg": "Ericales",
+    "species": 25,
+    "genera": 5
+  },
+  {
+    "kingdom": "Plantae",
+    "family": "Juncaceae",
+    "order_apg": "Poales",
+    "species": 24,
+    "genera": 4
+  },
+  {
+    "kingdom": "Plantae",
+    "family": "Capparaceae",
+    "order_apg": "Brassicales",
+    "species": 23,
+    "genera": 3
+  },
+  {
+    "kingdom": "Plantae",
+    "family": "Dilleniaceae",
+    "order_apg": "Dilleniales",
+    "species": 23,
+    "genera": 6
+  },
+  {
+    "kingdom": "Plantae",
+    "family": "Proteaceae",
+    "order_apg": "Proteales",
+    "species": 22,
+    "genera": 6
+  },
+  {
+    "kingdom": "Plantae",
+    "family": "Olacaceae",
+    "order_apg": "Santalales",
+    "species": 22,
+    "genera": 8
+  },
+  {
+    "kingdom": "Plantae",
+    "family": "Gleicheniaceae",
+    "order_apg": "Gleicheniales",
+    "species": 22,
+    "genera": 4
+  },
+  {
+    "kingdom": "Plantae",
+    "family": "Sabiaceae",
+    "order_apg": "Proteales",
+    "species": 21,
+    "genera": 2
+  },
+  {
+    "kingdom": "Plantae",
+    "family": "Calophyllaceae",
+    "order_apg": "Malpighiales",
+    "species": 21,
+    "genera": 7
+  },
+  {
+    "kingdom": "Plantae",
+    "family": "Connaraceae",
+    "order_apg": "Oxalidales",
+    "species": 20,
+    "genera": 3
+  },
+  {
+    "kingdom": "Plantae",
+    "family": "Ebenaceae",
+    "order_apg": "Ericales",
+    "species": 20,
+    "genera": 2
+  },
+  {
+    "kingdom": "Plantae",
+    "family": "Cleomaceae",
+    "order_apg": "Brassicales",
+    "species": 20,
+    "genera": 1
+  },
+  {
+    "kingdom": "Plantae",
+    "family": "Marattiaceae",
+    "order_apg": "Marattiales",
+    "species": 20,
+    "genera": 2
+  },
+  {
+    "kingdom": "Plantae",
+    "family": "Viburnaceae",
+    "order_apg": "Dipsacales",
+    "species": 19,
+    "genera": 2
+  },
+  {
+    "kingdom": "Plantae",
+    "family": "Caricaceae",
+    "order_apg": "Brassicales",
+    "species": 18,
+    "genera": 3
+  },
+  {
+    "kingdom": "Plantae",
+    "family": "Asparagaceae",
+    "order_apg": "Asparagales",
+    "species": 18,
+    "genera": 8
+  },
+  {
+    "kingdom": "Plantae",
+    "family": "Schizaeaceae",
+    "order_apg": "Schizaeales",
+    "species": 18,
+    "genera": 3
+  },
+  {
+    "kingdom": "Plantae",
+    "family": "Burmanniaceae",
+    "order_apg": "Dioscoreales",
+    "species": 17,
+    "genera": 8
+  },
+  {
+    "kingdom": "Plantae",
+    "family": "Dichapetalaceae",
+    "order_apg": "Malpighiales",
+    "species": 16,
+    "genera": 3
+  },
+  {
+    "kingdom": "Plantae",
+    "family": "Zingiberaceae",
+    "order_apg": "Zingiberales",
+    "species": 16,
+    "genera": 2
+  },
+  {
+    "kingdom": "Plantae",
+    "family": "Styracaceae",
+    "order_apg": "Ericales",
+    "species": 16,
+    "genera": 1
+  },
+  {
+    "kingdom": "Plantae",
+    "family": "Smilacaceae",
+    "order_apg": "Liliales",
+    "species": 16,
+    "genera": 1
+  },
+  {
+    "kingdom": "Plantae",
+    "family": "Petiveriaceae",
+    "order_apg": "Caryophyllales",
+    "species": 15,
+    "genera": 8
+  },
+  {
+    "kingdom": "Plantae",
+    "family": "Magnoliaceae",
+    "order_apg": "Magnoliales",
+    "species": 15,
+    "genera": 1
+  },
+  {
+    "kingdom": "Plantae",
+    "family": "Chloranthaceae",
+    "order_apg": "Chloranthales",
+    "species": 14,
+    "genera": 1
+  },
+  {
+    "kingdom": "Plantae",
+    "family": "Alismataceae",
+    "order_apg": "Alismatales",
+    "species": 14,
+    "genera": 5
+  },
+  {
+    "kingdom": "Plantae",
+    "family": "Papaveraceae",
+    "order_apg": "Ranunculales",
+    "species": 13,
+    "genera": 6
+  },
+  {
+    "kingdom": "Plantae",
+    "family": "Humiriaceae",
+    "order_apg": "Malpighiales",
+    "species": 13,
+    "genera": 6
+  },
+  {
+    "kingdom": "Plantae",
+    "family": "Actinidiaceae",
+    "order_apg": "Ericales",
+    "species": 13,
+    "genera": 1
+  },
+  {
+    "kingdom": "Plantae",
+    "family": "Brunelliaceae",
+    "order_apg": "Oxalidales",
+    "species": 13,
+    "genera": 1
+  },
+  {
+    "kingdom": "Plantae",
+    "family": "Clethraceae",
+    "order_apg": "Ericales",
+    "species": 13,
+    "genera": 2
+  },
+  {
+    "kingdom": "Plantae",
+    "family": "Lindsaeaceae",
+    "order_apg": "Polypodiales",
+    "species": 13,
+    "genera": 1
+  },
+  {
+    "kingdom": "Plantae",
+    "family": "Aizoaceae",
+    "order_apg": "Caryophyllales",
+    "species": 13,
+    "genera": 5
+  },
+  {
+    "kingdom": "Plantae",
+    "family": "Montiaceae",
+    "order_apg": "Caryophyllales",
+    "species": 13,
+    "genera": 5
+  },
+  {
+    "kingdom": "Plantae",
+    "family": "Lentibulariaceae",
+    "order_apg": "Lamiales",
+    "species": 12,
+    "genera": 2
+  },
+  {
+    "kingdom": "Plantae",
+    "family": "Zygophyllaceae",
+    "order_apg": "Zygophyllales",
+    "species": 12,
+    "genera": 7
+  },
+  {
+    "kingdom": "Plantae",
+    "family": "Escalloniaceae",
+    "order_apg": "Escalloniales",
+    "species": 11,
+    "genera": 1
+  },
+  {
+    "kingdom": "Plantae",
+    "family": "Xyridaceae",
+    "order_apg": "Poales",
+    "species": 11,
+    "genera": 2
+  },
+  {
+    "kingdom": "Plantae",
+    "family": "Portulacaceae",
+    "order_apg": "Caryophyllales",
+    "species": 11,
+    "genera": 1
+  },
+  {
+    "kingdom": "Plantae",
+    "family": "Isoetaceae",
+    "order_apg": "Isoetales",
+    "species": 11,
+    "genera": 1
+  },
+  {
+    "kingdom": "Plantae",
+    "family": "Balanophoraceae",
+    "order_apg": "Santalales",
+    "species": 10,
+    "genera": 6
+  },
+  {
+    "kingdom": "Plantae",
+    "family": "Picramniaceae",
+    "order_apg": "Picramniales",
+    "species": 10,
+    "genera": 3
+  },
+  {
+    "kingdom": "Plantae",
+    "family": "Cannabaceae",
+    "order_apg": "Rosales",
+    "species": 10,
+    "genera": 5
+  },
+  {
+    "kingdom": "Plantae",
+    "family": "Ophioglossaceae",
+    "order_apg": "Ophioglossales",
+    "species": 10,
+    "genera": 2
+  },
+  {
+    "kingdom": "Plantae",
+    "family": "Metteniusaceae",
+    "order_apg": "Metteniusales",
+    "species": 10,
+    "genera": 5
+  },
+  {
+    "kingdom": "Plantae",
+    "family": "Podocarpaceae",
+    "order_apg": "Pinales",
+    "species": 10,
+    "genera": 4
+  },
+  {
+    "kingdom": "Plantae",
+    "family": "Potamogetonaceae",
+    "order_apg": "Alismatales",
+    "species": 9,
+    "genera": 3
+  },
+  {
+    "kingdom": "Plantae",
+    "family": "Linaceae",
+    "order_apg": "Malpighiales",
+    "species": 9,
+    "genera": 3
+  },
+  {
+    "kingdom": "Plantae",
+    "family": "Bixaceae",
+    "order_apg": "Malvales",
+    "species": 8,
+    "genera": 2
+  },
+  {
+    "kingdom": "Plantae",
+    "family": "Cannaceae",
+    "order_apg": "Zingiberales",
+    "species": 8,
+    "genera": 1
+  },
+  {
+    "kingdom": "Plantae",
+    "family": "Zamiaceae",
+    "order_apg": "Cycadales",
+    "species": 8,
+    "genera": 1
+  },
+  {
+    "kingdom": "Plantae",
+    "family": "Phytolaccaceae",
+    "order_apg": "Caryophyllales",
+    "species": 8,
+    "genera": 1
+  },
+  {
+    "kingdom": "Plantae",
+    "family": "Linderniaceae",
+    "order_apg": "Lamiales",
+    "species": 7,
+    "genera": 4
+  },
+  {
+    "kingdom": "Plantae",
+    "family": "Caryocaraceae",
+    "order_apg": "Malpighiales",
+    "species": 7,
+    "genera": 2
+  },
+  {
+    "kingdom": "Plantae",
+    "family": "Thymelaeaceae",
+    "order_apg": "Malvales",
+    "species": 7,
+    "genera": 2
+  },
+  {
+    "kingdom": "Plantae",
+    "family": "Basellaceae",
+    "order_apg": "Caryophyllales",
+    "species": 7,
+    "genera": 2
+  },
+  {
+    "kingdom": "Plantae",
+    "family": "Hydrangeaceae",
+    "order_apg": "Cornales",
+    "species": 7,
+    "genera": 1
+  },
+  {
+    "kingdom": "Plantae",
+    "family": "Trigoniaceae",
+    "order_apg": "Malpighiales",
+    "species": 6,
+    "genera": 1
+  },
+  {
+    "kingdom": "Plantae",
+    "family": "Pontederiaceae",
+    "order_apg": "Commelinales",
+    "species": 6,
+    "genera": 2
+  },
+  {
+    "kingdom": "Plantae",
+    "family": "Simaroubaceae",
+    "order_apg": "Sapindales",
+    "species": 6,
+    "genera": 5
+  },
+  {
+    "kingdom": "Plantae",
+    "family": "Columelliaceae",
+    "order_apg": "Bruniales",
+    "species": 6,
+    "genera": 2
+  },
+  {
+    "kingdom": "Plantae",
+    "family": "Gunneraceae",
+    "order_apg": "Gunnerales",
+    "species": 6,
+    "genera": 1
+  },
+  {
+    "kingdom": "Plantae",
+    "family": "Equisetaceae",
+    "order_apg": "Equisetales",
+    "species": 5,
+    "genera": 1
+  },
+  {
+    "kingdom": "Plantae",
+    "family": "Lacistemataceae",
+    "order_apg": "Malpighiales",
+    "species": 5,
+    "genera": 2
+  },
+  {
+    "kingdom": "Plantae",
+    "family": "Monimiaceae",
+    "order_apg": "Laurales",
+    "species": 5,
+    "genera": 1
+  },
+  {
+    "kingdom": "Plantae",
+    "family": "Hydrocharitaceae",
+    "order_apg": "Alismatales",
+    "species": 5,
+    "genera": 3
+  },
+  {
+    "kingdom": "Plantae",
+    "family": "Peraceae",
+    "order_apg": "Malpighiales",
+    "species": 5,
+    "genera": 1
+  },
+  {
+    "kingdom": "Plantae",
+    "family": "Myricaceae",
+    "order_apg": "Fagales",
+    "species": 5,
+    "genera": 1
+  },
+  {
+    "kingdom": "Plantae",
+    "family": "Rhizophoraceae",
+    "order_apg": "Malpighiales",
+    "species": 5,
+    "genera": 3
+  },
+  {
+    "kingdom": "Plantae",
+    "family": "Schlegeliaceae",
+    "order_apg": "Lamiales",
+    "species": 5,
+    "genera": 1
+  },
+  {
+    "kingdom": "Plantae",
+    "family": "Oleaceae",
+    "order_apg": "Lamiales",
+    "species": 5,
+    "genera": 2
+  },
+  {
+    "kingdom": "Plantae",
+    "family": "Plumbaginaceae",
+    "order_apg": "Caryophyllales",
+    "species": 5,
+    "genera": 2
+  },
+  {
+    "kingdom": "Plantae",
+    "family": "Marsileaceae",
+    "order_apg": "Salviniales",
+    "species": 4,
+    "genera": 1
+  },
+  {
+    "kingdom": "Plantae",
+    "family": "Salviniaceae",
+    "order_apg": "Salviniales",
+    "species": 4,
+    "genera": 2
+  },
+  {
+    "kingdom": "Plantae",
+    "family": "Putranjivaceae",
+    "order_apg": "Malpighiales",
+    "species": 4,
+    "genera": 1
+  },
+  {
+    "kingdom": "Plantae",
+    "family": "Achariaceae",
+    "order_apg": "Malpighiales",
+    "species": 4,
+    "genera": 3
+  },
+  {
+    "kingdom": "Plantae",
+    "family": "Nymphaeaceae",
+    "order_apg": "Nymphaeales",
+    "species": 4,
+    "genera": 2
+  },
+  {
+    "kingdom": "Plantae",
+    "family": "Talinaceae",
+    "order_apg": "Caryophyllales",
+    "species": 3,
+    "genera": 1
+  },
+  {
+    "kingdom": "Plantae",
+    "family": "Schoepfiaceae",
+    "order_apg": "Santalales",
+    "species": 3,
+    "genera": 3
+  },
+  {
+    "kingdom": "Plantae",
+    "family": "Haloragaceae",
+    "order_apg": "Saxifragales",
+    "species": 3,
+    "genera": 1
+  },
+  {
+    "kingdom": "Plantae",
+    "family": "Francoaceae",
+    "order_apg": "Geraniales",
+    "species": 3,
+    "genera": 2
+  },
+  {
+    "kingdom": "Plantae",
+    "family": "Rapateaceae",
+    "order_apg": "Poales",
+    "species": 3,
+    "genera": 1
+  },
+  {
+    "kingdom": "Plantae",
+    "family": "Buxaceae",
+    "order_apg": "Buxales",
+    "species": 3,
+    "genera": 1
+  },
+  {
+    "kingdom": "Plantae",
+    "family": "Opiliaceae",
+    "order_apg": "Santalales",
+    "species": 3,
+    "genera": 1
+  },
+  {
+    "kingdom": "Plantae",
+    "family": "Dipentodontaceae",
+    "order_apg": "Huerteales",
+    "species": 3,
+    "genera": 1
+  },
+  {
+    "kingdom": "Plantae",
+    "family": "Hernandiaceae",
+    "order_apg": "Laurales",
+    "species": 3,
+    "genera": 1
+  },
+  {
+    "kingdom": "Plantae",
+    "family": "Icacinaceae",
+    "order_apg": "Icacinales",
+    "species": 3,
+    "genera": 3
+  },
+  {
+    "kingdom": "Plantae",
+    "family": "Calyceraceae",
+    "order_apg": "Asterales",
+    "species": 3,
+    "genera": 2
+  },
+  {
+    "kingdom": "Plantae",
+    "family": "Asphodelaceae",
+    "order_apg": "Asparagales",
+    "species": 3,
+    "genera": 3
+  },
+  {
+    "kingdom": "Plantae",
+    "family": "Molluginaceae",
+    "order_apg": "Caryophyllales",
+    "species": 3,
+    "genera": 2
+  },
+  {
+    "kingdom": "Plantae",
+    "family": "Cardiopteridaceae",
+    "order_apg": "Cardiopteridales",
+    "species": 3,
+    "genera": 1
+  },
+  {
+    "kingdom": "Plantae",
+    "family": "Ephedraceae",
+    "order_apg": "Ephedrales",
+    "species": 3,
+    "genera": 1
+  },
+  {
+    "kingdom": "Plantae",
+    "family": "Gnetaceae",
+    "order_apg": "Gnetales",
+    "species": 3,
+    "genera": 1
+  },
+  {
+    "kingdom": "Plantae",
+    "family": "Elatinaceae",
+    "order_apg": "Malpighiales",
+    "species": 3,
+    "genera": 2
+  },
+  {
+    "kingdom": "Plantae",
+    "family": "Saccolomataceae",
+    "order_apg": "Polypodiales",
+    "species": 3,
+    "genera": 1
+  },
+  {
+    "kingdom": "Plantae",
+    "family": "Ulmaceae",
+    "order_apg": "Rosales",
+    "species": 3,
+    "genera": 1
+  },
+  {
+    "kingdom": "Plantae",
+    "family": "Microteaceae",
+    "order_apg": "Caryophyllales",
+    "species": 3,
+    "genera": 1
+  },
+  {
+    "kingdom": "Plantae",
+    "family": "Podostemaceae",
+    "order_apg": "Malpighiales",
+    "species": 3,
+    "genera": 2
+  },
+  {
+    "kingdom": "Plantae",
+    "family": "Osmundaceae",
+    "order_apg": "Osmundales",
+    "species": 2,
+    "genera": 2
+  },
+  {
+    "kingdom": "Plantae",
+    "family": "Phyllonomaceae",
+    "order_apg": "Aquifoliales",
+    "species": 2,
+    "genera": 1
+  },
+  {
+    "kingdom": "Plantae",
+    "family": "Juglandaceae",
+    "order_apg": "Fagales",
+    "species": 2,
+    "genera": 1
+  },
+  {
+    "kingdom": "Plantae",
+    "family": "Frankeniaceae",
+    "order_apg": "Caryophyllales",
+    "species": 2,
+    "genera": 1
+  },
+  {
+    "kingdom": "Plantae",
+    "family": "Juncaginaceae",
+    "order_apg": "Alismatales",
+    "species": 2,
+    "genera": 1
+  },
+  {
+    "kingdom": "Plantae",
+    "family": "Achatocarpaceae",
+    "order_apg": "Caryophyllales",
+    "species": 2,
+    "genera": 1
+  },
+  {
+    "kingdom": "Plantae",
+    "family": "Apodanthaceae",
+    "order_apg": "Cucurbitales",
+    "species": 2,
+    "genera": 2
+  },
+  {
+    "kingdom": "Plantae",
+    "family": "Stemonuraceae",
+    "order_apg": "Cardiopteridales",
+    "species": 2,
+    "genera": 1
+  },
+  {
+    "kingdom": "Plantae",
+    "family": "Hydroleaceae",
+    "order_apg": "Solanales",
+    "species": 2,
+    "genera": 1
+  },
+  {
+    "kingdom": "Plantae",
+    "family": "Muntingiaceae",
+    "order_apg": "Malvales",
+    "species": 2,
+    "genera": 2
+  },
+  {
+    "kingdom": "Plantae",
+    "family": "Phrymaceae",
+    "order_apg": "Lamiales",
+    "species": 2,
+    "genera": 2
+  },
+  {
+    "kingdom": "Plantae",
+    "family": "Cabombaceae",
+    "order_apg": "Nymphaeales",
+    "species": 2,
+    "genera": 1
+  },
+  {
+    "kingdom": "Plantae",
+    "family": "Hypoxidaceae",
+    "order_apg": "Asparagales",
+    "species": 2,
+    "genera": 1
+  },
+  {
+    "kingdom": "Plantae",
+    "family": "Mayacaceae",
+    "order_apg": "Poales",
+    "species": 2,
+    "genera": 1
+  },
+  {
+    "kingdom": "Plantae",
+    "family": "Ruppiaceae",
+    "order_apg": "Alismatales",
+    "species": 2,
+    "genera": 1
+  },
+  {
+    "kingdom": "Plantae",
+    "family": "Triuridaceae",
+    "order_apg": "Pandanales",
+    "species": 2,
+    "genera": 2
+  },
+  {
+    "kingdom": "Plantae",
+    "family": "Droseraceae",
+    "order_apg": "Caryophyllales",
+    "species": 2,
+    "genera": 1
+  },
+  {
+    "kingdom": "Plantae",
+    "family": "Psilotaceae",
+    "order_apg": "Psilotales",
+    "species": 2,
+    "genera": 1
+  },
+  {
+    "kingdom": "Plantae",
+    "family": "Theaceae",
+    "order_apg": "Ericales",
+    "species": 2,
+    "genera": 1
+  },
+  {
+    "kingdom": "Plantae",
+    "family": "Lonchitidaceae",
+    "order_apg": "Polypodiales",
+    "species": 1,
+    "genera": 1
+  },
+  {
+    "kingdom": "Plantae",
+    "family": "Picrodendraceae",
+    "order_apg": "Malpighiales",
+    "species": 1,
+    "genera": 1
+  },
+  {
+    "kingdom": "Plantae",
+    "family": "Typhaceae",
+    "order_apg": "Poales",
+    "species": 1,
+    "genera": 1
+  },
+  {
+    "kingdom": "Plantae",
+    "family": "Anisophylleaceae",
+    "order_apg": "Cucurbitales",
+    "species": 1,
+    "genera": 1
+  },
+  {
+    "kingdom": "Plantae",
+    "family": "Velloziaceae",
+    "order_apg": "Pandanales",
+    "species": 1,
+    "genera": 1
+  },
+  {
+    "kingdom": "Plantae",
+    "family": "Saxifragaceae",
+    "order_apg": "Saxifragales",
+    "species": 1,
+    "genera": 1
+  },
+  {
+    "kingdom": "Plantae",
+    "family": "Bataceae",
+    "order_apg": "Brassicales",
+    "species": 1,
+    "genera": 1
+  },
+  {
+    "kingdom": "Plantae",
+    "family": "Betulaceae",
+    "order_apg": "Fagales",
+    "species": 1,
+    "genera": 1
+  },
+  {
+    "kingdom": "Plantae",
+    "family": "Tofieldiaceae",
+    "order_apg": "Alismatales",
+    "species": 1,
+    "genera": 1
+  },
+  {
+    "kingdom": "Plantae",
+    "family": "Coriariaceae",
+    "order_apg": "Cucurbitales",
+    "species": 1,
+    "genera": 1
+  },
+  {
+    "kingdom": "Plantae",
+    "family": "Krameriaceae",
+    "order_apg": "Zygophyllales",
+    "species": 1,
+    "genera": 1
+  },
+  {
+    "kingdom": "Plantae",
+    "family": "Tovariaceae",
+    "order_apg": "Brassicales",
+    "species": 1,
+    "genera": 1
+  },
+  {
+    "kingdom": "Plantae",
+    "family": "Corsiaceae",
+    "order_apg": "Liliales",
+    "species": 1,
+    "genera": 1
+  },
+  {
+    "kingdom": "Plantae",
+    "family": "Goupiaceae",
+    "order_apg": "Malpighiales",
+    "species": 1,
+    "genera": 1
+  },
+  {
+    "kingdom": "Plantae",
+    "family": "Alzateaceae",
+    "order_apg": "Myrtales",
+    "species": 1,
+    "genera": 1
+  },
+  {
+    "kingdom": "Plantae",
+    "family": "Lepidobotryaceae",
+    "order_apg": "Celastrales",
+    "species": 1,
+    "genera": 1
+  },
+  {
+    "kingdom": "Plantae",
+    "family": "Pedaliaceae",
+    "order_apg": "Lamiales",
+    "species": 1,
+    "genera": 1
+  },
+  {
+    "kingdom": "Plantae",
+    "family": "Bonnetiaceae",
+    "order_apg": "Malpighiales",
+    "species": 1,
+    "genera": 1
+  },
+  {
+    "kingdom": "Plantae",
+    "family": "Winteraceae",
+    "order_apg": "Canellales",
+    "species": 1,
+    "genera": 1
+  },
+  {
+    "kingdom": "Plantae",
+    "family": "Tapisciaceae",
+    "order_apg": "Huerteales",
+    "species": 1,
+    "genera": 1
+  },
+  {
+    "kingdom": "Plantae",
+    "family": "Tecophilaeaceae",
+    "order_apg": "Asparagales",
+    "species": 1,
+    "genera": 1
+  },
+  {
+    "kingdom": "Plantae",
+    "family": "Musaceae",
+    "order_apg": "Zingiberales",
+    "species": 1,
+    "genera": 1
+  },
+  {
+    "kingdom": "Plantae",
+    "family": "Strelitziaceae",
+    "order_apg": "Zingiberales",
+    "species": 1,
+    "genera": 1
+  },
+  {
+    "kingdom": "Plantae",
+    "family": "Cornaceae",
+    "order_apg": "Cornales",
+    "species": 1,
+    "genera": 1
+  },
+  {
+    "kingdom": "Plantae",
+    "family": "Menyanthaceae",
+    "order_apg": "Asterales",
+    "species": 1,
+    "genera": 1
+  },
+  {
+    "kingdom": "Plantae",
+    "family": "Haemodoraceae",
+    "order_apg": "Commelinales",
+    "species": 1,
+    "genera": 1
+  },
+  {
+    "kingdom": "Plantae",
+    "family": "Quillajaceae",
+    "order_apg": "Fabales",
+    "species": 1,
+    "genera": 1
+  },
+  {
+    "kingdom": "Plantae",
+    "family": "Staphyleaceae",
+    "order_apg": "Crossosomatales",
+    "species": 1,
+    "genera": 1
+  },
+  {
+    "kingdom": "Plantae",
+    "family": "Martyniaceae",
+    "order_apg": "Lamiales",
+    "species": 1,
+    "genera": 1
+  }
+]

@@ -1,0 +1,116 @@
+---
+import '../styles/global.css';
+import { COUNTRIES, getCountry, DEFAULT_COUNTRY } from '../lib/countries';
+import { KINGDOMS, getKingdom, DEFAULT_KINGDOM } from '../lib/kingdoms';
+
+interface Props {
+  title?: string;
+  countryCode?: string;
+  kingdomCode?: string;
+}
+const { title, countryCode = DEFAULT_COUNTRY, kingdomCode = DEFAULT_KINGDOM } = Astro.props;
+const country = getCountry(countryCode);
+const kingdom = getKingdom(kingdomCode);
+// El selector de reino existe en el shell pero se oculta hasta tener >1 reino.
+const showKingdomSelector = KINGDOMS.filter((k) => k.available).length > 1;
+const pageTitle = title ?? `Atlas Botánico del ${country.name}`;
+---
+
+<!doctype html>
+<html lang="es">
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <meta name="description" content={`Biodiversidad vegetal del ${country.name}: dashboards sobre WCVP (Kew) y ocurrencias GBIF. Datos abiertos CC BY.`} />
+    <title>{pageTitle}</title>
+    <link rel="preconnect" href="https://fonts.googleapis.com" />
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+    <link
+      href="https://fonts.googleapis.com/css2?family=Fraunces:opsz,wght@9..144,500;9..144,600&family=IBM+Plex+Mono:wght@400;500;600&display=swap"
+      rel="stylesheet"
+    />
+  </head>
+  <body>
+    <header class="site">
+      <div class="wrap masthead">
+        <div class="brand">
+          <h1>Atlas Botánico del <span class="x">{country.name}</span></h1>
+          <div class="sub">biodiversidad vegetal · backbone WCVP (Kew) + ocurrencias GBIF · estático-first</div>
+        </div>
+        <div class="selectors">
+          {showKingdomSelector && (
+            <div class="country-select" data-role="kingdom">
+              <label class="sr-only" for="kingdom">Reino</label>
+              <select id="kingdom" aria-label="Seleccionar reino">
+                {KINGDOMS.map((k) => (
+                  <option value={k.code} selected={k.code === kingdom.code} disabled={!k.available}>
+                    {k.icon} {k.name}{k.available ? '' : ' · próximamente'}
+                  </option>
+                ))}
+              </select>
+            </div>
+          )}
+          <div class="country-select">
+            <label class="sr-only" for="country">País</label>
+            <select id="country" aria-label="Seleccionar país">
+              {COUNTRIES.map((c) => (
+                <option value={c.code} selected={c.code === country.code} disabled={!c.available}>
+                  {c.flag} {c.name}{c.available ? '' : ' · próximamente'}
+                </option>
+              ))}
+            </select>
+          </div>
+        </div>
+      </div>
+    </header>
+
+    <main>
+      <div class="wrap">
+        <slot />
+      </div>
+    </main>
+
+    <footer class="site">
+      <div class="wrap">
+        <div class="lic">
+          <span class="cc">Datos abiertos · atribución <b>CC BY 4.0</b>:</span>
+          <span>WCVP — <a href="https://powo.science.kew.org/about-wcvp" rel="noopener">Kew, World Checklist of Vascular Plants</a></span>
+          <span>Hongos — <a href="https://www.indexfungorum.org" rel="noopener">Index Fungorum</a> (Kew, vía GBIF Backbone)</span>
+          <span>IPNI / Tree of Life — <a href="https://treeoflife.kew.org" rel="noopener">Kew PAFTOL</a></span>
+          <span>Ocurrencias ({kingdom.name}) — <a href={`https://doi.org/${kingdom.gbifDoi}`} rel="noopener">GBIF.org Occurrence Download, DOI {kingdom.gbifDoi}</a></span>
+          <span>Límites departamentales — <a href="https://www.geoboundaries.org" rel="noopener">geoBoundaries</a> (gbOpen PER ADM1)</span>
+        </div>
+        <div>
+          Cita GBIF: GBIF.org (22 June 2026) GBIF Occurrence Download <a href={`https://doi.org/${kingdom.gbifDoi}`} rel="noopener">https://doi.org/{kingdom.gbifDoi}</a> ·
+          Conteos sobre nombres <em>aceptados</em> (sinonimia resuelta) a rango especie. Esfuerzo de muestreo ≠ riqueza.
+        </div>
+      </div>
+    </footer>
+
+    <!-- Selectores país/reino: navegan a la ruta correspondiente. -->
+    <script>
+      // El sitio se publica en una subcarpeta del dominio (/botanica/), no en la raíz.
+      // BASE_URL lo resuelve Vite en build: '/' en dev, '/botanica/' en producción.
+      // Sin esto, cambiar de reino salta fuera del demo y da 404.
+      const BASE = import.meta.env.BASE_URL.replace(/\/$/, '');
+      const to = (slug: string) => `${BASE}/${slug}`.replace(/\/+$/, '') + '/';
+
+      const country = document.getElementById('country') as HTMLSelectElement | null;
+      country?.addEventListener('change', () => {
+        const code = country.value.toLowerCase();
+        // F1 solo tiene Perú en la raíz; rutas por país se agregan en fases siguientes.
+        window.location.href = code === 'per' ? to('') : to(code);
+      });
+
+      const kingdom = document.getElementById('kingdom') as HTMLSelectElement | null;
+      kingdom?.addEventListener('change', () => {
+        // Plantae = raíz del demo; otros reinos en <base>/{slug}/ (ver kingdomHref).
+        window.location.href =
+          kingdom.value === 'Plantae' ? to('') : to(kingdom.value.toLowerCase());
+      });
+    </script>
+    <style>
+      .sr-only { position: absolute; width: 1px; height: 1px; padding: 0; margin: -1px; overflow: hidden; clip: rect(0,0,0,0); border: 0; }
+    </style>
+  </body>
+</html>

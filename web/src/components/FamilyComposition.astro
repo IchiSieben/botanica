@@ -1,0 +1,95 @@
+---
+/**
+ * Composición por familia — treemap top-N. Fuente: mart_family_composition.
+ * Color por orden APG (mismo mapa que el futuro árbol filogenético, F2).
+ */
+import { getFamilies } from '../lib/data';
+import { orderColorMap, colorForOrder } from '../lib/clades';
+import { n } from '../lib/format';
+
+interface Props { kingdom?: string; }
+const { kingdom = 'Plantae' } = Astro.props;
+
+const TOP = 40;
+const families = getFamilies(kingdom);
+const colors = orderColorMap();
+
+const top = families.slice(0, TOP);
+const rest = families.slice(TOP);
+const restSpecies = rest.reduce((s, f) => s + f.species, 0);
+const restGenera = rest.reduce((s, f) => s + f.genera, 0);
+
+const nodes = top.map((f) => ({
+  name: f.family,
+  value: f.species,
+  genera: f.genera,
+  order: f.order_apg ?? '—',
+  itemStyle: { color: colorForOrder(f.order_apg, colors) },
+}));
+if (rest.length) {
+  nodes.push({
+    name: `+${rest.length} familias`,
+    value: restSpecies,
+    genera: restGenera,
+    order: '(varias)',
+    itemStyle: { color: '#2a3a32' },
+  });
+}
+
+const totalSpecies = families.reduce((s, f) => s + f.species, 0);
+const chartData = { nodes, total: totalSpecies };
+---
+
+<div class="card">
+  <div class="card-head">
+    <h3>Composición por familia</h3>
+    <span class="src">mart_family_composition</span>
+  </div>
+  <p class="note-quality">
+    {n(families.length)} familias · top {TOP} por número de especies (rango Species); el resto agrupado.
+    Tamaño = especies. Color = orden (APG IV).
+  </p>
+  <div id="chart-family" class="chart tall"></div>
+  <script type="application/json" id="data-family" set:html={JSON.stringify(chartData)} />
+</div>
+
+<script>
+  import { echarts, makeChart, readJSON, tooltipStyle, T } from '../lib/echarts-client';
+  import { TreemapChart } from 'echarts/charts';
+  echarts.use([TreemapChart]);
+
+  interface Node { name: string; value: number; genera: number; order: string; itemStyle: { color: string }; }
+  const { nodes, total } = readJSON<{ nodes: Node[]; total: number }>('data-family');
+
+  makeChart('chart-family', {
+    tooltip: {
+      ...tooltipStyle,
+      formatter: (p: any) => {
+        const pct = ((p.value / total) * 100).toFixed(1);
+        return `<b style="font-family:${T.display};font-size:14px;color:#f0e9da">${p.name}</b><br/>` +
+          `${p.value.toLocaleString('es-PE')} especies · ${pct}%<br/>` +
+          `<span style="color:${T.dim}">${p.data.genera} géneros · orden ${p.data.order}</span>`;
+      },
+    },
+    series: [{
+      type: 'treemap',
+      roam: false,
+      nodeClick: false,
+      breadcrumb: { show: false },
+      data: nodes,
+      width: '100%',
+      height: '100%',
+      top: 4, left: 0, right: 0, bottom: 4,
+      label: {
+        show: true,
+        fontFamily: T.font,
+        fontSize: 11,
+        color: '#10160f',
+        formatter: (p: any) => (p.value / total > 0.012 ? p.name : ''),
+      },
+      upperLabel: { show: false },
+      itemStyle: { borderColor: T.ink, borderWidth: 2, gapWidth: 2 },
+      emphasis: { itemStyle: { borderColor: '#fff', borderWidth: 1.5 } },
+    }],
+  });
+</script>

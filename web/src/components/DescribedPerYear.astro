@@ -1,0 +1,52 @@
+---
+/**
+ * Curva de especies descritas por año. Fuente: mart_described_per_year.
+ * Aún VACÍA (requiere IPNI `published` on-demand) -> placeholder honesto.
+ * Cuando el mart traiga filas, se renderiza la línea sin cambiar la página.
+ */
+import { getDescribedPerYear } from '../lib/data';
+import { n } from '../lib/format';
+
+interface Props { kingdom?: string; }
+const { kingdom = 'Plantae' } = Astro.props;
+
+const rows = getDescribedPerYear(kingdom);
+const hasData = rows.length > 0;
+const chartData = { rows };
+---
+
+<div class="card">
+  <div class="card-head">
+    <h3>Especies descritas por año</h3>
+    <span class="src">mart_described_per_year</span>
+  </div>
+
+  {hasData ? (
+    <>
+      <div id="chart-described" class="chart"></div>
+      <script type="application/json" id="data-described" set:html={JSON.stringify(chartData)} />
+      <script>
+        import { echarts, makeChart, readJSON, tooltipStyle, T } from '../lib/echarts-client';
+        import { LineChart } from 'echarts/charts';
+        echarts.use([LineChart]);
+        interface R { year: number; species: number; }
+        const { rows } = readJSON<{ rows: R[] }>('data-described');
+        makeChart('chart-described', {
+          grid: { left: 8, right: 12, top: 12, bottom: 24, containLabel: true },
+          tooltip: { ...tooltipStyle, trigger: 'axis' },
+          xAxis: { type: 'category', data: rows.map((r) => r.year), axisLine: { lineStyle: { color: T.line } }, axisLabel: { color: T.dim, fontSize: 10 } },
+          yAxis: { type: 'value', splitLine: { lineStyle: { color: T.line, opacity: 0.4 } }, axisLabel: { color: T.dim, fontSize: 10 } },
+          series: [{ type: 'line', smooth: true, showSymbol: false, data: rows.map((r) => r.species), lineStyle: { color: '#9b6fc4', width: 2 }, areaStyle: { color: 'rgba(155,111,196,.18)' } }],
+        });
+      </script>
+    </>
+  ) : (
+    <div class="placeholder">
+      <span class="tag">pendiente · F1.x</span>
+      <div>La curva temporal requiere el año de publicación (IPNI <code>published</code>).</div>
+      <div style="font-size:10.5px;color:var(--txt-dim)">
+        {n(0)} filas en el mart hoy · IPNI se integra on-demand para no inflar la descarga base.
+      </div>
+    </div>
+  )}
+</div>

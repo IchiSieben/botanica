@@ -1,0 +1,308 @@
+[
+  {
+    "kingdom": "Fungi",
+    "department": "LORETO",
+    "records": 4276,
+    "species": 384
+  },
+  {
+    "kingdom": "Fungi",
+    "department": "CUSCO",
+    "records": 2012,
+    "species": 488
+  },
+  {
+    "kingdom": "Fungi",
+    "department": "MADRE DE DIOS",
+    "records": 958,
+    "species": 197
+  },
+  {
+    "kingdom": "Fungi",
+    "department": "SAN MARTIN",
+    "records": 841,
+    "species": 248
+  },
+  {
+    "kingdom": "Fungi",
+    "department": "LIMA",
+    "records": 829,
+    "species": 235
+  },
+  {
+    "kingdom": "Fungi",
+    "department": "AMAZONAS",
+    "records": 826,
+    "species": 121
+  },
+  {
+    "kingdom": "Fungi",
+    "department": "JUNIN",
+    "records": 756,
+    "species": 250
+  },
+  {
+    "kingdom": "Fungi",
+    "department": "HUANUCO",
+    "records": 742,
+    "species": 309
+  },
+  {
+    "kingdom": "Fungi",
+    "department": "ANCASH",
+    "records": 693,
+    "species": 138
+  },
+  {
+    "kingdom": "Fungi",
+    "department": "UCAYALI",
+    "records": 383,
+    "species": 145
+  },
+  {
+    "kingdom": "Fungi",
+    "department": "PASCO",
+    "records": 254,
+    "species": 112
+  },
+  {
+    "kingdom": "Fungi",
+    "department": "LAMBAYEQUE",
+    "records": 252,
+    "species": 52
+  },
+  {
+    "kingdom": "Fungi",
+    "department": "LA LIBERTAD",
+    "records": 219,
+    "species": 33
+  },
+  {
+    "kingdom": "Fungi",
+    "department": "unassigned",
+    "records": 174,
+    "species": 21
+  },
+  {
+    "kingdom": "Fungi",
+    "department": "PIURA",
+    "records": 139,
+    "species": 52
+  },
+  {
+    "kingdom": "Fungi",
+    "department": "AREQUIPA",
+    "records": 121,
+    "species": 53
+  },
+  {
+    "kingdom": "Fungi",
+    "department": "ICA",
+    "records": 95,
+    "species": 29
+  },
+  {
+    "kingdom": "Fungi",
+    "department": "APURIMAC",
+    "records": 91,
+    "species": 43
+  },
+  {
+    "kingdom": "Fungi",
+    "department": "HUANCAVELICA",
+    "records": 85,
+    "species": 2
+  },
+  {
+    "kingdom": "Fungi",
+    "department": "PUNO",
+    "records": 56,
+    "species": 31
+  },
+  {
+    "kingdom": "Fungi",
+    "department": "AYACUCHO",
+    "records": 53,
+    "species": 31
+  },
+  {
+    "kingdom": "Fungi",
+    "department": "CAJAMARCA",
+    "records": 40,
+    "species": 24
+  },
+  {
+    "kingdom": "Fungi",
+    "department": "TUMBES",
+    "records": 32,
+    "species": 15
+  },
+  {
+    "kingdom": "Fungi",
+    "department": "CALLAO",
+    "records": 24,
+    "species": 11
+  },
+  {
+    "kingdom": "Fungi",
+    "department": "MOQUEGUA",
+    "records": 3,
+    "species": 1
+  },
+  {
+    "kingdom": "Plantae",
+    "department": "LORETO",
+    "records": 399410,
+    "species": 7905
+  },
+  {
+    "kingdom": "Plantae",
+    "department": "PASCO",
+    "records": 223476,
+    "species": 7775
+  },
+  {
+    "kingdom": "Plantae",
+    "department": "CUSCO",
+    "records": 140158,
+    "species": 7778
+  },
+  {
+    "kingdom": "Plantae",
+    "department": "MADRE DE DIOS",
+    "records": 97763,
+    "species": 4829
+  },
+  {
+    "kingdom": "Plantae",
+    "department": "UCAYALI",
+    "records": 77631,
+    "species": 8257
+  },
+  {
+    "kingdom": "Plantae",
+    "department": "AMAZONAS",
+    "records": 59492,
+    "species": 7654
+  },
+  {
+    "kingdom": "Plantae",
+    "department": "CAJAMARCA",
+    "records": 50075,
+    "species": 5516
+  },
+  {
+    "kingdom": "Plantae",
+    "department": "SAN MARTIN",
+    "records": 44373,
+    "species": 5946
+  },
+  {
+    "kingdom": "Plantae",
+    "department": "JUNIN",
+    "records": 34683,
+    "species": 4180
+  },
+  {
+    "kingdom": "Plantae",
+    "department": "HUANUCO",
+    "records": 26099,
+    "species": 4794
+  },
+  {
+    "kingdom": "Plantae",
+    "department": "LIMA",
+    "records": 21065,
+    "species": 1896
+  },
+  {
+    "kingdom": "Plantae",
+    "department": "ANCASH",
+    "records": 17656,
+    "species": 2106
+  },
+  {
+    "kingdom": "Plantae",
+    "department": "LA LIBERTAD",
+    "records": 13541,
+    "species": 2316
+  },
+  {
+    "kingdom": "Plantae",
+    "department": "AREQUIPA",
+    "records": 12224,
+    "species": 1678
+  },
+  {
+    "kingdom": "Plantae",
+    "department": "PIURA",
+    "records": 8672,
+    "species": 1746
+  },
+  {
+    "kingdom": "Plantae",
+    "department": "PUNO",
+    "records": 6825,
+    "species": 1830
+  },
+  {
+    "kingdom": "Plantae",
+    "department": "LAMBAYEQUE",
+    "records": 6755,
+    "species": 1068
+  },
+  {
+    "kingdom": "Plantae",
+    "department": "AYACUCHO",
+    "records": 6153,
+    "species": 1358
+  },
+  {
+    "kingdom": "Plantae",
+    "department": "APURIMAC",
+    "records": 5915,
+    "species": 946
+  },
+  {
+    "kingdom": "Plantae",
+    "department": "MOQUEGUA",
+    "records": 4731,
+    "species": 913
+  },
+  {
+    "kingdom": "Plantae",
+    "department": "TUMBES",
+    "records": 3858,
+    "species": 667
+  },
+  {
+    "kingdom": "Plantae",
+    "department": "HUANCAVELICA",
+    "records": 2939,
+    "species": 724
+  },
+  {
+    "kingdom": "Plantae",
+    "department": "ICA",
+    "records": 2324,
+    "species": 541
+  },
+  {
+    "kingdom": "Plantae",
+    "department": "TACNA",
+    "records": 2140,
+    "species": 443
+  },
+  {
+    "kingdom": "Plantae",
+    "department": "unassigned",
+    "records": 1328,
+    "species": 350
+  },
+  {
+    "kingdom": "Plantae",
+    "department": "CALLAO",
+    "records": 593,
+    "species": 176
+  }
+]

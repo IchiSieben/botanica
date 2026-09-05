@@ -1,0 +1,448 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+<title>Filodendro · explorador filogenético</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Fraunces:opsz,wght@9..144,500;9..144,600&family=IBM+Plex+Mono:wght@400;500;600&display=swap" rel="stylesheet">
+<script src="https://cdnjs.cloudflare.com/ajax/libs/d3/7.9.0/d3.min.js"></script>
+<style>
+  :root{
+    --ink:#0c1512; --ink2:#13201b; --ink3:#1b2c25; --line:#33473e;
+    --txt:#cdd9d2; --txt-dim:#7f968b; --gold:#e3b23c;
+    --c-ana:#b9a06a; --c-mag:#c97f3e; --c-mono:#e0b53a; --c-base:#9bbf6a;
+    --c-cary:#d8567f; --c-ros:#59ad63; --c-ast:#9b6fc4; --c-mix:#566b61;
+  }
+  *{box-sizing:border-box;-webkit-tap-highlight-color:transparent}
+  html,body{margin:0;height:100%;background:var(--ink);color:var(--txt);
+    font-family:"IBM Plex Mono",monospace;overflow:hidden}
+  #app{display:flex;flex-direction:column;height:100%}
+
+  header{padding:10px 14px 8px;border-bottom:1px solid var(--line);
+    background:linear-gradient(180deg,#0e1916,#0c1512)}
+  .masthead{display:flex;align-items:baseline;gap:10px;flex-wrap:wrap}
+  h1{font-family:"Fraunces",serif;font-weight:600;font-size:22px;margin:0;
+    letter-spacing:.3px;color:#f0e9da}
+  h1 .leaf{color:var(--c-ros)}
+  .sub{font-size:10.5px;color:var(--txt-dim);letter-spacing:.2px}
+
+  .bar{display:flex;gap:6px;flex-wrap:wrap;align-items:center;
+    padding:8px 12px;border-bottom:1px solid var(--line);background:var(--ink2)}
+  .seg{display:inline-flex;border:1px solid var(--line);border-radius:7px;overflow:hidden}
+  .seg button{background:transparent;border:0;color:var(--txt-dim);
+    font-family:inherit;font-size:11px;padding:6px 11px;cursor:pointer}
+  .seg button.on{background:var(--gold);color:#1a1407;font-weight:600}
+  .btn{background:var(--ink3);border:1px solid var(--line);color:var(--txt);
+    font-family:inherit;font-size:11px;padding:6px 10px;border-radius:7px;cursor:pointer}
+  .btn:active{transform:translateY(1px)}
+  .btn.live{border-color:var(--gold);color:var(--gold)}
+  input.search{background:var(--ink3);border:1px solid var(--line);color:var(--txt);
+    font-family:inherit;font-size:11px;padding:6px 9px;border-radius:7px;
+    width:148px;outline:none}
+  input.search:focus{border-color:var(--gold)}
+
+  #stage{position:relative;flex:1;min-height:0}
+  svg{display:block;width:100%;height:100%;touch-action:none}
+  .link{fill:none;stroke:var(--line);stroke-width:1.3px;stroke-linejoin:round;
+    transition:opacity .18s,stroke .18s,stroke-width .18s}
+  .link.dim{opacity:.12}
+  .link.lit{stroke-width:2.6px}
+  .node circle{stroke:var(--ink);stroke-width:1px;transition:opacity .18s}
+  .node.internal circle{cursor:pointer}
+  .node.dim{opacity:.18}
+  .node text{font-size:9.5px;fill:var(--txt);paint-order:stroke;
+    stroke:var(--ink);stroke-width:2.4px;cursor:default;transition:opacity .18s}
+  .node text .sp{font-style:italic}
+  .node.hit circle{stroke:#fff;stroke-width:1.6px}
+  .node.hit text{fill:#fff;font-weight:600}
+  .clps{font-size:8.5px;fill:var(--txt-dim)}
+
+  /* legend */
+  #legend{position:absolute;left:10px;top:10px;background:rgba(14,25,21,.82);
+    border:1px solid var(--line);border-radius:9px;padding:8px 9px;backdrop-filter:blur(3px);
+    max-width:160px}
+  #legend .lh{font-size:9px;color:var(--txt-dim);text-transform:uppercase;
+    letter-spacing:.6px;margin-bottom:5px}
+  .lg{display:flex;align-items:center;gap:7px;font-size:10px;padding:2px 0;cursor:pointer;
+    border-radius:4px}
+  .lg:hover{color:#fff}
+  .lg.off{opacity:.38}
+  .sw{width:11px;height:11px;border-radius:3px;flex:0 0 auto}
+
+  /* tooltip / info panel */
+  #tip{position:absolute;pointer-events:none;background:rgba(11,18,15,.96);
+    border:1px solid var(--line);border-left:3px solid var(--gold);border-radius:8px;
+    padding:9px 11px;font-size:11px;max-width:230px;opacity:0;transition:opacity .12s;
+    box-shadow:0 8px 24px rgba(0,0,0,.45);z-index:5}
+  #tip .t-sp{font-family:"Fraunces",serif;font-style:italic;font-size:14px;color:#f0e9da;
+    font-weight:500;line-height:1.15;margin-bottom:6px;display:block}
+  #tip .row{display:flex;justify-content:space-between;gap:14px;color:var(--txt-dim);
+    line-height:1.5}
+  #tip .row b{color:var(--txt);font-weight:500}
+  #tip .clade{display:inline-block;margin-top:6px;font-size:9px;padding:2px 7px;
+    border-radius:20px;color:#10160f;font-weight:600;letter-spacing:.3px}
+
+  footer{font-size:9.5px;color:var(--txt-dim);padding:7px 13px;border-top:1px solid var(--line);
+    background:var(--ink2);line-height:1.5}
+  footer a{color:var(--c-base);text-decoration:none}
+  .hint{color:var(--gold)}
+  @media (max-width:560px){
+    #legend{max-width:128px;padding:6px 7px}
+    h1{font-size:19px}
+  }
+</style>
+</head>
+<body>
+<div id="app">
+  <header>
+    <div class="masthead">
+      <h1>Filo<span class="leaf">dendro</span></h1>
+      <span class="sub">árbol de la vida de las angiospermas · datos al estilo Kew&nbsp;PAFTOL</span>
+    </div>
+  </header>
+
+  <div class="bar">
+    <div class="seg" id="mode">
+      <button data-mode="radial" class="on">Radial</button>
+      <button data-mode="linear">Lineal</button>
+    </div>
+    <button class="btn" id="collapse">Colapsar a clados</button>
+    <button class="btn" id="reset">Reiniciar vista</button>
+    <button class="btn" id="peru">Resaltar Perú 🇵🇪</button>
+    <input class="search" id="search" placeholder="Buscar género/especie…" />
+  </div>
+
+  <div id="stage">
+    <svg id="svg"></svg>
+    <div id="legend"></div>
+    <div id="tip"></div>
+  </div>
+
+  <footer>
+    Muestra de ~36 taxones con la convención de etiquetas de Kew
+    <span style="color:var(--txt)">Orden_Familia_Género_especie</span>.
+    Árbol real (≈8&nbsp;mil géneros): <a href="https://treeoflife.kew.org">treeoflife.kew.org</a> ·
+    Newick completo en <span style="color:var(--txt)">/api/tree</span> · CC&nbsp;BY&nbsp;4.0 &nbsp;·&nbsp;
+    <span class="hint">toca un nodo para colapsar su clado · pasa/toca una hoja para trazar su linaje</span>
+  </footer>
+</div>
+
+<script>
+/* ---------- 1. DATOS: árbol de muestra con etiquetas estilo Kew ---------- */
+const AMB="1001_false_Amborellales_Amborellaceae_Amborella_trichopoda";
+const NYM="1002_false_Nymphaeales_Nymphaeaceae_Nymphaea_alba";
+const ILL="1003_false_Austrobaileyales_Schisandraceae_Illicium_verum";
+const MAGN=`(2001_false_Magnoliales_Magnoliaceae_Magnolia_grandiflora:0.30,(2002_false_Laurales_Lauraceae_Persea_americana:0.28,2003_false_Piperales_Piperaceae_Piper_nigrum:0.32):0.10)`;
+const MONO=`(3001_false_Alismatales_Araceae_Monstera_deliciosa:0.34,((3002_false_Asparagales_Orchidaceae_Cattleya_maxima:0.30,3003_false_Asparagales_Amaryllidaceae_Allium_cepa:0.31,3004_false_Liliales_Liliaceae_Lilium_candidum:0.33):0.12,(3005_false_Arecales_Arecaceae_Ceroxylon_quindiuense:0.29,(3006_false_Poales_Poaceae_Zea_mays:0.27,3007_false_Poales_Bromeliaceae_Ananas_comosus:0.28):0.09,3008_false_Zingiberales_Musaceae_Musa_acuminata:0.30):0.11):0.10)`;
+const BASALEUDI=`(4001_false_Ranunculales_Ranunculaceae_Ranunculus_acris:0.36,4002_false_Proteales_Proteaceae_Protea_cynaroides:0.35)`;
+const CARYO=`(5001_false_Caryophyllales_Cactaceae_Echinopsis_pachanoi:0.33,5002_false_Caryophyllales_Amaranthaceae_Chenopodium_quinoa:0.34)`;
+const ROSIDS=`((6001_false_Fabales_Fabaceae_Phaseolus_vulgaris:0.26,(6002_false_Rosales_Rosaceae_Rosa_canina:0.27,6003_false_Fagales_Fagaceae_Quercus_robur:0.28,6004_false_Cucurbitales_Cucurbitaceae_Cucurbita_maxima:0.29):0.08):0.10,(6005_false_Brassicales_Brassicaceae_Arabidopsis_thaliana:0.27,6006_false_Malvales_Malvaceae_Theobroma_cacao:0.28,(6007_false_Malpighiales_Erythroxylaceae_Erythroxylum_coca:0.29,6008_false_Malpighiales_Euphorbiaceae_Hevea_brasiliensis:0.30):0.08,6009_false_Sapindales_Rutaceae_Citrus_limon:0.27,6010_false_Myrtales_Myrtaceae_Eucalyptus_globulus:0.28):0.10)`;
+const ASTERIDS=`(7001_false_Ericales_Theaceae_Camellia_sinensis:0.30,((7002_false_Gentianales_Rubiaceae_Cinchona_officinalis:0.26,7003_false_Gentianales_Rubiaceae_Coffea_arabica:0.27,(7004_false_Solanales_Solanaceae_Solanum_tuberosum:0.25,7005_false_Solanales_Solanaceae_Solanum_lycopersicum:0.25):0.07):0.09,(7006_false_Lamiales_Lamiaceae_Lavandula_angustifolia:0.28,(7007_false_Asterales_Asteraceae_Helianthus_annuus:0.27,7008_false_Apiales_Apiaceae_Daucus_carota:0.28):0.08):0.10):0.10)`;
+const NEWICK=`(${AMB}:0.55,(${NYM}:0.50,(${ILL}:0.48,(${MAGN}:0.18,(${MONO}:0.16,(${BASALEUDI}:0.14,(${CARYO}:0.13,(${ROSIDS}:0.12,${ASTERIDS}:0.14):0.10):0.12):0.16):0.12):0.10):0.20):0.08);`;
+
+/* orden -> clado coloreado (paleta inspirada en pigmentos vegetales) */
+const ORDER_GROUP={
+  Amborellales:"ana",Nymphaeales:"ana",Austrobaileyales:"ana",
+  Magnoliales:"mag",Laurales:"mag",Piperales:"mag",
+  Alismatales:"mono",Asparagales:"mono",Liliales:"mono",Arecales:"mono",Poales:"mono",Zingiberales:"mono",
+  Ranunculales:"base",Proteales:"base",
+  Caryophyllales:"cary",
+  Fabales:"ros",Rosales:"ros",Fagales:"ros",Cucurbitales:"ros",Brassicales:"ros",Malvales:"ros",Malpighiales:"ros",Sapindales:"ros",Myrtales:"ros",
+  Ericales:"ast",Gentianales:"ast",Lamiales:"ast",Solanales:"ast",Asterales:"ast",Apiales:"ast"
+};
+const GROUP=[
+  {k:"ana", label:"Grado ANA",      color:"var(--c-ana)",  hex:"#b9a06a"},
+  {k:"mag", label:"Magnólidas",     color:"var(--c-mag)",  hex:"#c97f3e"},
+  {k:"mono",label:"Monocotiledóneas",color:"var(--c-mono)",hex:"#e0b53a"},
+  {k:"base",label:"Eudicotas basales",color:"var(--c-base)",hex:"#9bbf6a"},
+  {k:"cary",label:"Cariofilales",   color:"var(--c-cary)", hex:"#d8567f"},
+  {k:"ros", label:"Rósidas",        color:"var(--c-ros)",  hex:"#59ad63"},
+  {k:"ast", label:"Astéridas",      color:"var(--c-ast)",  hex:"#9b6fc4"},
+];
+const HEX={}; GROUP.forEach(g=>HEX[g.k]=g.hex); HEX.mix="#566b61";
+const PERU=new Set(["Persea","Cattleya","Ceroxylon","Zea","Ananas","Echinopsis",
+  "Chenopodium","Theobroma","Erythroxylum","Cinchona","Solanum"]);
+
+/* ---------- 2. PARSER NEWICK ---------- */
+function parseNewick(s){
+  s=s.replace(/\s+/g,""); let i=0,idc=0;
+  function node(){
+    let n={children:[]};
+    if(s[i]==="("){ i++; do{ n.children.push(node()); }while(s[i]==="," && i++); i++; }
+    let lbl="";
+    while(i<s.length && ",();".indexOf(s[i])===-1) lbl+=s[i++];
+    if(lbl){ let p=lbl.split(":"); if(p[0])n.name=p[0];
+      if(p.length>1 && p[1]!=="")n.length=parseFloat(p[1]); }
+    n._id=idc++; return n;
+  }
+  return node();
+}
+
+/* ---------- 3. JERARQUÍA + METADATOS ---------- */
+const root=d3.hierarchy(parseNewick(NEWICK));
+let maxLen=0;
+root.eachBefore(d=>{
+  d.depthLen=(d.parent?d.parent.depthLen:0)+(d.data.length||0);
+  if(!d.children) maxLen=Math.max(maxLen,d.depthLen);
+});
+// taxonomía y soporte
+root.each(d=>{
+  if(!d.children){
+    const p=(d.data.name||"").split("_");
+    d.tax={order:p[2]||"",family:p[3]||"",genus:p[4]||"",species:(p.slice(5).join(" ")||"")};
+    d.group=ORDER_GROUP[d.tax.order]||"mix";
+    d.peru=PERU.has(d.tax.genus);
+  }
+});
+root.eachAfter(d=>{
+  if(d.children){
+    const gs=new Set(d.children.map(c=>c.group));
+    d.group=gs.size===1?[...gs][0]:"mix";
+    // pseudo-soporte determinista para nodos internos
+    d.support=(0.78+0.21*Math.abs(Math.sin(d._id?d._id:d.depth*7+3))).toFixed(2);
+  }
+});
+root.each(d=>{ d._id=(d.data&&d.data._id!=null)?d.data._id:d.depth; });
+root.each(d=>{ d.nLeaves=d.leaves().length; });
+
+/* ---------- 4. ESTADO ---------- */
+let mode="radial";
+const collapsed=new Set();
+let peruOn=false, query="";
+const offGroups=new Set();
+
+/* ---------- 5. SVG / ZOOM ---------- */
+const svg=d3.select("#svg");
+const gZoom=svg.append("g");
+const gLinks=gZoom.append("g");
+const gNodes=gZoom.append("g");
+const tip=d3.select("#tip");
+let W=0,H=0;
+const zoom=d3.zoom().scaleExtent([0.4,9]).on("zoom",e=>gZoom.attr("transform",e.transform));
+svg.call(zoom).on("dblclick.zoom",null);
+
+function measure(){ const r=document.getElementById("stage").getBoundingClientRect();
+  W=r.width; H=r.height; svg.attr("viewBox",`0 0 ${W} ${H}`); }
+
+/* aplica estado de colapso al árbol */
+function applyCollapse(){
+  root.each(d=>{
+    if(collapsed.has(d._id) && d.children){ d._children=d.children; d.children=null; }
+    else if(!collapsed.has(d._id) && d._children){ d.children=d._children; d._children=null; }
+  });
+}
+function polar(r,a){ return [r*Math.cos(a-Math.PI/2), r*Math.sin(a-Math.PI/2)]; }
+
+/* ---------- 6. RENDER ---------- */
+function render(refit=true){
+  applyCollapse();
+  const margin=mode==="radial"?86:150;
+  const R=Math.max(60,Math.min(W,H)/2-margin);
+  const innerW=Math.max(120,W-160), innerH=Math.max(120,H-70);
+
+  if(mode==="radial"){
+    d3.cluster().size([2*Math.PI, R]).separation((a,b)=>(a.parent===b.parent?1:1.3))(root);
+    root.each(d=>{ d.r=(d.depthLen/maxLen)*R; const[x,y]=polar(d.r,d.x); d.px=x; d.py=y; });
+  }else{
+    d3.cluster().size([innerH, innerW])(root);
+    root.each(d=>{ d.px=40+(d.depthLen/maxLen)*innerW; d.py=d.x; });
+  }
+
+  /* LINKS */
+  const links=root.links();
+  const lk=gLinks.selectAll("path.link").data(links,d=>d.target._id);
+  lk.exit().remove();
+  const lkE=lk.enter().append("path").attr("class","link");
+  lkE.merge(lk)
+    .attr("d",d=>linkPath(d.source,d.target))
+    .attr("stroke",d=>d.target.group&&d.target.group!=="mix"?HEX[d.target.group]:"#33473e");
+
+  /* NODES */
+  const nodes=root.descendants();
+  const nd=gNodes.selectAll("g.node").data(nodes,d=>d._id);
+  nd.exit().remove();
+  const ndE=nd.enter().append("g");
+  ndE.append("circle");
+  ndE.append("text");
+  ndE.append("text").attr("class","clps");
+  const all=ndE.merge(nd);
+
+  all.attr("class",d=>"node "+(d.children||d._children?"internal":"leaf"))
+     .attr("transform",d=>`translate(${d.px},${d.py})`);
+
+  all.select("circle")
+     .attr("r",d=>d._children?5: (d.children?2.4:3.4))
+     .attr("fill",d=> d._children?HEX[d.group]||"#566b61"
+                    : (d.children?"#26352e":(HEX[d.group]||"#9bb0a6")));
+
+  // etiqueta de hoja
+  all.select("text:not(.clps)")
+    .attr("display",d=>d.children?"none":null)
+    .each(function(d){
+      const t=d3.select(this);
+      if(d.children){ t.text(""); return; }
+      t.selectAll("*").remove();
+      if(mode==="radial"){
+        const deg=d.x*180/Math.PI-90, flip=d.x>Math.PI;
+        t.attr("transform",`rotate(${deg}) translate(${d.r+7},0) ${flip?"rotate(180)":""}`)
+         .attr("text-anchor",flip?"end":"start").attr("dy","0.31em");
+      }else{
+        t.attr("transform",`translate(7,0)`).attr("text-anchor","start").attr("dy","0.31em");
+      }
+      t.append("tspan").attr("class","sp").text(d.tax.genus+" "+d.tax.species);
+    });
+
+  // etiqueta de clado colapsado
+  all.select("text.clps")
+    .attr("display",d=>d._children?null:"none")
+    .each(function(d){
+      const t=d3.select(this); if(!d._children){t.text("");return;}
+      const g=GROUP.find(x=>x.k===d.group);
+      const lab=`▸ ${g?g.label:"clado"} (${d.nLeaves})`;
+      if(mode==="radial"){
+        const deg=d.x*180/Math.PI-90, flip=d.x>Math.PI;
+        t.attr("transform",`rotate(${deg}) translate(${d.r+9},0) ${flip?"rotate(180)":""}`)
+         .attr("text-anchor",flip?"end":"start").attr("dy","0.31em");
+      }else t.attr("transform","translate(9,0)").attr("text-anchor","start").attr("dy","0.31em");
+      t.text(lab);
+    });
+
+  // interacciones
+  all.on("mouseenter",(e,d)=>{ if(!d.children&&!d._children) showTip(e,d); lineage(d,true); })
+     .on("mousemove",(e,d)=>{ if(tip.style("opacity")==="1") moveTip(e); })
+     .on("mouseleave",(e,d)=>{ hideTip(); lineage(d,false); })
+     .on("click",(e,d)=>{
+        e.stopPropagation();
+        if(d.children||d._children){ toggle(d); }
+        else { showTip(e,d); lineage(d,true); }
+     });
+
+  applyHighlights();
+  if(refit) fit();
+}
+
+function linkPath(s,t){
+  if(mode==="radial"){
+    const a0=s.x,a1=t.x,r0=s.r,r1=t.r;
+    const [x0,y0]=polar(r0,a0), [xb,yb]=polar(r0,a1), [x1,y1]=polar(r1,a1);
+    const large=Math.abs(a1-a0)>Math.PI?1:0, sweep=a1>a0?1:0;
+    return `M${x0},${y0}A${r0},${r0} 0 ${large} ${sweep} ${xb},${yb}L${x1},${y1}`;
+  }
+  return `M${s.px},${s.py}L${s.px},${t.py}L${t.px},${t.py}`;
+}
+
+/* ---------- 7. HIGHLIGHTS ---------- */
+function lineage(d,on){
+  if(on){
+    const anc=new Set(d.ancestors().map(a=>a._id));
+    gLinks.selectAll("path.link")
+      .classed("dim",l=>!anc.has(l.target._id))
+      .classed("lit",l=>anc.has(l.target._id));
+    gNodes.selectAll("g.node").classed("dim",n=>!anc.has(n._id));
+  }else{
+    gLinks.selectAll("path.link").classed("dim",false).classed("lit",false);
+    gNodes.selectAll("g.node").classed("dim",false);
+    applyHighlights();
+  }
+}
+function applyHighlights(){
+  // grupos apagados desde leyenda
+  gNodes.selectAll("g.node").classed("dim",n=>{
+    if(offGroups.size===0) return false;
+    return n.group && offGroups.has(n.group);
+  });
+  gLinks.selectAll("path.link").classed("dim",l=>{
+    if(offGroups.size===0) return false;
+    return l.target.group && offGroups.has(l.target.group);
+  });
+  // Perú + búsqueda
+  gNodes.selectAll("g.node").classed("hit",d=>{
+    if(d.children||d._children) return false;
+    let h=false;
+    if(peruOn && d.peru) h=true;
+    if(query){
+      const s=(d.tax.genus+" "+d.tax.species).toLowerCase();
+      if(s.indexOf(query)>-1) h=true;
+    }
+    return h;
+  });
+}
+
+/* ---------- 8. TOOLTIP ---------- */
+function showTip(e,d){
+  const g=GROUP.find(x=>x.k===d.group);
+  tip.html(
+    `<span class="t-sp">${d.tax.genus} ${d.tax.species}</span>`+
+    `<div class="row"><span>Orden</span><b>${d.tax.order}</b></div>`+
+    `<div class="row"><span>Familia</span><b>${d.tax.family}</b></div>`+
+    `<div class="row"><span>Long. de rama</span><b>${d.depthLen.toFixed(2)}</b></div>`+
+    (d.peru?`<div class="row"><span>🇵🇪</span><b>presente en Perú</b></div>`:``)+
+    `<span class="clade" style="background:${g?g.hex:'#566b61'}">${g?g.label:'—'}</span>`
+  );
+  tip.style("opacity",1); moveTip(e);
+}
+function moveTip(e){
+  const r=document.getElementById("stage").getBoundingClientRect();
+  let x=e.clientX-r.left+14, y=e.clientY-r.top+14;
+  const tw=tip.node().offsetWidth, th=tip.node().offsetHeight;
+  if(x+tw>r.width) x=e.clientX-r.left-tw-14;
+  if(y+th>r.height) y=r.height-th-8;
+  tip.style("left",x+"px").style("top",Math.max(8,y)+"px");
+}
+function hideTip(){ tip.style("opacity",0); }
+
+/* ---------- 9. ACCIONES ---------- */
+function toggle(d){ if(collapsed.has(d._id)) collapsed.delete(d._id); else collapsed.add(d._id); render(false); }
+function collapseToClades(){
+  collapsed.clear();
+  // colapsa cada nodo cuyo subárbol es monofilético de un grupo coloreado
+  root.each(d=>{ if(d.children && d.group!=="mix" && d.depth>0){
+    const parentMixed = !d.parent || d.parent.group==="mix";
+    if(parentMixed) collapsed.add(d._id);
+  }});
+  render();
+}
+function fit(){
+  const b=gNodes.node().getBBox();
+  if(!b.width||!b.height) return;
+  const pad=46;
+  const k=Math.min((W-pad)/b.width,(H-pad)/b.height,2.4);
+  const tx=W/2-k*(b.x+b.width/2), ty=H/2-k*(b.y+b.height/2);
+  svg.transition().duration(420).call(zoom.transform,
+    d3.zoomIdentity.translate(tx,ty).scale(k));
+}
+
+/* ---------- 10. UI ---------- */
+d3.selectAll("#mode button").on("click",function(){
+  d3.selectAll("#mode button").classed("on",false);
+  d3.select(this).classed("on",true);
+  mode=this.dataset.mode; render();
+});
+d3.select("#collapse").on("click",collapseToClades);
+d3.select("#reset").on("click",()=>{ collapsed.clear(); peruOn=false; query="";
+  d3.select("#search").property("value",""); d3.select("#peru").classed("live",false);
+  offGroups.clear(); buildLegend(); render(); });
+d3.select("#peru").on("click",function(){ peruOn=!peruOn;
+  d3.select(this).classed("live",peruOn); applyHighlights(); });
+d3.select("#search").on("input",function(){ query=this.value.trim().toLowerCase(); applyHighlights(); });
+
+function buildLegend(){
+  const L=d3.select("#legend"); L.html('<div class="lh">Clados · pigmentos</div>');
+  GROUP.forEach(g=>{
+    const row=L.append("div").attr("class","lg"+(offGroups.has(g.k)?" off":""));
+    row.append("span").attr("class","sw").style("background",g.hex);
+    row.append("span").text(g.label);
+    row.on("click",()=>{ if(offGroups.has(g.k))offGroups.delete(g.k);else offGroups.add(g.k);
+      buildLegend(); applyHighlights(); });
+  });
+}
+
+/* ---------- INIT ---------- */
+function boot(){ measure(); render(); }
+buildLegend(); boot();
+window.addEventListener("resize",()=>{ measure(); render(); });
+</script>
+</body>
+</html>

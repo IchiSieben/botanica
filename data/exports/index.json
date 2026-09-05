@@ -1,0 +1,13 @@
+{
+  "country_l3": "PER",
+  "exports": [
+    "mart_clade_by_department (2730 filas)",
+    "mart_described_per_year (0 filas)",
+    "mart_family_composition (522 filas)",
+    "mart_kpis (2 filas)",
+    "mart_lifeform_spectrum (181 filas)",
+    "mart_richness_by_department (51 filas)",
+    "mart_status (4 filas)",
+    "stats_diversity (5 filas)"
+  ]
+}

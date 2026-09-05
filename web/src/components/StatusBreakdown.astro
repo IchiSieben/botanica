@@ -1,0 +1,90 @@
+---
+/**
+ * Nativas / introducidas / endémicas — donut. Fuente: mart_status.
+ * Los 3 buckets son mutuamente excluyentes y suman el total de especies.
+ * Nota: el KPI "nativas" = nativas (no endémicas) + endémicas.
+ */
+import { getStatus } from '../lib/data';
+import { n, pct } from '../lib/format';
+
+interface Props { kingdom?: string; }
+const { kingdom = 'Plantae' } = Astro.props;
+const isFungi = kingdom === 'Fungi';
+
+const rows = getStatus(kingdom);
+const total = rows.reduce((s, r) => s + r.species, 0);
+
+const LABELS: Record<string, { label: string; color: string }> = {
+  nativa: { label: 'Nativa (no endémica)', color: '#9bbf6a' },
+  endemica: { label: 'Endémica', color: '#e3b23c' },
+  introducida: { label: 'Introducida', color: '#c97f3e' },
+  '(sin dato)': { label: 'Sin dato de origen', color: '#566b61' },
+};
+const order = ['endemica', 'nativa', 'introducida', '(sin dato)'];
+const slices = order
+  .map((k) => rows.find((r) => r.status === k))
+  .filter((r): r is NonNullable<typeof r> => !!r)
+  .map((r) => ({ name: LABELS[r.status].label, value: r.species, color: LABELS[r.status].color }));
+
+const endemic = rows.find((r) => r.status === 'endemica')?.species ?? 0;
+const chartData = { slices, total };
+---
+
+<div class="card">
+  <div class="card-head">
+    <h3>Origen: nativas, endémicas e introducidas</h3>
+    <span class="src">mart_status</span>
+  </div>
+  <p class="note-quality">
+    {isFungi ? (
+      <>{n(total)} especies. El <b>origen</b> (nativa/introducida/endémica) <b>no es determinable</b> para hongos:
+      no hay un backbone de distribución curado como WCVP; la presencia es solo evidencia de ocurrencias GBIF.</>
+    ) : (
+      <>{n(total)} especies. Las <b style="color:var(--gold)">endémicas</b> ({pct((endemic / total) * 100)}) son un
+      subconjunto de las nativas — el KPI “nativas” las incluye.</>
+    )}
+  </p>
+  <div id="chart-status" class="chart"></div>
+  <script type="application/json" id="data-status" set:html={JSON.stringify(chartData)} />
+</div>
+
+<script>
+  import { echarts, makeChart, readJSON, tooltipStyle, T } from '../lib/echarts-client';
+  import { PieChart } from 'echarts/charts';
+  echarts.use([PieChart]);
+
+  interface Slice { name: string; value: number; color: string; }
+  const { slices, total } = readJSON<{ slices: Slice[]; total: number }>('data-status');
+
+  makeChart('chart-status', {
+    tooltip: {
+      ...tooltipStyle, trigger: 'item',
+      formatter: (p: any) => `<b>${p.name}</b><br/>${p.value.toLocaleString('es-PE')} especies · ${p.percent}%`,
+    },
+    legend: {
+      bottom: 0, left: 'center', icon: 'roundRect',
+      textStyle: { color: T.txt, fontFamily: T.font, fontSize: 11 },
+      itemWidth: 12, itemHeight: 12,
+    },
+    series: [{
+      type: 'pie',
+      radius: ['46%', '72%'],
+      center: ['50%', '44%'],
+      avoidLabelOverlap: true,
+      itemStyle: { borderColor: T.ink, borderWidth: 2 },
+      label: {
+        show: true, color: T.txt, fontFamily: T.font, fontSize: 11,
+        formatter: (p: any) => `${p.percent}%`,
+      },
+      labelLine: { lineStyle: { color: T.line } },
+      data: slices.map((s) => ({ name: s.name, value: s.value, itemStyle: { color: s.color } })),
+    }],
+    graphic: {
+      type: 'text', left: 'center', top: '38%',
+      style: {
+        text: `${total.toLocaleString('es-PE')}\nespecies`,
+        textAlign: 'center', fill: T.dim, fontFamily: T.font, fontSize: 11, lineHeight: 15,
+      },
+    },
+  });
+</script>

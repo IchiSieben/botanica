@@ -1,0 +1,92 @@
+---
+/**
+ * Espectro de formas de vida — barras horizontales. Fuente: mart_lifeform_spectrum.
+ * El "(sin dato)" (~27%) se MUESTRA destacado, no se esconde (honestidad de cobertura).
+ */
+import { getLifeforms } from '../lib/data';
+import { n, pct } from '../lib/format';
+
+interface Props { kingdom?: string; }
+const { kingdom = 'Plantae' } = Astro.props;
+const isFungi = kingdom === 'Fungi';
+const axisName = isFungi ? 'modo nutricional' : 'forma de vida';
+const sourceField = isFungi ? 'modo nutricional (FungalTraits, pendiente)' : 'lifeform_description de WCVP';
+
+const TOP = 13;
+const rows = getLifeforms(kingdom);
+const total = rows.reduce((s, r) => s + r.species, 0);
+
+const sinDato = rows.find((r) => r.lifeform === '(sin dato)');
+const sinDatoPct = total ? (sinDato ? (sinDato.species / total) * 100 : 0) : 0;
+
+// Top N (incluye "(sin dato)" si está entre los mayores) + resto agrupado.
+const top = rows.slice(0, TOP);
+const rest = rows.slice(TOP);
+const restSpecies = rest.reduce((s, r) => s + r.species, 0);
+
+const bars = top.map((r) => ({
+  name: r.lifeform,
+  value: r.species,
+  isSinDato: r.lifeform === '(sin dato)',
+}));
+if (rest.length) bars.push({ name: `+${rest.length} formas`, value: restSpecies, isSinDato: false });
+
+// ECharts barra horizontal: categoría de abajo hacia arriba -> invertimos.
+bars.reverse();
+const chartData = { bars, total };
+---
+
+<div class="card">
+  <div class="card-head">
+    <h3>Espectro de {axisName}</h3>
+    <span class="src">mart_lifeform_spectrum</span>
+  </div>
+  <div class="caveat">
+    <b>{pct(sinDatoPct)}</b> de las especies no tienen {axisName} registrado{isFungi ? '' : ' en WCVP'}.
+    Se muestra como “(sin dato)” — la cobertura parcial es parte del dato, no se oculta.
+    {isFungi && <> El modo trófico (saprótrofo / micorrízico / parásito / liquenizado) no viene de GBIF; se enriquecerá con FungalTraits.</>}
+  </div>
+  <div id="chart-lifeform" class="chart" style="margin-top:6px"></div>
+  <p class="note-quality">Según {sourceField} · {n(rows.length)} categorías; top {TOP} + resto agrupado.</p>
+  <script type="application/json" id="data-lifeform" set:html={JSON.stringify(chartData)} />
+</div>
+
+<script>
+  import { echarts, makeChart, readJSON, tooltipStyle, T } from '../lib/echarts-client';
+  import { BarChart } from 'echarts/charts';
+  echarts.use([BarChart]);
+
+  interface Bar { name: string; value: number; isSinDato: boolean; }
+  const { bars, total } = readJSON<{ bars: Bar[]; total: number }>('data-lifeform');
+
+  makeChart('chart-lifeform', {
+    grid: { left: 4, right: 56, top: 6, bottom: 6, containLabel: true },
+    tooltip: {
+      ...tooltipStyle, trigger: 'item',
+      formatter: (p: any) => {
+        const pc = ((p.value / total) * 100).toFixed(1);
+        return `<b>${p.name}</b><br/>${p.value.toLocaleString('es-PE')} especies · ${pc}%`;
+      },
+    },
+    xAxis: { type: 'value', splitLine: { lineStyle: { color: T.line, opacity: 0.4 } }, axisLabel: { color: T.dim, fontSize: 10 } },
+    yAxis: {
+      type: 'category',
+      data: bars.map((b) => b.name),
+      axisLine: { lineStyle: { color: T.line } },
+      axisLabel: { color: T.txt, fontSize: 11 },
+      axisTick: { show: false },
+    },
+    series: [{
+      type: 'bar',
+      data: bars.map((b) => ({
+        value: b.value,
+        itemStyle: { color: b.isSinDato ? T.gold : '#59ad63', borderRadius: [0, 3, 3, 0] },
+      })),
+      barWidth: '62%',
+      label: {
+        show: true, position: 'right', color: T.dim, fontSize: 10, fontFamily: T.font,
+        formatter: (p: any) => p.value.toLocaleString('es-PE'),
+      },
+    }],
+  });
+</script>

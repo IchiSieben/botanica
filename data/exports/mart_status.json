@@ -1,0 +1,22 @@
+[
+  {
+    "kingdom": "Fungi",
+    "status": "(sin dato)",
+    "species": 1802
+  },
+  {
+    "kingdom": "Plantae",
+    "status": "nativa",
+    "species": 13521
+  },
+  {
+    "kingdom": "Plantae",
+    "status": "endemica",
+    "species": 7541
+  },
+  {
+    "kingdom": "Plantae",
+    "status": "introducida",
+    "species": 523
+  }
+]

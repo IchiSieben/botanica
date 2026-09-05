@@ -1,0 +1,22 @@
+[
+  {
+    "metric": "n_familias",
+    "value": 257.0
+  },
+  {
+    "metric": "riqueza_total",
+    "value": 21585.0
+  },
+  {
+    "metric": "shannon_familias",
+    "value": 4.1897
+  },
+  {
+    "metric": "simpson_familias",
+    "value": 0.9665
+  },
+  {
+    "metric": "chao1_familias",
+    "value": 279.13
+  }
+]

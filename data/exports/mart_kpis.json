@@ -1,0 +1,34 @@
+[
+  {
+    "kingdom": "Fungi",
+    "species": 1802,
+    "native": 0,
+    "introduced": 0,
+    "endemic": 0,
+    "endemic_rate": 0.0,
+    "families": 265,
+    "genera": 712,
+    "occurrences": 13954,
+    "occurrences_raw": 14788,
+    "assigned": 13780,
+    "unassigned": 174,
+    "assigned_pct": 98.75,
+    "unassigned_pct": 1.25
+  },
+  {
+    "kingdom": "Plantae",
+    "species": 21585,
+    "native": 21062,
+    "introduced": 523,
+    "endemic": 7541,
+    "endemic_rate": 34.9,
+    "families": 257,
+    "genera": 2641,
+    "occurrences": 1269879,
+    "occurrences_raw": 1287722,
+    "assigned": 1268551,
+    "unassigned": 1328,
+    "assigned_pct": 99.9,
+    "unassigned_pct": 0.1
+  }
+]

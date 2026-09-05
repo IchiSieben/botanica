@@ -1,0 +1,74 @@
+---
+/**
+ * Vista overview reutilizable por REINO. La usan index.astro (Plantae) y la
+ * ruta dinámica [kingdom] (Fungi). Mismos dashboards, mismo caveat de muestreo;
+ * el texto se adapta al reino (hongos llevan caveat de subinventario más fuerte).
+ */
+import KpiStrip from './KpiStrip.astro';
+import FamilyComposition from './FamilyComposition.astro';
+import LifeformSpectrum from './LifeformSpectrum.astro';
+import StatusBreakdown from './StatusBreakdown.astro';
+import Choropleth from './Choropleth.astro';
+import DescribedPerYear from './DescribedPerYear.astro';
+import { getKpis } from '../lib/data';
+import { n } from '../lib/format';
+
+interface Props { kingdom: string; }
+const { kingdom } = Astro.props;
+const isFungi = kingdom === 'Fungi';
+const k = getKpis(kingdom);
+---
+
+<section class="section-head">
+  <h2>{isFungi ? 'Panorama de la micobiota del Perú' : 'Panorama de la flora vascular del Perú'}</h2>
+  {k && (
+    <p class="lede">
+      {isFungi ? (
+        <>{n(k.species)} especies de hongos aceptadas con registro en Perú, sobre el backbone de Index Fungorum
+        (vía GBIF), evidenciadas por {n(k.occurrences)} ocurrencias georreferenciadas. Sinonimia resuelta a
+        nombre aceptado antes de contar.</>
+      ) : (
+        <>{n(k.species)} especies aceptadas (rango Species) sobre el backbone WCVP de Kew, cruzadas con
+        {' '}{n(k.occurrences)} ocurrencias georreferenciadas de GBIF. Sinonimia resuelta antes de contar;
+        registros y riqueza se reportan por separado.</>
+      )}
+    </p>
+  )}
+</section>
+
+{isFungi && (
+  <div class="caveat" style="margin-bottom:6px">
+    <b>La micobiota peruana está muchísimo menos inventariada que la flora.</b>
+    Esperá números mucho más chicos y más huecos: hay ~21 000 plantas registradas pero apenas
+    una fracción de hongos. Lo que ves no es la diversidad real de hongos del Perú, sino lo poco
+    que se ha colectado y digitalizado. No está maquillado.
+  </div>
+)}
+
+<KpiStrip kingdom={kingdom} />
+
+<section class="section-head">
+  <h2>Composición taxonómica</h2>
+  <p class="lede">Familias por número de especies (tamaño) y orden (color), {isFungi ? 'según Index Fungorum' : 'según APG IV'}.</p>
+</section>
+<div class="grid">
+  <FamilyComposition kingdom={kingdom} />
+</div>
+
+<section class="section-head">
+  <h2>Composición y origen</h2>
+  <p class="lede">{isFungi ? 'Modo nutricional (cobertura pendiente) y origen biogeográfico (no determinable para hongos).' : 'Hábito de las especies y su origen biogeográfico (nativas, endémicas, introducidas).'}</p>
+</section>
+<div class="grid cols-2">
+  <LifeformSpectrum kingdom={kingdom} />
+  <StatusBreakdown kingdom={kingdom} />
+</div>
+
+<section class="section-head">
+  <h2>Distribución territorial</h2>
+  <p class="lede">Riqueza y esfuerzo de muestreo en los 25 departamentos, y el ritmo histórico de descripción de especies.</p>
+</section>
+<div class="grid cols-2">
+  <Choropleth kingdom={kingdom} />
+  <DescribedPerYear kingdom={kingdom} />
+</div>
