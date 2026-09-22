@@ -159,9 +159,7 @@ downloads are CC BY and must be cited by DOI (see "Data sources and licences" ab
 
 ---
 
-# Español
-
-## Atlas Botánico del Perú
+# Atlas Botánico del Perú (Español)
 
 Un atlas estático de la flora vascular y micobiota del Perú, construido a partir de datos
 abiertos de biodiversidad. 21 585 especies de plantas aceptadas y 1 802 de hongos, repartidas
@@ -311,7 +309,7 @@ Honestas, no relleno de roadmap:
 - **`/filogenia/` es taxonómico, no filogenético.** Muestra rangos APG IV (orden → familia), no
   longitudes de rama. La topología de Open Tree existe en `data/raw/` pero no está versionada,
   así que usarla requeriría una corrida del ETL para construir el sitio. La página lo indica.
-- **Los hongos están mucho menos inventariados que las plantas** — 1802 especies contra 21 585.
+- **Los hongos están mucho menos inventariados que las plantas** — 1 802 especies contra 21 585.
   Esa brecha es real, no un error de datos, y el sitio lo dice.
 - `npm audit` reporta advisories preexistentes en el árbol de dependencias de ECharts; cada
   etiqueta que se renderiza viene de los marts propios del build, así que la exposición es baja.
