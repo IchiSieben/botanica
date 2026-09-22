@@ -79,12 +79,16 @@ uv run atlas data --full       # re-downloads from GBIF; needs GBIF credentials
 `data/raw/`, but every later stage (`match`, `match_fungi`, `aggregate`, `analyze`, `export`,
 `profile`) runs against the full cached volume — 1.4M WCVP rows, 1.29M GBIF occurrences. A
 fresh clone needs its own free GBIF account (register at [gbif.org](https://www.gbif.org))
-before this step will do anything beyond `download`. **Not fully re-verified in this pass**:
-`uv run atlas data` was started against this machine's cached `data/raw/` and its local `.env`,
-ran for several minutes without erroring, but did not finish inside this session — the ADR-cited
-row counts above are consistent with that being genuine processing time, not a hang, but this
-README does not claim a completed rerun. The `data/exports/*.json` marts already in the repo
-(used by the site build below) are from a prior completed run.
+before this step will do anything beyond `download`. **Verified**: `uv run atlas data` ran
+end to end against this machine's cached `data/raw/` and its local `.env` (~10 minutes,
+exit code 0), reproducing the same figures cited above (21,585 plant species, 1,802 fungal
+species, 1,269,879/1,287,722 plant occurrences kept after cleaning). **One finding from that
+rerun, not fixed here**: some marts (`mart_status`, `mart_clade_by_department`,
+`mart_family_composition`, `mart_lifeform_spectrum`, `mart_richness_by_department`,
+`stats_diversity`) came out with the same rows in a different order than the committed
+version — same values, reordered, no new/missing records. That is at odds with the "byte-stable
+exports" property this repo has previously claimed; the regenerated files were discarded rather
+than committed, since that fix is outside this pass's scope.
 
 ```bash
 # 2. Site
@@ -147,6 +151,10 @@ Honest ones, not roadmap filler:
   real, not a data bug, and the site says so.
 - `npm audit` reports pre-existing advisories in ECharts' dependency tree; every label rendered
   comes from this project's own build-time marts, so exposure is low. Not patched in this pass.
+- **Mart export order is not actually stable across reruns**, despite a prior commit titled
+  "Make mart exports byte-stable across ETL runs." Verified in this pass: rerunning
+  `uv run atlas data` against unchanged cached input reordered rows in 6 of 8 marts (values
+  identical, order different). Not fixed here — see "Running it" above.
 
 ## Author
 
@@ -243,12 +251,16 @@ cacheados en `data/raw/`, pero todas las etapas posteriores (`match`, `match_fun
 `aggregate`, `analyze`, `export`, `profile`) corren sobre el volumen completo cacheado — 1,4 M
 de filas WCVP, 1,29 M de ocurrencias GBIF. Un clon nuevo necesita su propia cuenta GBIF gratuita
 (registro en [gbif.org](https://www.gbif.org)) antes de que este paso haga algo más que
-`download`. **No re-verificado de punta a punta en este pase**: `uv run atlas data` se lanzó
-contra el `data/raw/` cacheado y el `.env` local de esta máquina, corrió varios minutos sin
-error, pero no terminó dentro de esta sesión — los volúmenes citados en los ADR son consistentes
-con que sea procesamiento real y no un cuelgue, pero este README no afirma una corrida completa
-verificada. Los marts en `data/exports/*.json` que ya están en el repo (los que usa el build del
-sitio abajo) vienen de una corrida anterior ya completada.
+`download`. **Verificado**: `uv run atlas data` corrió de punta a punta contra el `data/raw/`
+cacheado y el `.env` local de esta máquina (~10 minutos, exit code 0), reproduciendo las mismas
+cifras citadas arriba (21 585 especies de plantas, 1802 de hongos, 1 269 879/1 287 722
+ocurrencias de plantas conservadas tras la limpieza). **Un hallazgo de esa corrida, no corregido
+acá**: algunos marts (`mart_status`, `mart_clade_by_department`, `mart_family_composition`,
+`mart_lifeform_spectrum`, `mart_richness_by_department`, `stats_diversity`) salieron con las
+mismas filas en un orden distinto al de la versión versionada — mismos valores, reordenados, sin
+registros nuevos ni faltantes. Eso contradice la propiedad de "exports estables byte a byte" que
+este repo afirmó antes; los archivos regenerados se descartaron en vez de commitearse, porque
+esa corrección queda fuera del alcance de este pase.
 
 ```bash
 # 2. Sitio
@@ -314,6 +326,10 @@ Honestas, no relleno de roadmap:
 - `npm audit` reporta advisories preexistentes en el árbol de dependencias de ECharts; cada
   etiqueta que se renderiza viene de los marts propios del build, así que la exposición es baja.
   No se parchó en este pase.
+- **El orden de los exports de los marts no es realmente estable entre corridas**, pese a un
+  commit previo titulado "Make mart exports byte-stable across ETL runs". Verificado en este
+  pase: volver a correr `uv run atlas data` contra el mismo input cacheado reordenó filas en 6
+  de 8 marts (mismos valores, orden distinto). No se corrigió acá — ver "Cómo correrlo" arriba.
 
 ## Autor
 
