@@ -253,7 +253,7 @@ de filas WCVP, 1,29 M de ocurrencias GBIF. Un clon nuevo necesita su propia cuen
 (registro en [gbif.org](https://www.gbif.org)) antes de que este paso haga algo más que
 `download`. **Verificado**: `uv run atlas data` corrió de punta a punta contra el `data/raw/`
 cacheado y el `.env` local de esta máquina (~10 minutos, exit code 0), reproduciendo las mismas
-cifras citadas arriba (21 585 especies de plantas, 1802 de hongos, 1 269 879/1 287 722
+cifras citadas arriba (21 585 especies de plantas, 1 802 de hongos, 1 269 879/1 287 722
 ocurrencias de plantas conservadas tras la limpieza). **Un hallazgo de esa corrida, no corregido
 acá**: algunos marts (`mart_status`, `mart_clade_by_department`, `mart_family_composition`,
 `mart_lifeform_spectrum`, `mart_richness_by_department`, `stats_diversity`) salieron con las
