@@ -115,7 +115,6 @@ const en = {
 
 'tree.title': 'Taxonomy tree',
   'tree.lede': 'How the species recorded in Peru split across orders and families. Pick a group, in the tree or in the list, to see where it lives, then open it in the explorer.',
-  'tree.sub': 'orders · families · species',
   'tree.radial': 'Radial',
   'tree.linear': 'Linear',
   'tree.reset': 'Reset',
@@ -238,7 +237,6 @@ const es: Record<Key, string> = {
 
 'tree.title': 'Árbol taxonómico',
   'tree.lede': 'Cómo se reparten las especies registradas en el Perú entre órdenes y familias. Elige un grupo, en el árbol o en la lista, para ver dónde vive, y ábrelo en el explorador.',
-  'tree.sub': 'órdenes · familias · especies',
   'tree.radial': 'Radial',
   'tree.linear': 'Lineal',
   'tree.reset': 'Reencuadrar',

@@ -1,48 +1,44 @@
 ---
 /**
- * /filogenia/ — árbol taxonómico navegable.
- *
- * Promoción del prototipo `web/prototypes/mapa-filogenetico.html` a página real.
- * El prototipo probaba la interacción con datos inventados; esta página se
- * alimenta de los marts del ETL. Ver la cabecera de PhyloTree.astro.
+ * /filogenia/ — taxonomy tree coordinated with the explorer's state.
+ * See PhyloTree.astro (data, honesty note) and scripts/tree.ts (behaviour).
  */
 import Base from '../../layouts/Base.astro';
 import PhyloTree from '../../components/PhyloTree.astro';
-import { availableKingdoms } from '../../lib/data';
 import Tutorial from '../../components/Tutorial.astro';
 import { TOURS } from '../../lib/tours';
+import { t } from '../../lib/i18n';
 
 const locale = 'es';
-
-// Plantae primero: es el reino principal del atlas (21 585 especies frente a 1 802
-// de Fungi). `availableKingdoms` devuelve el orden del mart, que no es el editorial.
-const ORDER = ['Plantae', 'Fungi'];
-const kingdoms = availableKingdoms().sort(
-  (a, b) => (ORDER.indexOf(a) + 1 || 99) - (ORDER.indexOf(b) + 1 || 99),
-);
 ---
 
-<Base title="Árbol taxonómico — Botánica" locale={locale} page="tree">
-  <section class="filo">
+<Base title={`${t(locale, 'tree.title')} — Botánica`} locale={locale} page="tree">
+  <div class="wrap filo">
     <header class="filo-head">
-      <h2>Filogenia</h2>
-      <p>
-        Cómo se reparten las especies registradas en Perú entre los grandes grupos
-        taxonómicos. Cada nodo es un orden o una familia; el tamaño es el número de
-        especies y el color, el clado al que pertenece.
-      </p>
+      <div>
+        <h1>{t(locale, 'tree.title')}</h1>
+        <p class="lede">{t(locale, 'tree.lede')}</p>
+      </div>
+      <div class="seg" role="group" aria-label={t(locale, 'k.label')}>
+        <button type="button" class="btn on" data-kset="plantae" aria-pressed="true">{t(locale, 'k.plantae')}</button>
+        <button type="button" class="btn" data-kset="fungi" aria-pressed="false">{t(locale, 'k.fungi')}</button>
+      </div>
     </header>
-
-    {kingdoms.map((k) => <div class="filo-block"><PhyloTree kingdom={k} /></div>)}
-  </section>
+    <PhyloTree kingdom="Plantae" locale={locale} />
+    <PhyloTree kingdom="Fungi" locale={locale} />
+  </div>
 
   <Tutorial id="botanica-filogenia" locale={locale} steps={TOURS.tree[locale]} />
 </Base>
 
+<script>
+  import { bootTree } from '../../scripts/tree';
+  bootTree();
+</script>
+
 <style>
-  .filo { display: flex; flex-direction: column; gap: 26px; }
-  .filo-head h2 { margin: 0 0 6px; font-family: 'Fraunces', Georgia, serif; font-size: 26px; }
-  .filo-head p { margin: 0; max-width: 62ch; font-size: 13px; color: var(--txt-dim); line-height: 1.6; }
-  .filo-block { padding-top: 18px; border-top: 1px solid var(--line); }
-  .filo-block:first-of-type { border-top: 0; padding-top: 0; }
+  .filo { display: flex; flex-direction: column; gap: 24px; padding-top: 32px; }
+  .filo-head { display: flex; flex-wrap: wrap; gap: 16px; align-items: flex-end; justify-content: space-between; }
+  .filo-head h1 { font-size: clamp(2rem, 1.2rem + 3vw, 3rem); letter-spacing: -0.02em; }
+  .filo-head .lede { margin-top: 10px; max-width: 64ch; color: rgb(var(--muted)); }
 </style>

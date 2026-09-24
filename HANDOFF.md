@@ -37,6 +37,7 @@ Unattended run started 2026-09-24. Brief: "from static atlas to an explorable on
 | `/` | 63 · LCP 4.20 · TBT 604 · 336 KB | 98 · LCP 2.28 · TBT 0 · 206 KB |
 | `/especies/` | 79 · LCP 3.73 · 412 KB | 83 · LCP 3.17 · 388 KB (CLS 0.205, fix in Phase 3) |
 | `/filogenia/` | 64 · LCP 4.16 · TBT 434 · 296 KB | 80 · LCP 3.06 · TBT 185 · 229 KB |
+| `/filogenia/` after tree coordination | | 89 · LCP 2.78 · TBT 344 · 251 KB (facets fetched only on first selection) |
 
 ## Gates tooling
 - `node web/scripts/serve.mjs <dir> <port>` — serves `<dir>` at `/botanica/` with gzip.
@@ -46,7 +47,7 @@ Unattended run started 2026-09-24. Brief: "from static atlas to an explorable on
   (strict viewport), 44 px touch targets (touch emulation), every tour target resolves, and
   interactions: map → KPIs/families/years, family → map, Back, search → drawer → map, decade → map,
   fungi → explicit "not available", tree → department view. Env: `LOCALES`, `ROOT_LOCALE`, `TREE=0`.
-- CHROME_PATH used here: `%LOCALAPPDATA%ms-playwrightchromium-1243chrome-win64chrome.exe`.
+- CHROME_PATH used here: `%LOCALAPPDATA%\ms-playwright\chromium-1243\chrome-win64\chrome.exe`.
 
 ## Tried and failed
 - Douglas–Peucker on closed GeoJSON rings: zero-length baseline, every path collapsed. Seed with the farthest point.
