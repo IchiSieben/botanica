@@ -1,5 +1,21 @@
 # HANDOFF — Botánica v2 (explorable atlas)
 
+## LIVE (2026-09-24)
+- https://ichisieben.dev/botanica/ (EN) · https://ichisieben.dev/botanica/es/ (ES)
+- Botanica `04e07e8` (site + canonical + AA treemap ink), mirrored by Landing `43fb9bc`
+  (git auto-deploy, Hostinger build `01a0d597-a573-73f7-8fc5-41284b18b9d7` completed 22:45 UTC).
+- Live smoke, cache-busted, under the real CSP: 44/44 — every page 200, 0 console errors,
+  0 CSP violations, 0 HTTP ≥ 400, fonts 2/2 same-origin, map click (LORETO) changes KPIs +
+  families + years, search → drawer, EN↔ES switch keeps `?dep=`, 0 px overflow at 360 (strict
+  viewport) on all 6 pages. Canonical/hreflang live point at ichisieben.dev/botanica/ and /es/.
+- axe dark (WCAG 2 A/AA, 1280 + 360, EN + ES): 0 violations live. `incomplete` on the explorer at
+  360 (tinted rows, checked by hand ≥ 8.6:1) and on the tree (checked by computed style, worst 5.62:1).
+  The ECharts canvas on the tree page is not checkable by axe.
+- Cache: HTML has no Cache-Control, hCDN `DYNAMIC` + ETag → the new version shows without a bust.
+  `_astro/*` max-age 7 d (hashed). `.htaccess` unchanged.
+- Redeploy: `cd web && npm run build`, replace `Landing/public/botanica/` with `web/dist/`
+  (git rm + copy, check tracked = on disk), push the Landing.
+
 Unattended run started 2026-09-24. Brief: "from static atlas to an explorable one"
 (phases 0–4 + close). Baseline commit `1b97936`.
 
@@ -38,8 +54,10 @@ Unattended run started 2026-09-24. Brief: "from static atlas to an explorable on
 - Language order: `?lang=` (remembered in `ic7.lang`) → `/es/` path → stored choice → navigator.language.
   Only unprefixed pages auto-redirect; `/es/` never does, so there is no loop. Query and hash survive.
 - Language switch is one 44 px link naming the other language (fits the 360 px header).
-- hreflang en/es/x-default are absolute, built from `site` in astro.config (still a placeholder domain,
-  brief §9.1). No canonical until the domain is real.
+- hreflang en/es/x-default and a per-locale canonical are absolute, built from `site` in astro.config
+  (`https://ichisieben.dev` since `04e07e8`).
+- Treemap tile ink is black or white, whichever contrasts more with the fill (was a fixed luminance cut
+  with near-black/near-white inks: the palette's #4E79A7 failed AA with both). Dark axe 26 → 0.
 
 - Deferred work (data fetches, ECharts mount, tour) starts after the first `largest-contentful-paint`
   entry, fetches at `priority: 'low'` (see `web/src/lib/after-paint.ts` for the measured options).
@@ -145,9 +163,7 @@ tutorial/tutorial.js · tutorial.css · (library, byte-identical to radar-precio
 image or API. Directory URLs (`/botanica/es/`) resolve to `index.html` with Apache's defaults.
 
 ## Open questions (for the owner)
-- The landing's ES project card links `/botanica/`; the demo then picks EN or ES from the browser
-  language. To send ES readers straight to Spanish, change `demoUrl`/`localPath` in
-  `Landing/src/content/projects/es/botanica.md` to `/botanica/es/` (not done: Landing is read-only here).
+- None. (The ES card now links `/botanica/es/`, done in Landing `43fb9bc`.)
 - hreflang URLs use the placeholder `site` (`atlas-botanico.example`) from astro.config; set it with the
   real domain (brief §9.1). The landing card says `ichisieben.dev`.
 - Dark-theme contrast was not audited by Lighthouse (it runs light); tokens are the landing's.
