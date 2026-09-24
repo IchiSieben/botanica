@@ -36,6 +36,8 @@ const labels = {
 </button>
 
 <script type="module" define:vars={{ id, steps, base, labels }}>
+  // The tour starts after the first paint, so it never delays the page itself.
+  await new Promise((r) => requestAnimationFrame(() => setTimeout(r, 0)));
   const { createTutorial } = await import(`${base}tutorial/tutorial.js`);
   const tour = createTutorial({
     id,
@@ -54,11 +56,14 @@ const labels = {
     --tut-fg: rgb(var(--fg));
     --tut-dim: rgb(var(--muted));
     --tut-line: rgb(var(--border));
-    --tut-accent: rgb(var(--accent));
+    /* accent-strong: the light theme's plain accent is 3.5:1 on white. */
+    --tut-accent: rgb(var(--accent-strong));
     --tut-font: var(--font-sans);
     --tut-mono: var(--font-mono);
   }
-  .ic7-tutorial-next {
+  /* The library hard-codes a dark ink on the accent (4.4:1 in light theme);
+     the page background colour passes in both themes. */
+  .ic7-tutorial-root .ic7-tutorial-next {
     color: rgb(var(--bg)) !important;
   }
 </style>

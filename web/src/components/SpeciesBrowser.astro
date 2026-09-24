@@ -41,6 +41,7 @@ const { locale } = Astro.props;
   import { createStore, serialize, EMPTY } from '../lib/store';
   import { t, fmt, type Locale } from '../lib/i18n';
   import { deptName } from '../lib/depts';
+  import { afterPaint } from '../lib/after-paint';
 
   type Row = [string, number, number, number, [number, number][], number, number];
   interface Index {
@@ -64,7 +65,7 @@ const { locale } = Astro.props;
     const load = (k: K) => {
       if (!cache.has(k)) {
         const url = `${import.meta.env.BASE_URL}data/species-${k}.json`;
-        cache.set(k, fetch(url).then((r) => {
+        cache.set(k, fetch(url, { priority: 'low' }).then((r) => {
           if (!r.ok) throw new Error(`${r.status} ${url}`);
           return r.json();
         }));
@@ -186,7 +187,8 @@ const { locale } = Astro.props;
     );
 
     store.subscribe(() => void render());
-    void render();
+    // The index (309 KB) is fetched once the page has painted.
+    void afterPaint().then(render);
   }
 </script>
 

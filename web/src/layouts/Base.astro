@@ -86,7 +86,7 @@ const abs = (l: Locale) => new URL(localePath(l, slug), Astro.site).href;
     <a class="skip" href="#main">{t(locale, 'skip')}</a>
     <header class="site">
       <div class="wrap bar">
-        <a class="brand" href={localePath(locale)}>
+        <a class="brand" href={localePath(locale)} aria-label={t(locale, 'site.brand')}>
           <svg viewBox="0 0 24 24" width="22" height="22" aria-hidden="true"><path d="M12 21V11m0 0C12 6 8 3 4 3c0 4 3 8 8 8Zm0 0c0-4 3-7 8-7 0 4-3 7-8 7Z" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linejoin="round" /></svg>
           <span>{t(locale, 'site.brand')}</span>
         </a>

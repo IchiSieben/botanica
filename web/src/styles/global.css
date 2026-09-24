@@ -116,6 +116,7 @@ i.sci, .sci { font-style: italic; }
   transition: border-color var(--ic7-t-hover) ease;
 }
 .btn:hover { border-color: rgb(var(--accent)); }
+:root.light .btn[aria-pressed='true'], :root.light .btn.on { background: rgb(var(--accent) / 0.07); }
 .btn[aria-pressed='true'], .btn.on {
   border-color: rgb(var(--accent)); background: rgb(var(--accent) / 0.12); color: rgb(var(--accent-strong));
 }

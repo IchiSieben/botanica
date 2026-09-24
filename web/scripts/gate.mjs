@@ -177,6 +177,37 @@ async function treeChecks(page, url) {
 }
 
 if (LOCALES.includes('en') && LOCALES.includes('es')) await langChecks();
+await inpChecks();
+
+// INP budget (< 200 ms) with the CPU slowed 4x, as Lighthouse's mobile profile does.
+// Event Timing entries give each interaction's full duration: input delay +
+// handlers + the frame that shows the result.
+async function inpChecks() {
+  console.log('\nINP (4x CPU)');
+  const measure = async (path, act, label) => {
+    const { page, ctx } = await open(`${BASE}${prefix(ROOT_LOCALE)}${path}`, 390, true);
+    const cdp = await ctx.newCDPSession(page);
+    await page.evaluate(() => {
+      window.__inp = 0;
+      new PerformanceObserver((l) => { for (const e of l.getEntries()) if (e.interactionId) window.__inp = Math.max(window.__inp, e.duration); })
+        .observe({ type: 'event', durationThreshold: 16, buffered: true });
+    });
+    await page.waitForTimeout(1500); // data after load + idle
+    await cdp.send('Emulation.setCPUThrottlingRate', { rate: 4 });
+    await act(page);
+    await page.waitForTimeout(800);
+    const inp = await page.evaluate(() => window.__inp);
+    await cdp.send('Emulation.setCPUThrottlingRate', { rate: 1 });
+    inp < 200 ? ok(`${label}: ${Math.round(inp)} ms`) : fail(`${label}: INP ${Math.round(inp)} ms ≥ 200`);
+    await ctx.close();
+  };
+  await measure('', (p) => p.tap('#map path[data-dep="CUSCO"]'), 'map tap');
+  await measure('', (p) => p.tap('#families [data-fam]'), 'family tap');
+  await measure('', async (p) => { await p.tap('#q'); await p.waitForTimeout(1200); await p.keyboard.type('cin', { delay: 120 }); }, 'search keystrokes');
+  await measure('?dep=LORETO', (p) => p.tap('#years [data-decade="1800"]'), 'decade tap');
+  if (process.env.TREE !== '0') await measure('filogenia/', async (p) => { await p.waitForSelector('#phylo-plantae-chart canvas'); await p.tap('#phylo-plantae [data-ord]'); }, 'tree order tap');
+  await measure('especies/', async (p) => { await p.tap('#sp-q'); await p.keyboard.type('cin', { delay: 120 }); }, 'species keystrokes');
+}
 
 async function langChecks() {
   console.log('\nlanguage');

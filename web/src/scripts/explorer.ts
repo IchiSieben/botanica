@@ -14,6 +14,7 @@ import { aggregate, compare, type Facets } from '../lib/facets';
 import * as V from '../lib/views';
 import { t, fmt, type Locale } from '../lib/i18n';
 import { deptName } from '../lib/depts';
+import { afterPaint } from '../lib/after-paint';
 
 interface Config { orderColor: Record<string, string>; records: Record<'plantae' | 'fungi', Record<string, number>>; base: string }
 type SpRow = [string, number, number, number, [number, number][], number, number];
@@ -84,7 +85,7 @@ export function boot() {
   const facetReq = new Map<K, Promise<Facets>>();
   const loadFacets = (k: K) => {
     if (!facetReq.has(k)) {
-      facetReq.set(k, fetch(`${cfg.base}data/facets-${k}.json`).then((r) => {
+      facetReq.set(k, fetch(`${cfg.base}data/facets-${k}.json`, { priority: 'low' }).then((r) => {
         if (!r.ok) throw new Error(`${r.status} facets-${k}`);
         return r.json();
       }));
@@ -94,7 +95,7 @@ export function boot() {
   const nameReq = new Map<K, Promise<Names>>();
   const loadNames = (k: K) => {
     if (!nameReq.has(k)) {
-      nameReq.set(k, fetch(`${cfg.base}data/species-${k}.json`).then(async (r) => {
+      nameReq.set(k, fetch(`${cfg.base}data/species-${k}.json`, { priority: 'low' }).then(async (r) => {
         if (!r.ok) throw new Error(`${r.status} species-${k}`);
         const d = (await r.json()) as Names;
         d.byName = new Map(d.rows.map((row, i) => [row[0], i]));
@@ -134,7 +135,11 @@ export function boot() {
       return;
     }
     root.classList.remove('is-loading');
-    // A newer state arrived while we were fetching: that render wins.
+    // Let the browser paint the input's own feedback (pressed state, focus ring)
+    // before recomputing every view: this keeps a map tap under the INP budget
+    // on a 4x-slowed CPU (288 → 88 ms). Also coalesces a burst of states.
+    await new Promise((r) => requestAnimationFrame(() => setTimeout(r, 0)));
+    // A newer state arrived meanwhile: that render wins.
     if (store.get() !== s) return;
     paint(s);
   }
@@ -575,9 +580,10 @@ export function boot() {
 
   // ---- go ------------------------------------------------------------------------
   store.subscribe((s) => { void render(s); });
-  // Facets load now (the views need them to answer the first click); names wait
-  // for the search box or a ?sp= link.
-  void render(store.get());
+  // Facets load right after the first paint (the views need them to answer the
+  // first click, the build already painted the unfiltered state); names wait for
+  // the search box or a ?sp= link.
+  void afterPaint().then(() => render(store.get()));
   // Exposed for the gate script and the console, not for the page.
   (window as unknown as { __botanica: unknown }).__botanica = { store, isFiltered };
 }

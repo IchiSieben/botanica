@@ -194,7 +194,8 @@ button.bar:hover { background: rgb(var(--surface-2)); }
 .bar.on .bt i { background: rgb(var(--accent)); }
 .bar.muted .bl { color: rgb(var(--muted)); font-style: italic; }
 .bar.muted .bt i { background: repeating-linear-gradient(90deg, rgb(var(--muted) / 0.5) 0 4px, transparent 4px 7px); }
-.bar.zero { opacity: 0.5; }
+/* Zero rows dim their text to --muted (still 4.5:1), not the whole row's opacity. */
+.bar.zero .bl, .bar.zero .bv { color: rgb(var(--muted)); }
 
 .na {
   font-size: 14px; color: rgb(var(--muted)); padding: 14px; border: 1px dashed rgb(var(--border)); border-radius: 8px;

@@ -7,7 +7,7 @@ Unattended run started 2026-09-24. Brief: "from static atlas to an explorable on
 - [x] Phase 0 · audit → `docs/AUDIT-v2.md`
 - [x] Phase 1 · architecture (store + URL, facets, no ECharts on `/`)
 - [x] Phase 2 · interactions (map/legend/compare, search→drawer→map, tree→filter, years brush+play, Plantae↔Fungi, tours)
-- [ ] Phase 3 · identity + mobile
+- [x] Phase 3 · identity + mobile (landing tokens/fonts/theme, 360 px, 44 px targets, LCP < 2.0 s, INP < 200 ms)
 - [x] Phase 4 · i18n EN/ES (EN at root, ES under /es/, same slugs)
 - [ ] Close · MIRROR-READY, reviewer
 
@@ -39,6 +39,16 @@ Unattended run started 2026-09-24. Brief: "from static atlas to an explorable on
 - hreflang en/es/x-default are absolute, built from `site` in astro.config (still a placeholder domain,
   brief §9.1). No canonical until the domain is real.
 
+- Deferred work (data fetches, ECharts mount, tour) starts after the first `largest-contentful-paint`
+  entry, fetches at `priority: 'low'` (see `web/src/lib/after-paint.ts` for the measured options).
+- The explorer yields one frame before recomputing views, so the tap's own feedback paints first
+  (map tap INP 288 → 88 ms at 4x CPU).
+- Light-theme contrast: tour accent uses `--accent-strong`, the tour's "next" ink is `--bg` (overrides
+  in this demo's Tutorial.astro, the library is untouched), pressed buttons use a lighter tint, and
+  zero rows dim only their text.
+- Decade columns stay ~10 px wide at 360 px (28 decades). Lighthouse flags target-size; the From/To
+  selects beside them are the equivalent control (WCAG 2.5.8 "equivalent" exception).
+
 ## Measurements (Lighthouse mobile, median of 3)
 | Page | Baseline 1b97936 | Phase 1 |
 |---|---|---|
@@ -56,6 +66,17 @@ After Phase 4 (EN at root, ES under /es/):
 | species | 93 · LCP 3.18 · CLS 0 · 394 KB | 93 · LCP 3.18 · 394 KB |
 | tree | 93 · LCP 2.58 · TBT 188 · 252 KB | 88 · LCP 2.64 · TBT 315 · 253 KB |
 
+After Phase 3 (median of 5):
+
+| Page | EN | ES |
+|---|---|---|
+| explore | 99 · a11y 96 · LCP 1.84 · TBT 0 · 209 KB | 99 · LCP 1.82 |
+| species | 100 · a11y 100 · LCP 1.52 · 395 KB | 100 · LCP 1.52 |
+| tree | 95 · a11y 100 · LCP 1.68 · TBT 188 · 253 KB | 96 · LCP 1.68 · TBT 182 |
+
+INP at 4x CPU (gate): map tap 64 · family 24 · search keys 48 · decade 32 · tree 72 · species keys 80 ms.
+Every page is lighter than baseline: 336→209, 412→395, 296→253 KB.
+
 ## Gates tooling
 - `node web/scripts/serve.mjs <dir> <port>` — serves `<dir>` at `/botanica/` with gzip.
 - `CHROME_PATH=<playwright chromium> RUNS=3 node web/scripts/lighthouse.mjs <port> <out>` — median of 3.
@@ -64,10 +85,14 @@ After Phase 4 (EN at root, ES under /es/):
   (strict viewport), 44 px touch targets (touch emulation), every tour target resolves, and
   interactions: map → KPIs/families/years, family → map, Back, search → drawer → map, decade → map,
   fungi → explicit "not available", tree → department view; language: ?lang=, stored
-  choice, switch keeps filters, no bounce, es-PE browser → /es/, /es/ never redirects. Env: `LOCALES`, `ROOT_LOCALE`, `TREE=0`.
+  choice, switch keeps filters, no bounce, es-PE browser → /es/, /es/ never redirects;
+  INP with CDP 4x CPU on map tap, family tap, decade tap, search keystrokes, tree tap, species keystrokes. Env: `LOCALES`, `ROOT_LOCALE`, `TREE=0`.
 - CHROME_PATH used here: `%LOCALAPPDATA%\ms-playwright\chromium-1243\chrome-win64\chrome.exe`.
 
 ## Tried and failed
+- LCP: deferring the species index to one frame after boot, or to load + idle, or low priority alone:
+  no change (3.2 s). Low priority + after load: 1.5–3.1 s, a race with Chrome's first paint. Fixed by
+  waiting for the first LCP entry.
 - Deferring the species index fetch until `document.fonts.ready` to speed up the lede's LCP: 3.18 vs 3.19 s, no gain, reverted.
 - Douglas–Peucker on closed GeoJSON rings: zero-length baseline, every path collapsed. Seed with the farthest point.
 - Measuring 360 px overflow under Playwright mobile emulation: Chrome widens the layout viewport and hides

@@ -8,6 +8,7 @@ import { createStore, serialize, EMPTY, type State } from '../lib/store';
 import { aggregate, type Facets } from '../lib/facets';
 import { t, fmt, type Locale } from '../lib/i18n';
 import { deptName } from '../lib/depts';
+import { afterPaint } from '../lib/after-paint';
 
 interface Node { name: string; value: number; meta: { rank: string; parent?: string }; children?: Node[]; itemStyle?: { color: string } }
 type K = 'plantae' | 'fungi';
@@ -27,7 +28,7 @@ export function bootTree() {
   const trees = new Map<K, Tree>();
   const facets = new Map<K, Promise<Facets>>();
   const loadFacets = (k: K) => {
-    if (!facets.has(k)) facets.set(k, fetch(`${base}data/facets-${k}.json`).then((r) => r.json()));
+    if (!facets.has(k)) facets.set(k, fetch(`${base}data/facets-${k}.json`, { priority: 'low' }).then((r) => r.json()));
     return facets.get(k)!;
   };
   const treeData = new Map<K, Node[]>();
@@ -94,7 +95,8 @@ export function bootTree() {
     for (const e of entries) {
       if (!e.isIntersecting) continue;
       io.unobserve(e.target);
-      void mountChart((e.target as HTMLElement).closest<HTMLElement>('[data-phylo-root]')!.dataset.k as K);
+      const k = (e.target as HTMLElement).closest<HTMLElement>('[data-phylo-root]')!.dataset.k as K;
+      void afterPaint().then(() => mountChart(k));
     }
   }, { rootMargin: '200px' });
 
