@@ -38,6 +38,7 @@ Unattended run started 2026-09-24. Brief: "from static atlas to an explorable on
 | `/especies/` | 79 · LCP 3.73 · 412 KB | 83 · LCP 3.17 · 388 KB (CLS 0.205, fix in Phase 3) |
 | `/filogenia/` | 64 · LCP 4.16 · TBT 434 · 296 KB | 80 · LCP 3.06 · TBT 185 · 229 KB |
 | `/filogenia/` after tree coordination | | 89 · LCP 2.78 · TBT 344 · 251 KB (facets fetched only on first selection) |
+| `/especies/` after shared state | | 92 · LCP 3.19 · TBT 0 · CLS 0 · 394 KB |
 
 ## Gates tooling
 - `node web/scripts/serve.mjs <dir> <port>` — serves `<dir>` at `/botanica/` with gzip.
@@ -50,6 +51,7 @@ Unattended run started 2026-09-24. Brief: "from static atlas to an explorable on
 - CHROME_PATH used here: `%LOCALAPPDATA%\ms-playwright\chromium-1243\chrome-win64\chrome.exe`.
 
 ## Tried and failed
+- Deferring the species index fetch until `document.fonts.ready` to speed up the lede's LCP: 3.18 vs 3.19 s, no gain, reverted.
 - Douglas–Peucker on closed GeoJSON rings: zero-length baseline, every path collapsed. Seed with the farthest point.
 - Measuring 360 px overflow under Playwright mobile emulation: Chrome widens the layout viewport and hides
   the overflow. The gate measures overflow in a strict viewport, touch targets under emulation.

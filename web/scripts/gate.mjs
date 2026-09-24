@@ -63,6 +63,7 @@ for (const locale of LOCALES) {
       }
       ok(`tour targets checked (${TOURS[p.id][locale].filter((s) => s.target).length})`);
       if (p.id === 'explore') await exploreChecks(page, url);
+      if (p.id === 'species') await speciesChecks(page, url);
       // The tree joins the shared state in Phase 2; until then TREE=0 skips it.
       if (p.id === 'tree' && process.env.TREE !== '0') await treeChecks(page, url);
       errors.length ? errors.forEach((e) => fail(`${url}: ${e}`)) : ok('no console errors');
@@ -152,6 +153,16 @@ async function exploreChecks(page, url) {
   (await page.$('#lifeforms .na')) && (await page.$('#status .na'))
     ? ok('fungi shows explicit not-available states')
     : fail(`${url}: fungi views not marked unavailable`);
+}
+
+async function speciesChecks(page, url) {
+  await page.waitForSelector('#sp-list [data-i]');
+  await page.fill('#sp-q', 'Cinchona');
+  await page.waitForFunction(() => document.querySelectorAll('#sp-list [data-i]').length < 50);
+  await page.click('#sp-list [data-i]');
+  await page.waitForFunction(() => location.search.includes('sp='));
+  const href = await page.getAttribute('#sp-detail a.btn', 'href');
+  href && href.includes('sp=Cinchona') ? ok('species pick -> URL and "show on map" link') : fail(`${url}: show-on-map link wrong: ${href}`);
 }
 
 async function treeChecks(page, url) {
