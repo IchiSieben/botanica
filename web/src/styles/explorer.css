@@ -79,6 +79,8 @@
   .ex-years { grid-area: years; }
 }
 .is-loading .ex-grid { cursor: progress; }
+/* A shared link before its data lands: the build's national numbers are not its answer. */
+.is-stale #kpis, .is-stale .ex-grid { opacity: 0.45; cursor: progress; }
 
 /* ---- map ---- */
 .map-wrap { position: relative; margin: 8px auto 0; max-width: 420px; }

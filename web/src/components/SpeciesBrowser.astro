@@ -39,7 +39,7 @@ const { locale } = Astro.props;
 
 <script>
   import { createStore, serialize, EMPTY } from '../lib/store';
-  import { t, fmt, type Locale } from '../lib/i18n';
+  import { t, fmt, localePath, type Locale } from '../lib/i18n';
   import { deptName } from '../lib/depts';
   import { afterPaint } from '../lib/after-paint';
 
@@ -91,8 +91,10 @@ const { locale } = Astro.props;
       return out;
     }
 
+    let listFor: number[] | null = null;
     function renderList() {
       if (!idx) return;
+      listFor = shown;
       const sel = store.get().sp;
       $list.innerHTML = shown.slice(0, CAP).map((i) => {
         const r = idx!.rows[i];
@@ -122,8 +124,8 @@ const { locale } = Astro.props;
       ].join('');
       const max = r[4][0]?.[1] ?? 1;
       const s = store.get();
-      const mapHref = `../${serialize({ ...EMPTY, k: s.k, sp: r[0] })}`;
-      const famHref = fam ? `../${serialize({ ...EMPTY, k: s.k, fam })}` : '';
+      const mapHref = `${localePath(locale)}${serialize({ ...EMPTY, k: s.k, sp: r[0] })}`;
+      const famHref = fam ? `${localePath(locale)}${serialize({ ...EMPTY, k: s.k, fam })}` : '';
       $detail.innerHTML = `
         <p class="label">${esc(ord ?? '—')} › ${esc(fam ?? '—')}</p>
         <h2 class="sci">${esc(r[0])}</h2>
@@ -163,7 +165,10 @@ const { locale } = Astro.props;
         loadedK = s.k;
         shown = match($q.value.trim());
       }
-      renderList();
+      // Picking a row only flips aria-pressed: re-rendering the list would drop keyboard focus.
+      if (listFor !== shown) renderList();
+      else $list.querySelectorAll<HTMLButtonElement>('button[data-i]').forEach((b) =>
+        b.setAttribute('aria-pressed', String(idx!.rows[Number(b.dataset.i)][0] === s.sp)));
       renderDetail(s.sp);
     }
 

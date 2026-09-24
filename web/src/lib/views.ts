@@ -112,7 +112,8 @@ const TM_W = 100, TM_H = 62.5; // 16:10
 
 export function families(c: Ctx): string {
   const n = fmt(c.locale);
-  const rows = [...c.agg.byFamily].filter(([, v]) => v > 0).sort((a, b) => b[1] - a[1]);
+  // i < 0: species with no family in the checklist (26 fungi); not a filterable tile.
+  const rows = [...c.agg.byFamily].filter(([i, v]) => i >= 0 && v > 0).sort((a, b) => b[1] - a[1]);
   if (!rows.length) return `<p class="na">${t(c.locale, 'search.none')}</p>`;
   const total = rows.reduce((s, [, v]) => s + v, 0);
   const tiles: Tile[] = rows.slice(0, TOP_FAMILIES).map(([i, v]) => {

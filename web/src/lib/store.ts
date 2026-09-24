@@ -97,10 +97,12 @@ export function createStore() {
 
   function set(patch: Partial<State>, { push = true } = {}) {
     const prev = state;
-    const next = { ...state, ...patch };
-    // Switching kingdom clears everything that names a taxon: an order of
-    // plants means nothing in the fungi view.
-    if (patch.k && patch.k !== prev.k) Object.assign(next, { ord: null, fam: null, lf: null, st: null, sp: null, y0: null, y1: null });
+    // Switching kingdom clears everything that names a taxon (an order of plants
+    // means nothing in the fungi view), then the patch applies: a search hit in the
+    // other kingdom sets k and sp in one call and must keep sp.
+    const reset = patch.k && patch.k !== prev.k
+      ? { ord: null, fam: null, lf: null, st: null, sp: null, y0: null, y1: null } : {};
+    const next = { ...state, ...reset, ...patch };
     const url = `${location.pathname}${serialize(next)}${location.hash}`;
     if (url === `${location.pathname}${location.search}${location.hash}`) return;
     state = next;

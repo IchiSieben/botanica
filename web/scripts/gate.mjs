@@ -140,6 +140,19 @@ async function exploreChecks(page, url) {
   await page.waitForSelector('#drawer', { state: 'hidden' });
   ok('Escape closed the drawer');
 
+  // A hit in the other kingdom switches kingdom AND opens that species.
+  await page.click('#q');
+  await page.fill('#q', 'abortiporus bien');
+  await page.waitForSelector('#q-list [role=option]');
+  await page.keyboard.press('Enter');
+  await page.waitForSelector('#drawer:not([hidden])');
+  const cross = await page.evaluate(() => location.search);
+  /k=fungi/.test(cross) && /sp=Abortiporus/.test(cross) ? ok('cross-kingdom search keeps the species') : fail(`${url}: cross-kingdom search lost the species (${cross})`);
+  await page.keyboard.press('Escape');
+  await page.goBack();
+  await page.goBack();
+  await page.waitForFunction(() => !location.search.includes('k=fungi'));
+
   // 5. Years brush -> map.
   const map3 = await page.$$eval('#map path', (ps) => ps.map((p) => p.getAttribute('class')).join());
   await page.click('#years [data-decade="2000"]');

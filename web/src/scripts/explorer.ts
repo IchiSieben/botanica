@@ -9,7 +9,7 @@
  * Nothing runs per frame: the only timer is the year "play", one step every
  * 700 ms.
  */
-import { createStore, isFiltered, type State, type Status } from '../lib/store';
+import { createStore, isFiltered, serialize, type State, type Status } from '../lib/store';
 import { aggregate, compare, type Facets } from '../lib/facets';
 import * as V from '../lib/views';
 import { t, fmt, type Locale } from '../lib/i18n';
@@ -80,6 +80,8 @@ export function boot() {
   const cfg = JSON.parse($('#ex-config').textContent!) as Config;
   const n = fmt(locale);
   const store = createStore();
+  // The build painted unfiltered Plantae; a shared link's numbers are stale until the data lands.
+  if (location.search && serialize(store.get()) !== '') root.classList.add('is-stale');
 
   // ---- data ----------------------------------------------------------------
   const facetReq = new Map<K, Promise<Facets>>();
@@ -142,6 +144,7 @@ export function boot() {
     // A newer state arrived meanwhile: that render wins.
     if (store.get() !== s) return;
     paint(s);
+    root.classList.remove('is-stale');
   }
 
   function paint(s: State) {
@@ -226,13 +229,13 @@ export function boot() {
     const rec = cfg.records[s.k];
     if (s.dep.length === 1) {
       const d = s.dep[0];
-      const top = [...agg.byFamily].sort((a, b) => b[1] - a[1]).slice(0, 5);
+      const top = [...agg.byFamily].filter(([i]) => i >= 0).sort((a, b) => b[1] - a[1]).slice(0, 5);
       const opts = f.depts.filter((x) => x !== d)
         .map((x) => `<option value="${V.esc(x)}">${V.esc(deptName(x))}</option>`).join('');
       morph(el.depDetail, `
         <div class="dep-head"><h3>${V.esc(deptName(d))}</h3>
           <button type="button" class="btn" data-clear="dep">${t(locale, 'dep.clear')}</button></div>
-        <p class="dep-nums"><b>${n(agg.total)}</b> ${t(locale, 'dep.species')} · <b>${n(rec[d] ?? 0)}</b> ${t(locale, 'dep.records')}</p>
+        <p class="dep-nums"><b>${n(agg.total)}</b> ${t(locale, 'dep.species')}${metricLocked(s) ? '' : ` · <b>${n(rec[d] ?? 0)}</b> ${t(locale, 'dep.records')}`}</p>
         ${top.length ? `<p class="label">${t(locale, 'dep.topFamilies')}</p><ol class="toplist">${top.map(([i, v]) =>
           `<li><button type="button" class="linkish" data-fam="${V.esc(f.families[i] ?? '')}">${V.esc(f.families[i] ?? '—')}</button> <span class="mono">${n(v)}</span></li>`).join('')}</ol>` : ''}
         <label class="cmp-pick"><span class="label">${t(locale, 'dep.compare')}</span>
@@ -339,6 +342,7 @@ export function boot() {
     if (d.lf) return toggle('lf', d.lf);
     if (d.st) return toggle('st', d.st as Status);
     if (d.band) {
+      if (!facets[store.get().k]) return;
       band = band === Number(d.band) ? null : Number(d.band);
       return paint(store.get());
     }
@@ -399,7 +403,7 @@ export function boot() {
     const v = lastPaint?.values[d];
     const rec = cfg.records[s.k][d] ?? 0;
     el.readout.textContent = lastPaint
-      ? `${deptName(d)} · ${n(v ?? 0)} ${t(locale, `map.m.${s.m === 'species' || metricLocked(s) ? 'species' : s.m}`)} · ${n(rec)} ${t(locale, 'dep.records')}`
+      ? `${deptName(d)} · ${n(v ?? 0)} ${t(locale, `map.m.${s.m === 'species' || metricLocked(s) ? 'species' : s.m}`)}${metricLocked(s) ? '' : ` · ${n(rec)} ${t(locale, 'dep.records')}`}`
       : deptName(d);
   };
   el.map.addEventListener('pointerover', (e) => readout((e.target as Element).closest('[data-dep]')));
@@ -457,12 +461,16 @@ export function boot() {
     el.play.textContent = `▶ ${t(locale, 'year.play')}`;
     press(el.play, false);
   }
+  // Any change the timer did not make (kingdom, clear all, Back) stops the animation.
+  let playing = false;
+  store.subscribe(() => { if (!playing && playTimer !== undefined) stopPlay(); });
+  const playSet = (patch: Partial<State>, push = false) => { playing = true; store.set(patch, { push }); playing = false; };
   el.play.addEventListener('click', () => {
     if (playTimer !== undefined) return stopPlay();
     press(el.play, true);
     el.play.textContent = `■ ${t(locale, 'year.stop')}`;
     let y1 = V.DECADE_RANGE.first + 9;
-    store.set({ y0: null, y1 });
+    playSet({ y0: null, y1 }, true);
     const step = () => {
       y1 += 10;
       if (y1 > V.DECADE_RANGE.last + 9) {
@@ -470,7 +478,7 @@ export function boot() {
         store.set({ y0: null, y1: null }, { push: false });
         return;
       }
-      store.set({ y1 }, { push: false });
+      playSet({ y1 });
       playTimer = window.setTimeout(step, 700);
     };
     playTimer = window.setTimeout(step, 700);

@@ -6,13 +6,13 @@
 import type { ECharts } from 'echarts/core';
 import { createStore, serialize, EMPTY, type State } from '../lib/store';
 import { aggregate, type Facets } from '../lib/facets';
-import { t, fmt, type Locale } from '../lib/i18n';
+import { t, fmt, localePath, type Locale } from '../lib/i18n';
 import { deptName } from '../lib/depts';
 import { afterPaint } from '../lib/after-paint';
 
 interface Node { name: string; value: number; meta: { rank: string; parent?: string }; children?: Node[]; itemStyle?: { color: string } }
 type K = 'plantae' | 'fungi';
-interface Tree { chart: ECharts | null; layout: 'radial' | 'orthogonal' }
+interface Tree { chart: ECharts | null; layout: 'radial' | 'orthogonal'; ro?: ResizeObserver }
 
 const esc = (s: string) =>
   s.replace(/[<>&"]/g, (c) => ({ '<': '&lt;', '>': '&gt;', '&': '&amp;', '"': '&quot;' })[c] as string);
@@ -28,7 +28,10 @@ export function bootTree() {
   const trees = new Map<K, Tree>();
   const facets = new Map<K, Promise<Facets>>();
   const loadFacets = (k: K) => {
-    if (!facets.has(k)) facets.set(k, fetch(`${base}data/facets-${k}.json`, { priority: 'low' }).then((r) => r.json()));
+    if (!facets.has(k)) facets.set(k, fetch(`${base}data/facets-${k}.json`, { priority: 'low' }).then((r) => {
+      if (!r.ok) { facets.delete(k); throw new Error(`facets-${k}: ${r.status}`); }
+      return r.json();
+    }));
     return facets.get(k)!;
   };
   const treeData = new Map<K, Node[]>();
@@ -49,6 +52,7 @@ export function bootTree() {
     const maxV = Math.max(...(data[0].children ?? []).map((c) => c.value));
     const radius = (v: number) => 3 + Math.sqrt(v / maxV) * 9;
     const radial = tr.layout === 'radial';
+    tr.ro?.disconnect();
     tr.chart?.dispose();
     const chart = echarts.init(el, null, { renderer: 'canvas' });
     chart.setOption({
@@ -85,7 +89,8 @@ export function bootTree() {
       else if (d.meta.rank === 'family') store.set({ fam: s.fam === d.name ? null : d.name, ord: d.meta.parent ?? null });
       else store.set({ ord: null, fam: null });
     });
-    new ResizeObserver(() => chart.resize()).observe(el);
+    tr.ro = new ResizeObserver(() => chart.resize());
+    tr.ro.observe(el);
     tr.chart = chart;
     el.dataset.ready = '1';
   }
@@ -107,7 +112,9 @@ export function bootTree() {
           x.classList.toggle('on', x === b);
           x.setAttribute('aria-pressed', String(x === b));
         });
-        trees.set(k, { chart: trees.get(k)?.chart ?? null, layout: b.dataset.layout as Tree['layout'] });
+        const tr = trees.get(k);
+        if (tr) tr.layout = b.dataset.layout as Tree['layout'];
+        else trees.set(k, { chart: null, layout: b.dataset.layout as Tree['layout'] });
         void mountChart(k);
       }),
     );
@@ -154,7 +161,7 @@ export function bootTree() {
     const group = s.fam ?? s.ord;
     root.querySelector('[data-side-title]')!.textContent = `${t(locale, 'tree.depts')} · ${group ?? t(locale, 'tree.all')}`;
     const q: State = { ...EMPTY, k: s.k, ord: s.ord, fam: s.fam };
-    root.querySelector<HTMLAnchorElement>('[data-open]')!.href = `../${serialize(q)}`;
+    root.querySelector<HTMLAnchorElement>('[data-open]')!.href = `${localePath(locale)}${serialize(q)}`;
 
     // Nothing selected: the build already rendered the whole-kingdom bars.
     if (!s.ord && !s.fam && !facets.has(s.k)) return;

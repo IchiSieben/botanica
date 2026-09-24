@@ -137,17 +137,25 @@ def build_facets(con: duckdb.DuckDBPyConnection, kingdom: str, index: dict) -> d
         if dep in bit:  # 'unassigned' no es un poligono
             masks[sp] = masks.get(sp, 0) | bit[dep]
 
-    # Año de descripcion: WCVP `first_published` ("(1753)") del nombre aceptado.
+    # Año de descripcion: WCVP `first_published` ("(1753)") del basionimo cuando
+    # existe (la descripcion original), si no del nombre aceptado. Sin el basionimo,
+    # un tercio de las especies transferidas de genero caia en el año del nombre nuevo.
     # Solo plantas; hongos no tienen una fuente equivalente en el atlas.
     years: dict[str, int] = {}
     if kingdom == "Plantae":
         for name, y in con.execute(
             r"""
-            SELECT a.taxon_name,
-                   min(try_cast(regexp_extract(w.first_published, '\((\d{4})\)', 1) AS INTEGER))
-            FROM wcvp_accepted a
-            JOIN raw_wcvp_names w ON w.plant_name_id = a.plant_name_id
-            WHERE a.taxon_rank = 'Species'
+            WITH y AS (
+                SELECT a.taxon_name,
+                       try_cast(regexp_extract(w.first_published, '\((\d{4})\)', 1) AS INTEGER) AS cur,
+                       try_cast(regexp_extract(b.first_published, '\((\d{4})\)', 1) AS INTEGER) AS bas
+                FROM wcvp_accepted a
+                JOIN raw_wcvp_names w ON w.plant_name_id = a.plant_name_id
+                LEFT JOIN raw_wcvp_names b ON b.plant_name_id = w.basionym_plant_name_id
+                WHERE a.taxon_rank = 'Species'
+            )
+            SELECT taxon_name, min(coalesce(least(cur, bas), cur, bas))
+            FROM y
             GROUP BY 1
             """
         ).fetchall():
@@ -160,7 +168,7 @@ def build_facets(con: duckdb.DuckDBPyConnection, kingdom: str, index: dict) -> d
             "kingdom": kingdom,
             "species": len(rows),
             "flags": index["meta"]["flags"],
-            "yearSource": "WCVP first_published" if years else None,
+            "yearSource": "WCVP first_published (basionym if any)" if years else None,
         },
         "depts": depts,
         "families": index["families"],

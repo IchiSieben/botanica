@@ -188,6 +188,6 @@ export function compare(f: Facets, s: State, a: string, b: string) {
     else if (inB) { onlyB++; famB.set(f.fam[i], (famB.get(f.fam[i]) ?? 0) + 1); }
   }
   const top = (m: Map<number, number>) =>
-    [...m].sort((x, y) => y[1] - x[1]).slice(0, 3).map(([k, v]) => ({ family: f.families[k] ?? '—', species: v }));
+    [...m].filter(([k]) => k >= 0).sort((x, y) => y[1] - x[1]).slice(0, 3).map(([k, v]) => ({ family: f.families[k] ?? '—', species: v }));
   return { onlyA, both, onlyB, topA: top(famA), topB: top(famB) };
 }

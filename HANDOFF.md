@@ -9,7 +9,7 @@ Unattended run started 2026-09-24. Brief: "from static atlas to an explorable on
 - [x] Phase 2 · interactions (map/legend/compare, search→drawer→map, tree→filter, years brush+play, Plantae↔Fungi, tours)
 - [x] Phase 3 · identity + mobile (landing tokens/fonts/theme, 360 px, 44 px targets, LCP < 2.0 s, INP < 200 ms)
 - [x] Phase 4 · i18n EN/ES (EN at root, ES under /es/, same slugs)
-- [ ] Close · MIRROR-READY, reviewer
+- [x] Close · MIRROR-READY, reviewer (Opus, read-only; findings below)
 
 ## Decisions (one line each)
 - Spanish numbers group with a narrow no-break space (21 585), matching the repo's Spanish text,
@@ -19,7 +19,9 @@ Unattended run started 2026-09-24. Brief: "from static atlas to an explorable on
 - Crossfilter convention: each view counts species passing every filter except its own.
 - Species counts come from the WCVP checklist (facets), not from all GBIF names, so map = KPIs.
   LORETO drops 7 905 → 5 821 on the map. Records (effort) are unchanged. See AUDIT §2.
-- Year axis = **year described** (WCVP `first_published`), not collection year. Plantae only.
+- Year axis = **year described**: WCVP `first_published` of the basionym when there is one (original
+  description), else of the accepted name. Plantae only. Median moves ~1948 → ~1922 across WCVP; before
+  this, 31 % of Peru's plant species were dated by a later transfer to another genus (reviewer finding).
 - Facet export aligned row by row with `species-*.json`, no names (98 KB gz); names are lazy-loaded
   on first search focus.
 - Species index export made deterministic (tie-break by department name).
@@ -99,5 +101,53 @@ Every page is lighter than baseline: 336→209, 412→395, 296→253 KB.
   the overflow. The gate measures overflow in a strict viewport, touch targets under emulation.
 - The "other families" tail as a treemap tile took a third of the area; it is now a caption.
 
+## Reviewer findings (Opus, read-only, over 1b97936..HEAD)
+Applied:
+1. Cross-kingdom search lost the species (store reset applied after the patch) → reset first, gate covers it.
+2. Year described used the accepted name, not the basionym → ETL fixed, note in EN/ES updated.
+3. Play timer kept writing after kingdom/clear/Back → any change the timer did not make stops it.
+4. Legend click before data threw → guarded.
+5. Shared links showed national numbers until data landed → `.is-stale` dims KPIs and grid until the first paint.
+6. Fungi with no family produced a "—" tile filtering to zero → excluded from family rankings.
+7. Species page lost keyboard focus on pick → only aria-pressed flips.
+8. With storage blocked, the switch could bounce back to ES → switch also carries `?lang=`.
+9. Tree leaked a ResizeObserver per re-mount → disconnected with the chart; failed facet fetch no longer cached.
+10. Records shown next to filtered species counts → hidden while a taxon/year filter is on.
+11. `../` links broke without trailing slash → built from BASE_URL + locale.
+Not applied: `esc` and the species-detail HTML are duplicated across explorer / species page (refactor
+not asked for; small, noted here).
+
+## MIRROR-READY
+
+Build: `cd web && npm run build` → mirror **`Botanica/web/dist/`** into `Landing/public/botanica/`
+(replace the folder's contents; old `_astro/*` hashes are no longer referenced).
+
+```
+index.html                     EN explorer
+es/index.html                  ES explorer
+especies/index.html            EN species finder
+es/especies/index.html         ES species finder
+filogenia/index.html           EN tree
+es/filogenia/index.html        ES tree
+fungi/index.html               redirect stub → ?k=fungi (keeps old links alive)
+favicon.svg
+_astro/*                       17 hashed JS/CSS/font files (self-hosted fonts, no Google Fonts)
+data/facets-plantae.json       fetched by the explorer (98 KB gz)
+data/facets-fungi.json
+data/species-plantae.json      fetched on search / species page
+data/species-fungi.json
+data/peru_departamentos.geojson  build-time only; not fetched, safe to omit
+tutorial/tutorial.js · tutorial.css · (library, byte-identical to radar-precios)
+```
+
+`.htaccess`: **no change needed.** The landing's CSP already allows everything used: inline scripts
+('unsafe-inline' is present), same-origin fetches (`connect-src 'self'`), self-hosted fonts. No external
+image or API. Directory URLs (`/botanica/es/`) resolve to `index.html` with Apache's defaults.
+
 ## Open questions (for the owner)
-- (none yet)
+- The landing's ES project card links `/botanica/`; the demo then picks EN or ES from the browser
+  language. To send ES readers straight to Spanish, change `demoUrl`/`localPath` in
+  `Landing/src/content/projects/es/botanica.md` to `/botanica/es/` (not done: Landing is read-only here).
+- hreflang URLs use the placeholder `site` (`atlas-botanico.example`) from astro.config; set it with the
+  real domain (brief §9.1). The landing card says `ichisieben.dev`.
+- Dark-theme contrast was not audited by Lighthouse (it runs light); tokens are the landing's.
