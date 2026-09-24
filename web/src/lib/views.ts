@@ -95,6 +95,13 @@ function lum(hex: string): number {
   return 0.2126 * r + 0.7152 * g + 0.0722 * b;
 }
 
+/** Black or white, whichever contrasts more with the fill. Pure inks: the palette's
+ *  mid blue (#4E79A7) stays under 4.5:1 with both the theme's near-black and near-white. */
+function ink(hex: string): string {
+  const l = lum(hex);
+  return 1.05 / (l + 0.05) >= (l + 0.05) / 0.05 ? '#ffffff' : '#000000';
+}
+
 const famOrderCache = new WeakMap<Facets, Map<number, number>>();
 /** family index -> order index, built once per facet file. */
 function famOrder(f: Facets): Map<number, number> {
@@ -143,7 +150,7 @@ export function families(c: Ctx): string {
       const pct = ((tile.value / total) * 100).toFixed(1);
       const style = `left:${((r.x / TM_W) * 100).toFixed(2)}%;top:${((r.y / TM_H) * 100).toFixed(2)}%;` +
         `width:${((r.w / TM_W) * 100).toFixed(2)}%;height:${((r.h / TM_H) * 100).toFixed(2)}%;` +
-        (tile.color ? `--c:${tile.color};--tc:${lum(tile.color) > 0.3 ? '#0d1117' : '#f6f8fa'};` : '') +
+        (tile.color ? `--c:${tile.color};--tc:${ink(tile.color)};` : '') +
         `--share:${(tile.value / rows[0][1]).toFixed(3)}`;
       const small = r.w * r.h < 22 ? ' sm' : '';
       if (!tile.key) {

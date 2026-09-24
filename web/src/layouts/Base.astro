@@ -37,6 +37,7 @@ const abs = (l: Locale) => new URL(localePath(l, slug), Astro.site).href;
     <meta name="color-scheme" content="dark light" />
     <link rel="icon" type="image/svg+xml" href={`${import.meta.env.BASE_URL}favicon.svg`} />
     <link rel="preload" href={sgUrl} as="font" type="font/woff2" crossorigin />
+    <link rel="canonical" href={abs(locale)} />
     <link rel="alternate" hreflang="en" href={abs('en')} />
     <link rel="alternate" hreflang="es" href={abs('es')} />
     <link rel="alternate" hreflang="x-default" href={abs('en')} />
