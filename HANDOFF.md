@@ -6,9 +6,9 @@ Unattended run started 2026-09-24. Brief: "from static atlas to an explorable on
 ## State
 - [x] Phase 0 · audit → `docs/AUDIT-v2.md`
 - [x] Phase 1 · architecture (store + URL, facets, no ECharts on `/`)
-- [ ] Phase 2 · interactions
+- [x] Phase 2 · interactions (map/legend/compare, search→drawer→map, tree→filter, years brush+play, Plantae↔Fungi, tours)
 - [ ] Phase 3 · identity + mobile
-- [ ] Phase 4 · i18n EN/ES
+- [x] Phase 4 · i18n EN/ES (EN at root, ES under /es/, same slugs)
 - [ ] Close · MIRROR-READY, reviewer
 
 ## Decisions (one line each)
@@ -31,6 +31,14 @@ Unattended run started 2026-09-24. Brief: "from static atlas to an explorable on
 - Theme: `.light` class on `<html>`, `localStorage.theme` — the same key as the landing, on the same
   origin, so the theme carries over from the landing.
 
+- i18n: EN unprefixed, ES under `/es/`, page slugs kept (`especies/`, `filogenia/`) so existing links
+  keep working. Pages are thin wrappers over `src/page-views/*`.
+- Language order: `?lang=` (remembered in `ic7.lang`) → `/es/` path → stored choice → navigator.language.
+  Only unprefixed pages auto-redirect; `/es/` never does, so there is no loop. Query and hash survive.
+- Language switch is one 44 px link naming the other language (fits the 360 px header).
+- hreflang en/es/x-default are absolute, built from `site` in astro.config (still a placeholder domain,
+  brief §9.1). No canonical until the domain is real.
+
 ## Measurements (Lighthouse mobile, median of 3)
 | Page | Baseline 1b97936 | Phase 1 |
 |---|---|---|
@@ -40,6 +48,14 @@ Unattended run started 2026-09-24. Brief: "from static atlas to an explorable on
 | `/filogenia/` after tree coordination | | 89 · LCP 2.78 · TBT 344 · 251 KB (facets fetched only on first selection) |
 | `/especies/` after shared state | | 92 · LCP 3.19 · TBT 0 · CLS 0 · 394 KB |
 
+After Phase 4 (EN at root, ES under /es/):
+
+| Page | EN | ES |
+|---|---|---|
+| explore | 97 · LCP 2.43 · TBT 0 · 208 KB | 97 · LCP 2.31 · 209 KB |
+| species | 93 · LCP 3.18 · CLS 0 · 394 KB | 93 · LCP 3.18 · 394 KB |
+| tree | 93 · LCP 2.58 · TBT 188 · 252 KB | 88 · LCP 2.64 · TBT 315 · 253 KB |
+
 ## Gates tooling
 - `node web/scripts/serve.mjs <dir> <port>` — serves `<dir>` at `/botanica/` with gzip.
 - `CHROME_PATH=<playwright chromium> RUNS=3 node web/scripts/lighthouse.mjs <port> <out>` — median of 3.
@@ -47,7 +63,8 @@ Unattended run started 2026-09-24. Brief: "from static atlas to an explorable on
 - `npm run gate` (web/, needs `npm run serve`) — console errors per page and locale, 360 px overflow
   (strict viewport), 44 px touch targets (touch emulation), every tour target resolves, and
   interactions: map → KPIs/families/years, family → map, Back, search → drawer → map, decade → map,
-  fungi → explicit "not available", tree → department view. Env: `LOCALES`, `ROOT_LOCALE`, `TREE=0`.
+  fungi → explicit "not available", tree → department view; language: ?lang=, stored
+  choice, switch keeps filters, no bounce, es-PE browser → /es/, /es/ never redirects. Env: `LOCALES`, `ROOT_LOCALE`, `TREE=0`.
 - CHROME_PATH used here: `%LOCALAPPDATA%\ms-playwright\chromium-1243\chrome-win64\chrome.exe`.
 
 ## Tried and failed

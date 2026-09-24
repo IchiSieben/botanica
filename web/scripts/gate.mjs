@@ -176,6 +176,38 @@ async function treeChecks(page, url) {
   after !== before ? ok('tree selection changed the department view') : fail(`${url}: tree selection did not change the department view`);
 }
 
+if (LOCALES.includes('en') && LOCALES.includes('es')) await langChecks();
+
+async function langChecks() {
+  console.log('\nlanguage');
+  const path = () => page.evaluate(() => location.pathname + location.search + location.hash);
+  const want = (got, exp, msg) => (got === exp ? ok(msg) : fail(`${msg}: got ${got}, expected ${exp}`));
+  // ?lang= wins, is remembered, and the query and hash survive.
+  let { page, ctx } = await open(`${BASE}especies/?k=fungi&lang=es#x`);
+  await page.waitForURL((u) => u.pathname.includes('/es/'));
+  want(await path(), '/botanica/es/especies/?k=fungi#x', '?lang=es redirects, keeps query and hash');
+  await page.goto(`${BASE}?dep=CUSCO`, { waitUntil: 'networkidle' });
+  want(await path(), '/botanica/es/?dep=CUSCO', 'stored choice sends / to /es/');
+  // The switch writes the choice and carries the filters; reloading does not bounce.
+  await page.click('#lang-switch');
+  await page.waitForURL((u) => !u.pathname.includes('/es/'));
+  want(await path(), '/botanica/?dep=CUSCO', 'switch goes to EN with the filters');
+  await page.reload({ waitUntil: 'networkidle' });
+  want(await page.evaluate(() => document.documentElement.lang), 'en', 'EN sticks after reload');
+  await ctx.close();
+  // No stored choice: the browser language decides, only on unprefixed pages.
+  const es = await browser.newContext({ locale: 'es-PE' });
+  page = await es.newPage();
+  await page.goto(`${BASE}filogenia/`, { waitUntil: 'networkidle' });
+  want(await path(), '/botanica/es/filogenia/', 'es-PE browser lands on /es/');
+  await es.close();
+  const en = await browser.newContext({ locale: 'en-US' });
+  page = await en.newPage();
+  await page.goto(`${BASE}es/filogenia/`, { waitUntil: 'networkidle' });
+  want(await path(), '/botanica/es/filogenia/', '/es/ never redirects on its own');
+  await en.close();
+}
+
 await browser.close();
 console.log(failures.length ? `\nGATE FAILED: ${failures.length}` : '\nGATE PASSED');
 process.exit(failures.length ? 1 : 0);

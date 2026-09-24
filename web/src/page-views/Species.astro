@@ -1,0 +1,31 @@
+---
+/**
+ * /especies/ — the species finder. One page + a columnar index in the browser.
+ * See SpeciesBrowser.astro.
+ */
+import Base from '../layouts/Base.astro';
+import SpeciesBrowser from '../components/SpeciesBrowser.astro';
+import Tutorial from '../components/Tutorial.astro';
+import { TOURS } from '../lib/tours';
+import { t, type Locale } from '../lib/i18n';
+
+const { locale } = Astro.props as { locale: Locale };
+---
+
+<Base title={`${t(locale, 'species.title')} — Botánica`} locale={locale} page="species">
+  <section class="wrap esp">
+    <header>
+      <h1>{t(locale, 'species.title')}</h1>
+      <p class="lede">{t(locale, 'species.lede')}</p>
+    </header>
+    <SpeciesBrowser locale={locale} />
+  </section>
+
+  <Tutorial id="botanica-especies" locale={locale} steps={TOURS.species[locale]} />
+</Base>
+
+<style>
+  .esp { display: flex; flex-direction: column; gap: 20px; padding-top: 32px; }
+  .esp h1 { font-size: clamp(2rem, 1.2rem + 3vw, 3rem); letter-spacing: -0.02em; }
+  .esp .lede { margin-top: 10px; max-width: 64ch; color: rgb(var(--muted)); }
+</style>

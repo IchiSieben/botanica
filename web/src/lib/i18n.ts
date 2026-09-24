@@ -21,6 +21,7 @@ const en = {
   'nav.home': 'iC7 portfolio',
   'nav.lang': 'Language',
   'theme.toggle': 'Switch light/dark theme',
+  'lang.switch': 'Read in English',
   'skip': 'Skip to content',
 
   'k.plantae': 'Plants',
@@ -150,6 +151,7 @@ const es: Record<Key, string> = {
   'nav.home': 'Portafolio iC7',
   'nav.lang': 'Idioma',
   'theme.toggle': 'Cambiar tema claro/oscuro',
+  'lang.switch': 'Leer en español',
   'skip': 'Ir al contenido',
 
   'k.plantae': 'Plantas',

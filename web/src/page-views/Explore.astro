@@ -1,0 +1,15 @@
+---
+/** The explorer page, shared by EN (/) and ES (/es/). */
+import Base from '../layouts/Base.astro';
+import Explorer from '../components/Explorer.astro';
+import Tutorial from '../components/Tutorial.astro';
+import { TOURS } from '../lib/tours';
+import type { Locale } from '../lib/i18n';
+
+const { locale } = Astro.props as { locale: Locale };
+---
+
+<Base locale={locale} page="explore">
+  <Explorer locale={locale} />
+  <Tutorial id="botanica-explorar" locale={locale} steps={TOURS.explore[locale]} />
+</Base>

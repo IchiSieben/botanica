@@ -1,13 +1,5 @@
 ---
-import Base from '../layouts/Base.astro';
-import Explorer from '../components/Explorer.astro';
-import Tutorial from '../components/Tutorial.astro';
-import { TOURS } from '../lib/tours';
-
-const locale = 'es';
+import Explore from '../page-views/Explore.astro';
 ---
 
-<Base locale={locale} page="explore">
-  <Explorer locale={locale} />
-  <Tutorial id="botanica-explorar" locale={locale} steps={TOURS.explore[locale]} />
-</Base>
+<Explore locale="en" />
