@@ -8,11 +8,23 @@
   0 CSP violations, 0 HTTP ≥ 400, fonts 2/2 same-origin, map click (LORETO) changes KPIs +
   families + years, search → drawer, EN↔ES switch keeps `?dep=`, 0 px overflow at 360 (strict
   viewport) on all 6 pages. Canonical/hreflang live point at ichisieben.dev/botanica/ and /es/.
-- axe dark (WCAG 2 A/AA, 1280 + 360, EN + ES): 0 violations live. `incomplete` on the explorer at
-  360 (tinted rows, checked by hand ≥ 8.6:1) and on the tree (checked by computed style, worst 5.62:1).
-  The ECharts canvas on the tree page is not checkable by axe.
-- Cache: HTML has no Cache-Control, hCDN `DYNAMIC` + ETag → the new version shows without a bust.
-  `_astro/*` max-age 7 d (hashed). `.htaccess` unchanged.
+- axe dark (WCAG 2 A/AA), live, 1280 + 360, EN + ES: 0 violations on first paint AND in the states
+  people use: tour open (explore, tree), drawer (`?sp=`), `?dep=LORETO&fam=Orchidaceae`, zero rows
+  (`?dep=TUMBES&y0=2010&y1=2019`), `?k=fungi` (+ dep), species page pick, tree with an order selected.
+  axe `incomplete` nodes were pixel-sampled (text hidden, viewport screenshot, only nodes visible by
+  hit-test): worst 4.51:1 (drawer ✕ `#dr-close`). Not checked: the ECharts canvas on the tree page.
+- Cache: HTML and `data/*.json` have no Cache-Control (hCDN `DYNAMIC` + ETag); the new version showed
+  without a bust and every unhashed file matched `dist` by sha256 after deploy. `_astro/*`, `tutorial/*`
+  and `favicon.svg` get `max-age=604800` — fine for hashed `_astro`, but a changed `tutorial/*` could
+  stay stale up to 7 days for returning visitors. If stale JSON is ever seen, the fix is a narrow
+  `<If "%{REQUEST_URI} =~ m#^/botanica/(data/|tutorial/|.*\.html$|.*/$)#">Header set Cache-Control "no-cache"</If>`
+  in the landing's `.htaccess` (not added: no evidence of staleness).
+- Live testing gotcha: after many headless runs, Hostinger's CDN answers headless Chromium's first
+  document request with a 403 challenge and reloads ~3.5 s later (curl, even with a HeadlessChrome UA,
+  gets 200; real users are not affected). A test that clicks right after `networkidle` can land on the
+  reloaded, not-yet-booted page — wait until `performance.now() > 2500` before interacting.
+- Privacy sweep of the mirror (`sis|ogti|gob.pe|ghp_|github_pat_|AKIA|yoichi@`): only botanical
+  names (Sisymbrium, Sistotremataceae).
 - Redeploy: `cd web && npm run build`, replace `Landing/public/botanica/` with `web/dist/`
   (git rm + copy, check tracked = on disk), push the Landing.
 
