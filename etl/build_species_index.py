@@ -74,7 +74,9 @@ def build(con: duckdb.DuckDBPyConnection, kingdom: str) -> dict:
 
     rows = []
     for name, fam, order, genus, lifeform, climate, nat, intro, endem in taxa:
-        deps = sorted(by_species.get(name, []), key=lambda x: -x[1])
+        # Desempate por nombre: GROUP BY no garantiza orden y, sin esto, los empates
+        # cambian de lugar (y de top-6) en cada corrida.
+        deps = sorted(by_species.get(name, []), key=lambda x: (-x[1], x[0]))
         total = sum(n for _, n in deps)
         flags = (NATIVE if nat else 0) | (INTRODUCED if intro else 0) | (ENDEMIC if endem else 0)
         rows.append([
@@ -104,6 +106,82 @@ def build(con: duckdb.DuckDBPyConnection, kingdom: str) -> dict:
     }
 
 
+def departments(con: duckdb.DuckDBPyConnection) -> list[str]:
+    """Los 25 departamentos en orden alfabetico: el bit i de `mask` es depts[i].
+    Sale de dim_geo (los mismos nombres que NOMBDEP del GeoJSON)."""
+    return [r[0] for r in con.execute("SELECT department FROM dim_geo ORDER BY department").fetchall()]
+
+
+def build_facets(con: duckdb.DuckDBPyConnection, kingdom: str, index: dict) -> dict:
+    """Facetas por especie para el explorador: una columna por atributo, alineada
+    fila a fila con `index["rows"]` (mismo ORDER BY taxon_name).
+
+    Sin nombres a proposito: el explorador cruza filtros sobre enteros y solo baja
+    los nombres (species-*.json) cuando alguien abre el buscador.
+
+    Los conteos de especies salen del checklist (dim_taxon), no de todos los
+    nombres de GBIF: asi el mapa filtrado y el KPI "especies" cuentan el mismo
+    universo. Ver docs/AUDIT-v2.md, "Reconciliacion".
+    """
+    depts = departments(con)
+    bit = {d: 1 << i for i, d in enumerate(depts)}
+
+    masks: dict[str, int] = {}
+    for sp, dep in con.execute(
+        """
+        SELECT DISTINCT species, department FROM fact_occurrence
+        WHERE kingdom = ? AND species IS NOT NULL AND department IS NOT NULL
+        """,
+        [kingdom],
+    ).fetchall():
+        if dep in bit:  # 'unassigned' no es un poligono
+            masks[sp] = masks.get(sp, 0) | bit[dep]
+
+    # Año de descripcion: WCVP `first_published` ("(1753)") del nombre aceptado.
+    # Solo plantas; hongos no tienen una fuente equivalente en el atlas.
+    years: dict[str, int] = {}
+    if kingdom == "Plantae":
+        for name, y in con.execute(
+            r"""
+            SELECT a.taxon_name,
+                   min(try_cast(regexp_extract(w.first_published, '\((\d{4})\)', 1) AS INTEGER))
+            FROM wcvp_accepted a
+            JOIN raw_wcvp_names w ON w.plant_name_id = a.plant_name_id
+            WHERE a.taxon_rank = 'Species'
+            GROUP BY 1
+            """
+        ).fetchall():
+            if y:
+                years[name] = y
+
+    rows = index["rows"]
+    return {
+        "meta": {
+            "kingdom": kingdom,
+            "species": len(rows),
+            "flags": index["meta"]["flags"],
+            "yearSource": "WCVP first_published" if years else None,
+        },
+        "depts": depts,
+        "families": index["families"],
+        "orders": index["orders"],
+        "lifeforms": index["lifeforms"],
+        # Columnas. -1 = sin dato; year 0 = sin dato; mask 0 = sin ocurrencias.
+        "fam": [r[1] for r in rows],
+        "ord": [r[2] for r in rows],
+        "life": [r[6] for r in rows],
+        "flags": [r[5] for r in rows],
+        "mask": [masks.get(r[0], 0) for r in rows],
+        "year": [years.get(r[0], 0) for r in rows] if years else None,
+    }
+
+
+def _write(path: Path, data: dict) -> float:
+    # separators sin espacios: ~15% menos peso, y nadie lee esto a mano.
+    path.write_text(json.dumps(data, ensure_ascii=False, separators=(",", ":")), encoding="utf-8")
+    return path.stat().st_size / 1048576
+
+
 def run() -> None:
     OUT.mkdir(parents=True, exist_ok=True)
     con = duckdb.connect(str(C.DUCKDB_PATH), read_only=True)
@@ -111,14 +189,10 @@ def run() -> None:
         written = []
         for kingdom in ("Plantae", "Fungi"):
             data = build(con, kingdom)
-            path = OUT / f"species-{kingdom.lower()}.json"
-            # separators sin espacios: ~15% menos peso, y nadie lee esto a mano.
-            path.write_text(
-                json.dumps(data, ensure_ascii=False, separators=(",", ":")),
-                encoding="utf-8",
-            )
-            mb = path.stat().st_size / 1048576
-            written.append(f"{path.name} ({data['meta']['species']:,} especies, {mb:.2f} MB)")
+            mb = _write(OUT / f"species-{kingdom.lower()}.json", data)
+            written.append(f"species-{kingdom.lower()}.json ({data['meta']['species']:,} especies, {mb:.2f} MB)")
+            mb = _write(OUT / f"facets-{kingdom.lower()}.json", build_facets(con, kingdom, data))
+            written.append(f"facets-{kingdom.lower()}.json ({mb:.2f} MB)")
         print("[species-index] ->", " · ".join(written))
     finally:
         con.close()

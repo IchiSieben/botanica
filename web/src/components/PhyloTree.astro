@@ -247,12 +247,12 @@ const uid = `phylo-${kingdom.toLowerCase()}`;
     }
 
     let chart = makeChart(`${uid}-chart`, optionFor('radial'));
-    chart?.on('mouseover', (p: { data: Node }) => detail(p.data));
+    chart?.on('mouseover', (p) => detail(p.data as unknown as Node));
 
     const remount = (layout: 'radial' | 'orthogonal') => {
       chart?.dispose();
       chart = makeChart(`${uid}-chart`, optionFor(layout));
-      chart?.on('mouseover', (p: { data: Node }) => detail(p.data));
+      chart?.on('mouseover', (p) => detail(p.data as unknown as Node));
     };
 
     // Los controles se buscan DENTRO de la instancia: con dos arboles en la

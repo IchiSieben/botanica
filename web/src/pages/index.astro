@@ -1,43 +1,13 @@
 ---
 import Base from '../layouts/Base.astro';
-import Overview from '../components/Overview.astro';
+import Explorer from '../components/Explorer.astro';
 import Tutorial from '../components/Tutorial.astro';
+import { TOURS } from '../lib/tours';
+
+const locale = 'es';
 ---
 
-<Base title="Atlas Botánico del Perú" kingdomCode="Plantae">
-  <Overview kingdom="Plantae" />
-
-  <Tutorial
-    id="botanica-inicio"
-    steps={[
-      {
-        title: 'Atlas Botánico del Perú',
-        body: 'Un recorrido por la <b>flora y la micobiota</b> peruanas, armado sobre datos abiertos: WCVP de Kew, ocurrencias de GBIF y la clasificación APG IV.',
-      },
-      {
-        target: '.kpis',
-        title: 'Los números base',
-        body: 'Especies aceptadas, endemismo, familias y géneros. Todo cuenta <b>nombres aceptados</b>, no sinónimos: por eso las cifras son más bajas que en otras fuentes.',
-        placement: 'bottom',
-      },
-      {
-        target: '#chart-map',
-        title: 'Dónde está cada cosa',
-        body: 'Riqueza por departamento. Ojo: mide <b>esfuerzo de registro</b> tanto como biodiversidad real — donde más se colectó, más aparece.',
-        placement: 'right',
-      },
-      {
-        target: '#chart-family',
-        title: 'Composición',
-        body: 'Qué familias concentran más especies. Pasá el cursor por cualquier gráfico para ver los valores exactos.',
-        placement: 'top',
-      },
-      {
-        target: '[data-role="kingdom"]',
-        title: 'Plantas y hongos',
-        body: 'Con este selector cambiás de reino. La micobiota está <b>mucho menos inventariada</b>: 1 802 especies frente a 21 585.',
-        placement: 'bottom',
-      },
-    ]}
-  />
+<Base locale={locale} page="explore">
+  <Explorer locale={locale} />
+  <Tutorial id="botanica-explorar" locale={locale} steps={TOURS.explore[locale]} />
 </Base>

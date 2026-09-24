@@ -1,0 +1,24 @@
+---
+/**
+ * /fungi/ used to be its own page. Fungi are now a toggle over the same views
+ * (`?k=fungi`); this stub keeps old links alive and forwards any query string.
+ */
+const target = `${import.meta.env.BASE_URL}?k=fungi`;
+---
+
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="utf-8" />
+    <meta name="robots" content="noindex" />
+    <link rel="canonical" href={target} />
+    <meta http-equiv="refresh" content={`0; url=${target}`} />
+    <script is:inline define:vars={{ base: import.meta.env.BASE_URL }}>
+      const p = new URLSearchParams(location.search);
+      p.set('k', 'fungi');
+      location.replace(`${base}?${p}${location.hash}`);
+    </script>
+    <title>Botánica · Fungi</title>
+  </head>
+  <body><a href={target}>Botánica · Fungi</a></body>
+</html>

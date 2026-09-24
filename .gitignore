@@ -28,3 +28,6 @@ web/.astro/
 Thumbs.db
 .DS_Store
 .env.example
+
+# Gate artefacts
+web/lh-report/

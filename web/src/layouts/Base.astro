@@ -1,119 +1,149 @@
 ---
+/**
+ * Shell shared by every page: the landing's identity (tokens, type, focus,
+ * light/dark), a three-link nav, and the data attribution the licences require.
+ */
 import '../styles/global.css';
-import { COUNTRIES, getCountry, DEFAULT_COUNTRY } from '../lib/countries';
-import { KINGDOMS, getKingdom, DEFAULT_KINGDOM } from '../lib/kingdoms';
+import sgUrl from '@fontsource-variable/space-grotesk/files/space-grotesk-latin-wght-normal.woff2?url';
+import { t, localePath, BCP47, type Locale } from '../lib/i18n';
+import { KINGDOMS } from '../lib/kingdoms';
 
 interface Props {
+  locale: Locale;
+  page: 'explore' | 'species' | 'tree';
   title?: string;
-  countryCode?: string;
-  kingdomCode?: string;
+  description?: string;
 }
-const { title, countryCode = DEFAULT_COUNTRY, kingdomCode = DEFAULT_KINGDOM } = Astro.props;
-const country = getCountry(countryCode);
-const kingdom = getKingdom(kingdomCode);
-// El selector de reino existe en el shell pero se oculta hasta tener >1 reino.
-const showKingdomSelector = KINGDOMS.filter((k) => k.available).length > 1;
-const pageTitle = title ?? `Atlas Botánico del ${country.name}`;
+const { locale, page, title, description } = Astro.props;
+const pageTitle = title ?? t(locale, 'site.title');
+const desc = description ?? t(locale, 'site.description');
+const nav = [
+  { id: 'explore', href: localePath(locale), label: t(locale, 'nav.explore') },
+  { id: 'species', href: localePath(locale, 'especies/'), label: t(locale, 'nav.species') },
+  { id: 'tree', href: localePath(locale, 'filogenia/'), label: t(locale, 'nav.tree') },
+];
 ---
 
 <!doctype html>
-<html lang="es">
+<html lang={locale} data-locale={locale}>
   <head>
     <meta charset="utf-8" />
-    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-    <meta name="description" content={`Biodiversidad vegetal del ${country.name}: dashboards sobre WCVP (Kew) y ocurrencias GBIF. Datos abiertos CC BY.`} />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
     <title>{pageTitle}</title>
-    <!-- Sin esto el navegador pide /favicon.ico y deja un 404 en consola.
-         BASE_URL para que resuelva dentro de la subcarpeta del hub. -->
+    <meta name="description" content={desc} />
+    <meta name="color-scheme" content="dark light" />
     <link rel="icon" type="image/svg+xml" href={`${import.meta.env.BASE_URL}favicon.svg`} />
-    <link rel="preconnect" href="https://fonts.googleapis.com" />
-    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
-    <link
-      href="https://fonts.googleapis.com/css2?family=Fraunces:opsz,wght@9..144,500;9..144,600&family=IBM+Plex+Mono:wght@400;500;600&display=swap"
-      rel="stylesheet"
-    />
+    <link rel="preload" href={sgUrl} as="font" type="font/woff2" crossorigin />
+    <slot name="head" />
+    <!-- Before first paint: the landing's theme key, so the choice carries over
+         between the hub and this demo (same origin). -->
+    <script is:inline>
+      (() => {
+        let stored = null;
+        try { stored = localStorage.getItem('theme'); } catch {}
+        if (stored === 'light' || (!stored && matchMedia('(prefers-color-scheme: light)').matches)) {
+          document.documentElement.classList.add('light');
+        }
+      })();
+    </script>
   </head>
   <body>
+    <a class="skip" href="#main">{t(locale, 'skip')}</a>
     <header class="site">
-      <div class="wrap masthead">
-        <div class="brand">
-          <h1>Atlas Botánico del <span class="x">{country.name}</span></h1>
-          <div class="sub">biodiversidad vegetal · backbone WCVP (Kew) + ocurrencias GBIF · estático-first</div>
-        </div>
-        <div class="selectors">
-          {showKingdomSelector && (
-            <div class="country-select" data-role="kingdom">
-              <label class="sr-only" for="kingdom">Reino</label>
-              <select id="kingdom" aria-label="Seleccionar reino">
-                {KINGDOMS.map((k) => (
-                  <option value={k.code} selected={k.code === kingdom.code} disabled={!k.available}>
-                    {k.icon} {k.name}{k.available ? '' : ' · próximamente'}
-                  </option>
-                ))}
-              </select>
-            </div>
-          )}
-          <div class="country-select">
-            <label class="sr-only" for="country">País</label>
-            <select id="country" aria-label="Seleccionar país">
-              {COUNTRIES.map((c) => (
-                <option value={c.code} selected={c.code === country.code} disabled={!c.available}>
-                  {c.flag} {c.name}{c.available ? '' : ' · próximamente'}
-                </option>
-              ))}
-            </select>
-          </div>
+      <div class="wrap bar">
+        <a class="brand" href={localePath(locale)}>
+          <svg viewBox="0 0 24 24" width="22" height="22" aria-hidden="true"><path d="M12 21V11m0 0C12 6 8 3 4 3c0 4 3 8 8 8Zm0 0c0-4 3-7 8-7 0 4-3 7-8 7Z" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linejoin="round" /></svg>
+          <span>{t(locale, 'site.brand')}</span>
+        </a>
+        <nav aria-label="Botánica">
+          {nav.map((n) => (
+            <a href={n.href} aria-current={n.id === page ? 'page' : undefined}>{n.label}</a>
+          ))}
+        </nav>
+        <div class="tools">
+          <slot name="tools" />
+          <button type="button" class="icon-btn" id="theme-toggle" aria-label={t(locale, 'theme.toggle')} title={t(locale, 'theme.toggle')}>
+            <svg viewBox="0 0 24 24" width="18" height="18" aria-hidden="true"><path d="M12 3a9 9 0 1 0 9 9 7 7 0 0 1-9-9Z" fill="currentColor" /></svg>
+          </button>
         </div>
       </div>
     </header>
 
-    <main>
-      <div class="wrap">
-        <slot />
-      </div>
+    <main id="main">
+      <slot />
     </main>
 
     <footer class="site">
       <div class="wrap">
-        <div class="lic">
-          <span class="cc">Datos abiertos · atribución <b>CC BY 4.0</b>:</span>
-          <span>WCVP — <a href="https://powo.science.kew.org/about-wcvp" rel="noopener">Kew, World Checklist of Vascular Plants</a></span>
-          <span>Hongos — <a href="https://www.indexfungorum.org" rel="noopener">Index Fungorum</a> (Kew, vía GBIF Backbone)</span>
-          <span>IPNI / Tree of Life — <a href="https://treeoflife.kew.org" rel="noopener">Kew PAFTOL</a></span>
-          <span>Ocurrencias ({kingdom.name}) — <a href={`https://doi.org/${kingdom.gbifDoi}`} rel="noopener">GBIF.org Occurrence Download, DOI {kingdom.gbifDoi}</a></span>
-          <span>Límites departamentales — <a href="https://www.geoboundaries.org" rel="noopener">geoBoundaries</a> (gbOpen PER ADM1)</span>
-        </div>
-        <div>
-          Cita GBIF: GBIF.org (22 June 2026) GBIF Occurrence Download <a href={`https://doi.org/${kingdom.gbifDoi}`} rel="noopener">https://doi.org/{kingdom.gbifDoi}</a> ·
-          Conteos sobre nombres <em>aceptados</em> (sinonimia resuelta) a rango especie. Esfuerzo de muestreo ≠ riqueza.
-        </div>
+        <p class="lic">
+          <span>{t(locale, 'footer.data')}</span>
+          <a href="https://powo.science.kew.org/about-wcvp" rel="noopener">WCVP (Kew)</a> ·
+          <a href="https://www.indexfungorum.org" rel="noopener">Index Fungorum</a> ·
+          {KINGDOMS.map((k, i) => (
+            <>{i ? ' · ' : ''}<a href={`https://doi.org/${k.gbifDoi}`} rel="noopener">GBIF {k.code} DOI {k.gbifDoi}</a></>
+          ))} ·
+          <a href="https://www.geoboundaries.org" rel="noopener">geoBoundaries</a> (gbOpen PER ADM1)
+        </p>
+        <p>{t(locale, 'footer.caveat')}</p>
+        <p class="foot-links">
+          <a href="https://github.com/IchiSieben" rel="noopener">{t(locale, 'footer.code')}</a> ·
+          <a href="/">{t(locale, 'nav.home')}</a> ·
+          <span class="mono">{new Intl.DateTimeFormat(BCP47[locale], { dateStyle: 'medium' }).format(new Date('2026-06-22'))} · GBIF.org</span>
+        </p>
       </div>
     </footer>
 
-    <!-- Selectores país/reino: navegan a la ruta correspondiente. -->
     <script>
-      // El sitio se publica en una subcarpeta del dominio (/botanica/), no en la raíz.
-      // BASE_URL lo resuelve Vite en build: '/' en dev, '/botanica/' en producción.
-      // Sin esto, cambiar de reino salta fuera del demo y da 404.
-      const BASE = import.meta.env.BASE_URL.replace(/\/$/, '');
-      const to = (slug: string) => `${BASE}/${slug}`.replace(/\/+$/, '') + '/';
-
-      const country = document.getElementById('country') as HTMLSelectElement | null;
-      country?.addEventListener('change', () => {
-        const code = country.value.toLowerCase();
-        // F1 solo tiene Perú en la raíz; rutas por país se agregan en fases siguientes.
-        window.location.href = code === 'per' ? to('') : to(code);
-      });
-
-      const kingdom = document.getElementById('kingdom') as HTMLSelectElement | null;
-      kingdom?.addEventListener('change', () => {
-        // Plantae = raíz del demo; otros reinos en <base>/{slug}/ (ver kingdomHref).
-        window.location.href =
-          kingdom.value === 'Plantae' ? to('') : to(kingdom.value.toLowerCase());
+      import { applyTier } from '../lib/tier';
+      applyTier();
+      document.getElementById('theme-toggle')?.addEventListener('click', () => {
+        const isLight = document.documentElement.classList.toggle('light');
+        try { localStorage.setItem('theme', isLight ? 'light' : 'dark'); } catch {}
       });
     </script>
-    <style>
-      .sr-only { position: absolute; width: 1px; height: 1px; padding: 0; margin: -1px; overflow: hidden; clip: rect(0,0,0,0); border: 0; }
-    </style>
   </body>
 </html>
+
+<style>
+  .skip {
+    position: absolute; left: 8px; top: -48px; z-index: 100; padding: 8px 12px; border-radius: 8px;
+    background: rgb(var(--accent)); color: rgb(var(--bg)); font-weight: 600;
+  }
+  .skip:focus { top: 8px; }
+  header.site {
+    position: sticky; top: 0; z-index: 40;
+    background: rgb(var(--bg) / 0.86); backdrop-filter: blur(10px);
+    border-bottom: 1px solid rgb(var(--border));
+  }
+  .bar { display: flex; align-items: center; gap: 12px; min-height: 56px; }
+  .brand {
+    display: inline-flex; align-items: center; gap: 8px; font-weight: 600; font-size: 17px;
+    color: rgb(var(--fg)); text-decoration: none; letter-spacing: -0.01em;
+  }
+  .brand svg { color: rgb(var(--accent)); }
+  nav { display: flex; gap: 2px; margin-left: 8px; overflow-x: auto; scrollbar-width: none; }
+  nav a {
+    display: inline-flex; align-items: center; min-height: 44px; padding: 0 10px; border-radius: 8px;
+    color: rgb(var(--muted)); text-decoration: none; font-size: 15px; white-space: nowrap;
+  }
+  nav a:hover { color: rgb(var(--fg)); }
+  nav a[aria-current='page'] { color: rgb(var(--fg)); box-shadow: inset 0 -2px 0 rgb(var(--accent)); border-radius: 0; }
+  .tools { margin-left: auto; display: flex; align-items: center; gap: 6px; }
+  .icon-btn {
+    display: inline-grid; place-items: center; width: 44px; height: 44px; border-radius: 8px;
+    border: 1px solid transparent; background: transparent; color: rgb(var(--muted)); cursor: pointer;
+  }
+  .icon-btn:hover { color: rgb(var(--fg)); border-color: rgb(var(--border)); }
+  @media (max-width: 560px) {
+    .brand span { display: none; }
+    nav { margin-left: 0; }
+    nav a { padding: 0 8px; font-size: 14px; }
+  }
+  footer.site {
+    margin-top: 64px; border-top: 1px solid rgb(var(--border)); padding: 24px 0 40px;
+    font-size: 13px; color: rgb(var(--muted)); line-height: 1.6;
+  }
+  footer.site p + p { margin-top: 8px; }
+  footer.site a { color: rgb(var(--muted)); }
+  footer.site a:hover { color: rgb(var(--fg)); }
+</style>

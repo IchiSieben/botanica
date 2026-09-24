@@ -5,24 +5,14 @@
  * ~150 KB en vez de ~1 MB. Si sumas un tipo de chart nuevo, registralo aca.
  */
 import * as echarts from 'echarts/core';
-import {
-  TooltipComponent,
-  GridComponent,
-  VisualMapComponent,
-  LegendComponent,
-  TitleComponent,
-  GraphicComponent,
-} from 'echarts/components';
+import { TooltipComponent } from 'echarts/components';
 import { CanvasRenderer } from 'echarts/renderers';
 import type { EChartsCoreOption, ECharts } from 'echarts/core';
 
-// Solo COMPONENTES + renderer en el chunk compartido. Cada componente registra
-// SU chart (TreemapChart, MapChart, …) para que Vite lo code-splittee y ninguna
-// página arrastre charts que no usa.
-echarts.use([
-  TooltipComponent, GridComponent, VisualMapComponent, LegendComponent, TitleComponent,
-  GraphicComponent, CanvasRenderer,
-]);
+// v2: only the taxonomy tree still uses ECharts (the explorer draws its views
+// as SVG/HTML). Register nothing it doesn't need: VisualMap, Legend, Grid,
+// Title and Graphic were ~60 % of this chunk.
+echarts.use([TooltipComponent, CanvasRenderer]);
 
 export const T = {
   ink: '#0c1512',

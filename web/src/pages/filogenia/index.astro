@@ -10,6 +10,9 @@ import Base from '../../layouts/Base.astro';
 import PhyloTree from '../../components/PhyloTree.astro';
 import { availableKingdoms } from '../../lib/data';
 import Tutorial from '../../components/Tutorial.astro';
+import { TOURS } from '../../lib/tours';
+
+const locale = 'es';
 
 // Plantae primero: es el reino principal del atlas (21 585 especies frente a 1 802
 // de Fungi). `availableKingdoms` devuelve el orden del mart, que no es el editorial.
@@ -19,7 +22,7 @@ const kingdoms = availableKingdoms().sort(
 );
 ---
 
-<Base title="Filogenia — Atlas Botánico del Perú" kingdomCode="Plantae">
+<Base title="Árbol taxonómico — Botánica" locale={locale} page="tree">
   <section class="filo">
     <header class="filo-head">
       <h2>Filogenia</h2>
@@ -33,39 +36,7 @@ const kingdoms = availableKingdoms().sort(
     {kingdoms.map((k) => <div class="filo-block"><PhyloTree kingdom={k} /></div>)}
   </section>
 
-  <Tutorial
-    id="botanica-filogenia"
-    steps={[
-      {
-        title: 'Cómo se lee este árbol',
-        body: 'Muestra cómo se reparten las <b>21 585 especies</b> de plantas registradas en Perú entre los grandes grupos taxonómicos. Cuatro pasos y lo tenés.',
-      },
-      {
-        target: '#phylo-plantae-chart',
-        title: 'Cada punto es un grupo',
-        body: 'El centro es el reino; los radios son <b>órdenes</b>. El tamaño del punto es cuántas especies tiene y el color, a qué clado pertenece.',
-        placement: 'right',
-      },
-      {
-        target: '#phylo-plantae-chart',
-        title: 'Abrir y navegar',
-        body: '<b>Clic</b> en un orden despliega sus familias. <b>Rueda</b> para acercar, <b>arrastrar</b> para moverte.',
-        placement: 'right',
-      },
-      {
-        target: '#phylo-plantae-side',
-        title: 'El detalle',
-        body: 'Al pasar por un orden, acá aparecen los <b>departamentos</b> donde tiene más especies registradas. Datos reales de ocurrencias GBIF.',
-        placement: 'left',
-      },
-      {
-        target: '#phylo-plantae .phylo-tools',
-        title: 'Si te perdés',
-        body: '<b>Reencuadrar</b> vuelve a centrar el árbol. <b>Lineal</b> lo despliega en horizontal, más cómodo para leer nombres largos.',
-        placement: 'bottom',
-      },
-    ]}
-  />
+  <Tutorial id="botanica-filogenia" locale={locale} steps={TOURS.tree[locale]} />
 </Base>
 
 <style>

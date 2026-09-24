@@ -6,9 +6,12 @@
 import Base from '../../layouts/Base.astro';
 import SpeciesBrowser from '../../components/SpeciesBrowser.astro';
 import Tutorial from '../../components/Tutorial.astro';
+import { TOURS } from '../../lib/tours';
+
+const locale = 'es';
 ---
 
-<Base title="Especies — Atlas Botánico del Perú" kingdomCode="Plantae">
+<Base title="Especies — Botánica" locale={locale} page="species">
   <section class="esp">
     <header class="esp-head">
       <h2>Especies</h2>
@@ -20,39 +23,7 @@ import Tutorial from '../../components/Tutorial.astro';
     <SpeciesBrowser />
   </section>
 
-  <Tutorial
-    id="botanica-especies"
-    steps={[
-      {
-        title: 'Buscador de especies',
-        body: 'Las <b>23 387 especies</b> del atlas en una sola página. El índice se descarga una vez y la búsqueda corre entera en tu navegador: sin servidor y sin esperas.',
-      },
-      {
-        target: '#sp-q',
-        title: 'Buscá',
-        body: 'Por nombre científico (<i>Cinchona officinalis</i>), por género o por <b>familia</b>. Filtra mientras escribís.',
-        placement: 'bottom',
-      },
-      {
-        target: '.sp-kingdoms',
-        title: 'Plantas u hongos',
-        body: 'Cada reino tiene su propio índice. El de hongos pesa 0,09 MB frente a 1,17 MB: solo se baja el que mirás.',
-        placement: 'bottom',
-      },
-      {
-        target: '#sp-list',
-        title: 'La lista',
-        body: 'Nombre, familia y número de registros. Hacé clic en cualquiera para ver su ficha.',
-        placement: 'right',
-      },
-      {
-        target: '#sp-detail',
-        title: 'La ficha',
-        body: 'Orden y familia, si es <b>endémica</b>, y en qué departamentos hay más registros. "Sin ocurrencias" significa que está en el checklist pero sin coordenadas: es un dato real, no un error.',
-        placement: 'left',
-      },
-    ]}
-  />
+  <Tutorial id="botanica-especies" locale={locale} steps={TOURS.species[locale]} />
 </Base>
 
 <style>

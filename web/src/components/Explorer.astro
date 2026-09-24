@@ -1,0 +1,156 @@
+---
+/**
+ * The explorer: one shared state (store.ts, kept in the URL), six coordinated
+ * views over the per-species facet columns (facets.ts), no chart library.
+ *
+ * The build renders the unfiltered Plantae state with the same view functions
+ * the browser uses (views.ts), so the first paint is complete and stable; the
+ * client script then takes over, reads the URL and re-renders on every change.
+ */
+import { aggregate } from '../lib/facets';
+import { EMPTY } from '../lib/store';
+import * as V from '../lib/views';
+import { loadFacets, recordsByDept } from '../lib/data';
+import { orderColorMap } from '../lib/clades';
+import { departmentPaths } from '../lib/geo';
+import { deptName } from '../lib/depts';
+import { t, fmt, type Locale } from '../lib/i18n';
+import { DECADE0, DECADES } from '../lib/facets';
+import '../styles/explorer.css';
+
+interface Props { locale: Locale }
+const { locale } = Astro.props;
+
+const f = loadFacets('plantae');
+const s = { ...EMPTY };
+const agg = aggregate(f, s);
+const orderColor = orderColorMap();
+const records = recordsByDept();
+const ctx: V.Ctx = { locale, f, agg, s, orderColor };
+const paint = V.paintMap(ctx, records.plantae);
+const { paths, width, height } = departmentPaths();
+const n = fmt(locale);
+const decades = Array.from({ length: DECADES }, (_, i) => DECADE0 + i * 10);
+const config = { orderColor, records, base: import.meta.env.BASE_URL };
+---
+
+<div class="ex" data-explorer data-k="plantae">
+  <section class="ex-hero wrap">
+    <div class="ex-title">
+      <h1>{t(locale, 'hero.title')}</h1>
+      <p class="lede">{t(locale, 'hero.lede')}</p>
+    </div>
+    <div class="ex-controls">
+      <div class="seg" role="group" aria-label={t(locale, 'k.label')}>
+        <button type="button" class="btn on" data-k="plantae" aria-pressed="true">{t(locale, 'k.plantae')}</button>
+        <button type="button" class="btn" data-k="fungi" aria-pressed="false">{t(locale, 'k.fungi')}</button>
+      </div>
+      <div class="search" id="search">
+        <label class="sr-only" for="q">{t(locale, 'search.label')}</label>
+        <svg viewBox="0 0 24 24" width="18" height="18" aria-hidden="true"><circle cx="11" cy="11" r="7" fill="none" stroke="currentColor" stroke-width="2" /><path d="m20 20-4-4" stroke="currentColor" stroke-width="2" /></svg>
+        <input id="q" type="search" autocomplete="off" spellcheck="false" placeholder={t(locale, 'search.placeholder')}
+          role="combobox" aria-expanded="false" aria-controls="q-list" aria-autocomplete="list" />
+        <kbd class="mono" aria-hidden="true">/</kbd>
+        <ul id="q-list" role="listbox" hidden></ul>
+      </div>
+    </div>
+  </section>
+
+  <div class="wrap">
+    <div class="ex-status" aria-live="polite">
+      <div class="chips" id="chips"><span class="chip-none">{t(locale, 'filters.none')}</span></div>
+      <div class="kpis" id="kpis" set:html={V.kpis(ctx)} />
+    </div>
+
+    <p class="caveat fungi-only" hidden>{t(locale, 'fungi.caveat')}</p>
+
+    <div class="ex-grid">
+      <section class="card ex-map" aria-labelledby="h-map">
+        <div class="card-head">
+          <h2 id="h-map">{t(locale, 'map.title')}</h2>
+          <div class="seg metric" role="group" aria-label={t(locale, 'map.metric')}>
+            {(['species', 'records', 'coverage'] as const).map((m) => (
+              <button type="button" class:list={['btn', { on: m === 'species' }]} data-m={m} aria-pressed={m === 'species' ? 'true' : 'false'}>
+                {t(locale, `map.m.${m}`)}
+              </button>
+            ))}
+          </div>
+        </div>
+        <p class="note hint" id="map-hint">{t(locale, 'hint.map')}. {t(locale, 'hint.more')}.</p>
+        <p class="note locked" id="map-locked" hidden>{t(locale, 'map.metricLocked')}</p>
+        <div class="map-wrap">
+          <svg id="map" viewBox={`0 0 ${width} ${height}`} role="group" aria-label={t(locale, 'map.title')}>
+            {paths.map((p, i) => (
+              <path
+                d={p.d}
+                data-dep={p.name}
+                class={`q${paint.cls[p.name]}`}
+                tabindex={i === 0 ? 0 : -1}
+                role="button"
+                aria-pressed="false"
+                aria-label={`${deptName(p.name)}: ${n(paint.values[p.name] ?? 0)} ${t(locale, 'map.m.species')}`}
+              />
+            ))}
+          </svg>
+          <p class="readout mono" id="readout" aria-hidden="true">&nbsp;</p>
+        </div>
+        <div class="legend" id="legend" role="group" aria-label={t(locale, 'map.legend')} set:html={V.legend(ctx, paint, null)} />
+        <p class="note">{t(locale, 'map.caveat')}</p>
+        <div class="dep-panel" id="dep-panel">
+          <label class="sr-only" for="dep-select">{t(locale, 'map.title')}</label>
+          <select id="dep-select" class="btn">
+            <option value="">{t(locale, 'filters.none')}</option>
+            {paths.map((p) => <option value={p.name}>{deptName(p.name)}</option>)}
+          </select>
+          <div id="dep-detail"></div>
+        </div>
+      </section>
+
+      <section class="card ex-fam" aria-labelledby="h-fam">
+        <div class="card-head"><h2 id="h-fam">{t(locale, 'fam.title')}</h2></div>
+        <p class="note">{t(locale, 'fam.note')}</p>
+        <div class="tm" id="families" set:html={V.families(ctx)} />
+      </section>
+
+      <section class="card ex-st" aria-labelledby="h-st">
+        <div class="card-head"><h2 id="h-st">{t(locale, 'st.title')}</h2></div>
+        <div class="bars" id="status" set:html={V.status(ctx)} />
+      </section>
+
+      <section class="card ex-life" aria-labelledby="h-life">
+        <div class="card-head"><h2 id="h-life">{t(locale, 'life.title')}</h2><span class="label">{t(locale, 'life.note')}</span></div>
+        <div class="bars" id="lifeforms" set:html={V.lifeforms(ctx)} />
+      </section>
+
+      <section class="card ex-years" aria-labelledby="h-years">
+        <div class="card-head">
+          <h2 id="h-years">{t(locale, 'year.title')}</h2>
+          <div class="yr-tools">
+            <label class="sr-only" for="y0">{t(locale, 'year.range')}</label>
+            <select id="y0" class="btn"><option value="">{decades[0]}</option>{decades.slice(1).map((d) => <option value={d}>{d}</option>)}</select>
+            <span aria-hidden="true">–</span>
+            <label class="sr-only" for="y1">{t(locale, 'year.range')}</label>
+            <select id="y1" class="btn">{decades.slice(0, -1).map((d) => <option value={d + 9}>{d + 9}</option>)}<option value="" selected>{decades[decades.length - 1] + 9}</option></select>
+            <button type="button" class="btn" id="play" aria-pressed="false">▶ {t(locale, 'year.play')}</button>
+          </div>
+        </div>
+        <p class="note">{t(locale, 'year.note')}</p>
+        <div id="years" set:html={V.years(ctx)} />
+      </section>
+    </div>
+  </div>
+
+  <aside class="drawer" id="drawer" aria-labelledby="dr-title" hidden>
+    <div class="dr-grip" aria-hidden="true"></div>
+    <button type="button" class="icon-btn dr-close" id="dr-close" aria-label={t(locale, 'sp.close')}>✕</button>
+    <div id="dr-body"></div>
+  </aside>
+
+  <script type="application/json" id="ex-config" set:html={JSON.stringify(config)} />
+</div>
+
+<script>
+  import { boot } from '../scripts/explorer';
+  boot();
+</script>
+

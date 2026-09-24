@@ -94,3 +94,22 @@ export const getAllClades = () => loadMart<CladeDeptRow[]>('mart_clade_by_depart
 /** Reinos con datos exportados (para getStaticPaths / selector). */
 export const availableKingdoms = (): string[] =>
   [...new Set(loadMart<Kpis[]>('mart_kpis').map((r) => r.kingdom))];
+
+// --- v2 explorer ------------------------------------------------------------
+import type { Facets } from './facets';
+
+/** Facet columns for a kingdom, read from the same file the browser fetches. */
+export function loadFacets(kingdom: 'plantae' | 'fungi'): Facets {
+  const path = fileURLToPath(new URL(`../../public/data/facets-${kingdom}.json`, import.meta.url));
+  return JSON.parse(readFileSync(path, 'utf-8')) as Facets;
+}
+
+/** Records per department (sampling effort) for both kingdoms. */
+export function recordsByDept(): Record<'plantae' | 'fungi', Record<string, number>> {
+  const out = { plantae: {} as Record<string, number>, fungi: {} as Record<string, number> };
+  for (const r of loadMart<RichnessRow[]>('mart_richness_by_department')) {
+    const k = r.kingdom.toLowerCase() as 'plantae' | 'fungi';
+    if (out[k]) out[k][r.department] = r.records;
+  }
+  return out;
+}

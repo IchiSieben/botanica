@@ -4,6 +4,6 @@
   "exclude": ["dist"],
   "compilerOptions": {
     "resolveJsonModule": true,
-    "allowImportingTsExtensions": false
+    "allowImportingTsExtensions": true
   }
 }
