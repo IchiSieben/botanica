@@ -15,7 +15,7 @@
  * Input:
  * - buttons (zoomIn / zoomOut / reset), keys + = − 0 while focus is inside the map;
  * - wheel with Ctrl/Cmd (also a trackpad pinch), or a plain wheel only while the map has
- *   focus: the page's own scroll is never hijacked;
+ *   keyboard focus: the page's own scroll is never hijacked, not even after a click;
  * - two-finger pinch; one-pointer drag pans once zoomed.
  * A press that moves less than 6 px is a tap: the click goes through and selects the
  * department. Past 6 px it is a drag and the click that follows is swallowed.
@@ -76,7 +76,9 @@ export function mapZoom(vp: HTMLElement, layer: HTMLElement, onChange?: (k: numb
 
   // ---- wheel ----
   vp.addEventListener('wheel', (e) => {
-    const focused = vp.contains(document.activeElement);
+    // Keyboard focus only: a clicked department also takes focus, and a plain wheel after
+    // a click must still scroll the page.
+    const focused = !!vp.querySelector(':focus-visible');
     if (!(e.ctrlKey || e.metaKey || focused)) return; // let the page scroll
     e.preventDefault();
     busy();

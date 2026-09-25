@@ -139,8 +139,7 @@
   .ex-map .hint { line-height: 1.35; }
   /* The compare tip lives in the department panel's how-to below; keep the map tall. */
   .ex-map .hint-more { display: none; }
-  .ex-map .legend .lg { min-width: 28px; min-height: 28px; padding: 1px; }
-  .ex-map .legend .lg i { width: 24px; height: 10px; }
+
   .ex-map, .ex-fam, .ex-st { min-height: 0; overflow: hidden; }
   .ex-map .cf-body, .ex-fam .cf-body { flex: 1 1 auto; min-height: 0; display: flex; flex-direction: column; gap: 6px; }
   .ex-grid > .ex-life, .ex-grid > .ex-years, .ex-grid > .dep-panel { align-self: start; }
@@ -167,6 +166,12 @@
   stroke: rgb(var(--bg)); stroke-width: calc(0.8px / var(--z, 1)); stroke-linejoin: round; cursor: pointer;
   vector-effect: non-scaling-stroke;
   transition: opacity var(--ic7-t-hover) ease;
+}
+/* Denser legend bands in the one-glance row, only for a mouse: a large touch screen
+   keeps the 44 px targets of the (pointer: coarse) rule. */
+@media (min-width: 1200px) and (pointer: fine) {
+  .ex-map .legend .lg { min-width: 28px; min-height: 28px; padding: 1px; }
+  .ex-map .legend .lg i { width: 24px; height: 10px; }
 }
 @media (min-width: 1200px) {
   .map-vp { flex: 1 1 auto; min-height: 0; max-width: none; margin: 0; }

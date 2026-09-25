@@ -134,6 +134,22 @@ for (const [locale, L] of Object.entries(LOCALES)) {
     }
     await page.click('[data-zoom="reset"]');
     check((await scale(page)) === 1, 'reset → scale 1', `${url}: reset did not restore scale 1`);
+    // A plain wheel over the map after a click scrolls the page, it does not zoom.
+    const y0 = await page.evaluate(() => scrollY);
+    await page.mouse.move(vp.x + vp.w / 2, vp.y + vp.h / 2);
+    await page.mouse.wheel(0, 300);
+    await page.waitForTimeout(300);
+    const y1 = await page.evaluate(() => scrollY);
+    check(y1 > y0 && (await scale(page)) === 1, `plain wheel after a click scrolls the page (${y0} → ${y1})`, `${url}: plain wheel hijacked (scroll ${y0} → ${y1}, scale ${await scale(page)})`);
+    await page.evaluate(() => document.querySelector('#explorar').scrollIntoView());
+    await page.keyboard.down('Control');
+    await page.mouse.move(vp.x + vp.w / 2, vp.y + vp.h / 2);
+    await page.mouse.wheel(0, -200);
+    await page.keyboard.up('Control');
+    await page.waitForTimeout(300);
+    const kw = await scale(page);
+    check(kw > 1, `Ctrl + wheel zooms (scale ${kw.toFixed(2)})`, `${url}: Ctrl + wheel did not zoom`);
+    await page.click('[data-zoom="reset"]');
     await page.focus('#map path[tabindex="0"]');
     await page.keyboard.press('+');
     const kk = await scale(page);
@@ -146,8 +162,9 @@ for (const [locale, L] of Object.entries(LOCALES)) {
     await page.click('[data-zoom="in"]');
     await page.click('[data-zoom="in"]');
     const w3 = await onScreen();
+    const k3 = await scale(page);
     await page.click('[data-zoom="reset"]');
-    check(Math.abs(w1 - w3) < 0.05, `department strokes stay ${w1.toFixed(2)} px when zoomed (${w3.toFixed(2)} px at ${(await page.$eval('#map-vp', (e) => e.style.getPropertyValue('--z'))) || 1}x after reset)`, `${url}: stroke ${w1} px at 1x, ${w3} px zoomed`);
+    check(Math.abs(w1 - w3) < 0.05, `department strokes stay ${w1.toFixed(2)} px on screen (${w3.toFixed(2)} px at ${k3.toFixed(2)}x)`, `${url}: stroke ${w1} px at 1x, ${w3} px at ${k3}x`);
     // Fullscreen.
     const fsVisible = await page.$eval('#map-fs', (b) => !b.hidden);
     if (fsVisible) {
