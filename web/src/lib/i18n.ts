@@ -117,7 +117,8 @@ const enBase = {
   'footer.code': 'Source code',
 
   'species.title': 'Species',
-  'species.lede': 'The 21,585 plant and 1,802 fungus species recorded in Peru, with their family, order and where they have been found. Search by scientific name, genus or family.',
+  'species.ledePlantae': 'The {n} plant species recorded in Peru, with their family, order and where they have been found. Search by scientific name, genus or family.',
+  'species.ledeFungi': 'The {n} fungus species recorded in Peru, with their family, order and where they have been found. Search by scientific name, genus or family.',
   'species.of': 'of',
   'species.showing': 'showing',
   'species.pick': 'Pick a species from the list.',
@@ -244,7 +245,8 @@ const esBase: Record<keyof typeof enBase, string> = {
   'footer.code': 'Código fuente',
 
   'species.title': 'Especies',
-  'species.lede': 'Las 21 585 especies de plantas y 1 802 de hongos registradas en el Perú, con su familia, su orden y dónde se las ha encontrado. Busca por nombre científico, género o familia.',
+  'species.ledePlantae': 'Las {n} especies de plantas registradas en el Perú, con su familia, su orden y dónde se las ha encontrado. Busca por nombre científico, género o familia.',
+  'species.ledeFungi': 'Las {n} especies de hongos registradas en el Perú, con su familia, su orden y dónde se las ha encontrado. Busca por nombre científico, género o familia.',
   'species.of': 'de',
   'species.showing': 'mostrando',
   'species.pick': 'Elige una especie de la lista.',

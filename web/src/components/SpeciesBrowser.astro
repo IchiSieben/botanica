@@ -309,6 +309,7 @@ const mapAsset = { paths: deptPaths.map((p) => ({ name: p.name, d: p.d })), widt
     let loadedFor: K | null = null;
     async function render() {
       const s = store.get();
+      document.documentElement.dataset.sk = s.k; // the page lede follows the kingdom (pages/Species.astro)
       root!.querySelectorAll<HTMLButtonElement>('[data-kingdom]').forEach((b) => {
         const on = b.dataset.kingdom === s.k;
         b.classList.toggle('on', on);

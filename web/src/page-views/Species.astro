@@ -7,16 +7,23 @@ import Base from '../layouts/Base.astro';
 import SpeciesBrowser from '../components/SpeciesBrowser.astro';
 import Tutorial from '../components/Tutorial.astro';
 import { TOURS } from '../lib/tours';
-import { t, type Locale } from '../lib/i18n';
+import { t, fmt, type Locale } from '../lib/i18n';
+import { getKpis } from '../lib/data';
 
 const { locale } = Astro.props as { locale: Locale };
+// Counts from the marts, not typed into the copy; the lede follows the kingdom toggle.
+const n = fmt(locale);
+const lede = (k: 'Plantae' | 'Fungi') =>
+  t(locale, k === 'Plantae' ? 'species.ledePlantae' : 'species.ledeFungi').replace('{n}', n(getKpis(k)?.species ?? 0));
 ---
 
 <Base title={`${t(locale, 'species.title')} — Botánica`} locale={locale} page="species">
   <section class="wrap esp">
     <header>
       <h1>{t(locale, 'species.title')}</h1>
-      <p class="lede">{t(locale, 'species.lede')}</p>
+      <p class="lede"><span class="k-plantae">{lede('Plantae')}</span><span class="k-fungi">{lede('Fungi')}</span></p>
+      <!-- Before first paint, so a ?k=fungi link shows the fungi lede without a swap. -->
+      <script is:inline>document.documentElement.dataset.sk = new URLSearchParams(location.search).get('k') === 'fungi' ? 'fungi' : 'plantae';</script>
     </header>
     <SpeciesBrowser locale={locale} />
   </section>
@@ -28,4 +35,5 @@ const { locale } = Astro.props as { locale: Locale };
   .esp { display: flex; flex-direction: column; gap: 20px; padding-top: 32px; }
   .esp h1 { font-size: clamp(2rem, 1.2rem + 3vw, 3rem); letter-spacing: -0.02em; }
   .esp .lede { margin-top: 10px; max-width: 64ch; color: rgb(var(--muted)); }
+  :global(:root[data-sk='fungi']) .esp .k-plantae, :global(:root:not([data-sk='fungi'])) .esp .k-fungi { display: none; }
 </style>
