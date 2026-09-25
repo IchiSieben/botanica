@@ -34,3 +34,6 @@ web/lh-report/
 
 # Claude Code agent worktrees
 .claude/worktrees/
+
+# Auto-drafts written by the compaction hook; HANDOFF.md is the record
+docs/handoffs/
