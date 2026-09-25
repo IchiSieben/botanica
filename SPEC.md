@@ -1,60 +1,69 @@
-# SPEC — Botánica v3-A (story, one-glance layout, interaction)
+# SPEC — Botánica v3.1 (clarity, tree, species)
 
-Contract for release **v3.0.0**. Brief: owner prompt of 2026-09-24 ("v3-A"). Baseline `f8aacb6`.
+Contract for release **v3.1.0**. Brief: owner prompt of 2026-09-25 ("v3.1"). Baseline `4cb9cb3`
+(v3.0.0 = `5de89ac`). The v3.0 contract is in git history (`git show 5de89ac:SPEC.md`).
 
 ## Inputs
-- `data/atlas.duckdb` (local, not in git): WCVP names (`raw_wcvp_names`: `ipni_id`, `first_published`,
-  `basionym_plant_name_id`), `peru_species`, `dim_taxon`, `gbif_fungi_clean` (`phylum`, `class`, `order`).
-- `web/public/data/{species,facets}-{plantae,fungi}.json` (ETL export, reproducible byte for byte at `f8aacb6`).
-- `docs/RESEARCH-PERU.md` — the owner's research dossier. **Not found on this machine or in Drive on
-  2026-09-24.** Items that need it (dossier facts in the intro, the 1777 timeline anchor, `ROADMAP.md`)
-  ship with our own data only, and a visible slot for the rest (see Out of scope).
+- `docs/RESEARCH-PERU.md` — the owner's dossier (2026-09-24). Source of every non-own figure.
+  Link check 2026-09-25: 53/56 URLs resolve. BHL `bibliography/194092` and iNaturalist answer 403 to
+  automated clients (use the archive.org copy for Brako & Zarucchi 1993); Conosur resolves only over
+  `http://`. Facts marked ⚠️ in the dossier are **not shown** on the page.
+- `data/atlas.duckdb` (local only, open `read_only`), `web/public/data/*.json` (ETL export).
 
-## Outputs (one line per brief item)
-1. **Intro** — first screen of `/` and `/es/`, then "Explore" (anchor `#explorar`). 8–10 facts, each a
-   number computed from our data with a link to its source (dataset DOI / WCVP / IPNI); a timeline of
-   milestones derived from WCVP `first_published` + our release dates; "how the atlas works" (WCVP +
-   GBIF, records ≠ richness). Scroll-driven motion = CSS `animation-timeline: view()` on `transform`
-   only (an opacity fade put entering text below AA), inside `@supports` and `prefers-reduced-motion: no-preference`; otherwise static.
-   A URL that carries explorer state (`?dep=`, `?sp=`, …) or `#explorar` lands on the explorer.
-2. **One-glance explorer** — at 1440×900 the bottoms of `#kpis`, `#map`, `#families` and `#status`
-   (origin) are ≤ 900 px once the explorer section is at the top of the viewport. Growth form and
-   years sit below. < 1024 px keeps the current stacked layout.
-3. **Chart frame** — every chart (map, families, origin, growth form, years, tree, tree's department
-   bars) has: a "How to read this" line, a legend with units, a source line (dataset + DOI/version).
-4. **Department label** — with a department selected, the KPI reads "species with GBIF records in
-   <dep>"; a note explains that since v2 counts come from the WCVP checklist ∩ GBIF records
-   (Loreto 7,905 → 5,821). Same explanation in HANDOFF.
-5. **Growth form groups** — `etl/mappings/growth_form_groups_v1.csv` (`raw_wcvp,group`) maps all WCVP
-   `lifeform_description` strings in the export to 9 groups: tree, shrub, herb, geophyte, climber,
-   epiphyte, succulent, aquatic, parasite (+ `other`). Facets carry groups; the species index keeps
-   the raw string, shown as the tooltip (`title`) wherever a group label is shown for one species.
-   A test fails if any exported raw string is unmapped.
-6. **Taxonomy tree** — list click → the tree highlights, expands and centres/zooms that branch
-   (bug fix). Fullscreen, zoom in/out/reset, expand all/collapse all. Plants: intermediate clades
-   from `etl/mappings/clades_apg4_ppg1_v1.csv` (order → lycophytes / ferns / gymnosperms /
-   angiosperms › ANA grade, magnoliids, monocots, eudicots › superrosids / superasterids).
-   Fungi: phylum › class from GBIF. List hover is compositor-only (transform/opacity).
-7. **Map** — zoom (buttons, wheel, pinch) and pan (drag) as a CSS transform on the SVG; fullscreen;
-   legend with units per metric and a "no records" swatch.
-8. **Header** — "Language: ES | EN" and "Theme: light/dark", each icon + visible text + aria-label;
-   fits 360 px.
-9. **Species drawer** — taxonomy path, status, year described linking the protologue
-   (`https://www.ipni.org/n/{ipni_id}`, basionym's IPNI id when there is one, as for the year),
-   departments, and an empty photo slot `[data-photo-slot]` for session B.
-10. **Changes** — `CHANGELOG.md` (+ `CHANGELOG.es.md`), `/cambios/` and `/es/cambios/` generated at
-    build time from them and git tags; reusable as `Portfolio/shared/changelog/` (zero-dependency,
-    vendored like `shared/tutorial`). Tag `v3.0.0` (and retro-tag `v1.0.0`, `v2.0.0`).
-    `ROADMAP.md`: blocked on the dossier (§5).
+## Outputs
+0. **Dossier items skipped in v3.0**
+   - Intro facts: 8–10 in total, mixing own-data facts with un-flagged dossier facts. Each shows its
+     number with a link to its source (DOI or URL), and nothing is shown without a citation. The
+     Libro Rojo 27.9 % sits beside our 34.9 %, with the reason they differ (other taxonomy, other
+     date; dossier §1 #5–6).
+   - Timeline from 1777 to 2026, built from the dossier's §2 rows (not the ⚠️ ones) plus our computed
+     milestones.
+   - `ROADMAP.md`: dossier §5, copied as it is.
+1. **Filter clarity**
+   - A question sentence above the explorer reads every active filter in plain language and ends with
+     `→ <count>`.
+   - At 0 results, an empty state lists what removing each filter would return.
+   - Every chart has one line saying it ignores its own filter.
+   - Panels whose content changed get a brief highlight, compositor-only.
+   - Department detail: the top families come from the same filtered set as its count, or it says
+     which set they use. No "0 species" beside "Poaceae 20".
+   - Map legend: when the scale is rescaled to the filtered maximum, it says so ("scale 0–2 of 5
+     species").
+   - One tour step shows a filter and explains the crossfilter behaviour.
+2. **Tree**
+   - The linear view becomes the default.
+   - Radial is replaced by a zoomable sunburst: angle = species, click to zoom, breadcrumb, same clade
+     palette.
+   - Optional 3D view, a port of the approach in Armonía Viva's galaxy (Three.js, orbit/zoom),
+     re-written, not copied. It is lazy-loaded; tier 0/1 devices and `prefers-reduced-motion` get the
+     sunburst instead.
+   - HANDOFF explains why the plant radial looked sparse, written before radial is removed.
+   - The tree lede names clades.
+   - At 1440×900, the tree, the orders list and the species-per-department bars read in one glance.
+3. **Species**
+   - Species page: virtual scrolling (no 200 cap), list/grid toggle, sort options, and filters for
+     endemic, department and family.
+   - The Plants/Fungi toggle updates the count (bug).
+   - Drawer (the explorer's, and the species page's detail through the same renderer):
+     - mini department map;
+     - the species' position on the year-described timeline;
+     - same-genus species;
+     - IPNI, GBIF and POWO links;
+     - photo and threat slots inside the render template, for session B.
+4. **Housekeeping**
+   - `window.__phylo` is absent in production builds.
+   - A gate for map pinch-zoom.
+   - Merged worktrees deleted (done at `30b3009`).
+   - Tag `v3.1.0`.
 
 ## Invariants
-- No ECharts on `/` (AUDIT-v2). No new runtime dependency.
-- Gates stay green: `npm test`, `npm run gate` + `npm run gate:v3` (intro, explorer, tree, changes), axe dark 0 violations, 0 console
-  errors / CSP violations live, 0 px overflow at 360, Lighthouse mobile ≥ 90 on every page.
-- Every figure on the page comes from our data or the dossier, with its citation; every DOI cited is
-  checked against `https://doi.org/api/handles/<doi>` (`responseCode: 1`).
-- Existing URLs and URL state keep working (`?dep= ?fam= ?ord= ?lf= ?sp= ?k=`, `/fungi/`).
+- Gates stay green: `npm test`, `npm run gate`, `npm run gate:v3` (+ the v3.1 gates), `check:dois`,
+  axe dark 0 violations, 0 console errors / CSP violations live, 0 px overflow at 360,
+  Lighthouse mobile ≥ 90 on every page.
+- No ECharts on `/`. Three.js only as a lazy chunk of the tree page, never in the initial bundle.
+- Existing URLs and URL state keep working. `?view=radial` (if present) maps to the sunburst.
+- Every DOI or URL the page cites resolves (`check:dois` for DOIs, curl for URLs).
 
-## Out of scope (this release)
-- Dossier facts, the 1777 Ruiz & Pavón anchor and `ROADMAP.md` until `docs/RESEARCH-PERU.md` exists.
-- Photos (session B). Branch lengths / dated phylogeny.
+## Out of scope
+- Photos and threat data (session B: DS 043, GBIF media). The slots only.
+- GBIF backbone → COL XR migration (dossier §0): recorded as an open item in HANDOFF.
