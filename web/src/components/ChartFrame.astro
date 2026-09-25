@@ -1,0 +1,42 @@
+---
+/**
+ * Contract for every chart (brief v3 item 3): a title, one "How to read this" line,
+ * the chart, a legend with units, and a source line with dataset + DOI/version.
+ * Slots: default = the chart; `legend` = legend markup (units included); `tools` = buttons
+ * next to the title (zoom, fullscreen...). Client code may update `[data-cf-howto]`.
+ */
+import { t, type Locale } from '../lib/i18n';
+import { SOURCES, sourceHref, type Source, type SourceKey } from '../lib/sources';
+import '../styles/frame.css';
+
+interface Props {
+  locale: Locale;
+  id?: string;
+  title: string;
+  howto: string;
+  sources: SourceKey[];
+  /** Heading level of the title; default 2. */
+  level?: 2 | 3;
+  class?: string;
+}
+const { locale, id, title, howto, sources, level = 2, class: cls } = Astro.props;
+const H = `h${level}` as 'h2' | 'h3';
+const list: Source[] = sources.map((k) => SOURCES[k]);
+---
+<figure class:list={['cf', cls]} id={id} data-chart={id}>
+  <div class="cf-head">
+    <H class="cf-title">{title}</H>
+    {Astro.slots.has('tools') && <div class="cf-tools"><slot name="tools" /></div>}
+  </div>
+  <p class="cf-howto"><span class="cf-k">{t(locale, 'frame.howto')}</span> <span data-cf-howto>{howto}</span></p>
+  <div class="cf-body"><slot /></div>
+  <figcaption class="cf-foot">
+    {Astro.slots.has('legend') && <div class="cf-legend" aria-label={t(locale, 'frame.legend')}><slot name="legend" /></div>}
+    <p class="cf-source">
+      <span class="cf-k">{t(locale, list.length > 1 ? 'frame.sources' : 'frame.source')}:</span>
+      {list.map((s, i) => (
+        <>{i > 0 && ' · '}<a href={sourceHref(s)} rel="noopener" target="_blank" lang="en">{s.label}</a>{s.version && <span class="cf-ver"> ({s.version})</span>}{s.doi && <span class="cf-doi"> doi:{s.doi}</span>}</>
+      ))}
+    </p>
+  </figcaption>
+</figure>
