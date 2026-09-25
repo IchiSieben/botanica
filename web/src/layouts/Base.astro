@@ -98,11 +98,26 @@ const abs = (l: Locale) => new URL(localePath(l, slug), Astro.site).href;
         </nav>
         <div class="tools">
           <slot name="tools" />
-          <a class="icon-btn lang" id="lang-switch" href={localePath(other, slug)} hreflang={other} lang={other}
-            data-lang={other} aria-label={t(other, 'lang.switch')} title={t(other, 'lang.switch')}>{other.toUpperCase()}</a>
-          <button type="button" class="icon-btn" id="theme-toggle" aria-label={t(locale, 'theme.toggle')} title={t(locale, 'theme.toggle')}>
-            <svg viewBox="0 0 24 24" width="18" height="18" aria-hidden="true"><path d="M12 3a9 9 0 1 0 9 9 7 7 0 0 1-9-9Z" fill="currentColor" /></svg>
+          <div class="tg" role="group" aria-label={t(locale, 'hdr.langGroup')}>
+            <svg class="tg-ic" viewBox="0 0 24 24" width="16" height="16" aria-hidden="true"><circle cx="12" cy="12" r="9" fill="none" stroke="currentColor" stroke-width="1.7"/><path d="M3 12h18M12 3c2.6 2.8 3.9 5.8 3.9 9s-1.3 6.2-3.9 9c-2.6-2.8-3.9-5.8-3.9-9S9.4 5.8 12 3Z" fill="none" stroke="currentColor" stroke-width="1.7"/></svg>
+            <span class="tg-k">{t(locale, 'hdr.lang')}:</span>
+            <span class="tg-cur" aria-label={t(locale, 'hdr.langCurrent')} lang={locale}>{locale.toUpperCase()}</span>
+            <span class="tg-sep" aria-hidden="true">|</span>
+            <a class="tg-opt" id="lang-switch" href={localePath(other, slug)} hreflang={other} lang={other}
+              data-lang={other} aria-label={t(locale, 'hdr.langTo')} title={t(locale, 'hdr.langTo')}>{other.toUpperCase()}</a>
+          </div>
+          <button type="button" class="tg tg-btn" id="theme-toggle" aria-label={t(locale, 'hdr.themeAriaDark')}
+            data-aria-dark={t(locale, 'hdr.themeAriaDark')} data-aria-light={t(locale, 'hdr.themeAriaLight')}>
+            <svg class="tg-ic ic-dark" viewBox="0 0 24 24" width="16" height="16" aria-hidden="true"><path d="M12 3a9 9 0 1 0 9 9 7 7 0 0 1-9-9Z" fill="currentColor" /></svg>
+            <svg class="tg-ic ic-light" viewBox="0 0 24 24" width="16" height="16" aria-hidden="true"><circle cx="12" cy="12" r="4.2" fill="currentColor"/><path d="M12 2.5v2.2M12 19.3v2.2M2.5 12h2.2M19.3 12h2.2M5.3 5.3l1.6 1.6M17.1 17.1l1.6 1.6M5.3 18.7l1.6-1.6M17.1 6.9l1.6-1.6" stroke="currentColor" stroke-width="1.7" stroke-linecap="round"/></svg>
+            <span class="tg-k">{t(locale, 'hdr.theme')}:</span>
+            <span class="txt-dark">{t(locale, 'hdr.dark')}</span><span class="txt-light">{t(locale, 'hdr.light')}</span>
           </button>
+          <script is:inline>
+            (() => { const b = document.getElementById('theme-toggle'); if (!b) return;
+              const l = document.documentElement.classList.contains('light');
+              b.setAttribute('aria-label', l ? b.dataset.ariaLight : b.dataset.ariaDark); })();
+          </script>
         </div>
       </div>
     </header>
@@ -147,6 +162,8 @@ const abs = (l: Locale) => new URL(localePath(l, slug), Astro.site).href;
       document.getElementById('theme-toggle')?.addEventListener('click', () => {
         const isLight = document.documentElement.classList.toggle('light');
         try { localStorage.setItem('theme', isLight ? 'light' : 'dark'); } catch {}
+        const b = document.getElementById('theme-toggle')!;
+        b.setAttribute('aria-label', (isLight ? b.dataset.ariaLight : b.dataset.ariaDark)!);
       });
     </script>
   </body>
@@ -166,6 +183,7 @@ const abs = (l: Locale) => new URL(localePath(l, slug), Astro.site).href;
   .bar { display: flex; align-items: center; gap: 12px; min-height: 56px; }
   .brand {
     display: inline-flex; align-items: center; gap: 8px; font-weight: 600; font-size: 17px;
+    min-height: 44px; min-width: 44px; justify-content: center;
     color: rgb(var(--fg)); text-decoration: none; letter-spacing: -0.01em;
   }
   .brand svg { color: rgb(var(--accent)); }
@@ -177,15 +195,35 @@ const abs = (l: Locale) => new URL(localePath(l, slug), Astro.site).href;
   nav a:hover { color: rgb(var(--fg)); }
   nav a[aria-current='page'] { color: rgb(var(--fg)); box-shadow: inset 0 -2px 0 rgb(var(--accent)); border-radius: 0; }
   .tools { margin-left: auto; display: flex; align-items: center; gap: 6px; }
-  .icon-btn {
-    display: inline-grid; place-items: center; width: 44px; height: 44px; border-radius: 8px;
-    border: 1px solid transparent; background: transparent; color: rgb(var(--muted)); cursor: pointer;
+  .tg {
+    display: inline-flex; align-items: center; gap: 6px; min-height: 44px; padding: 0 10px; border-radius: 8px;
+    border: 1px solid rgb(var(--border)); background: transparent; color: rgb(var(--muted));
+    font: 500 13px/1 var(--font-sans, inherit); white-space: nowrap;
   }
-  .lang { font: 600 13px/1 var(--font-mono, monospace); text-decoration: none; letter-spacing: 0.04em; }
-  .icon-btn:hover { color: rgb(var(--fg)); border-color: rgb(var(--border)); }
+  .tg-ic { flex: none; color: rgb(var(--accent)); }
+  .tg-k { color: rgb(var(--muted)); }
+  .tg-cur { color: rgb(var(--fg)); font-weight: 700; font-family: var(--font-mono, monospace); }
+  .tg-sep { color: rgb(var(--border)); }
+  .tg-opt {
+    display: inline-grid; place-items: center; min-width: 32px; min-height: 44px; margin: 0 -6px;
+    color: rgb(var(--muted)); font-family: var(--font-mono, monospace); text-decoration: underline;
+    text-underline-offset: 3px;
+  }
+  .tg-opt:hover, .tg-btn:hover { color: rgb(var(--fg)); }
+  .tg-btn { cursor: pointer; color: rgb(var(--fg)); }
+  .ic-light, .txt-light { display: none; }
+  :global(:root.light) .ic-light, :global(:root.light) .txt-light { display: inline; }
+  :global(:root.light) .ic-dark, :global(:root.light) .txt-dark { display: none; }
+  @media (max-width: 719px) {
+    .bar { flex-wrap: wrap; row-gap: 0; padding-top: 4px; }
+    nav { order: 3; flex: 1 0 100%; margin-left: -10px; }
+  }
+  @media (max-width: 399px) {
+    .tg-k { position: absolute; width: 1px; height: 1px; overflow: hidden; clip: rect(0 0 0 0); white-space: nowrap; }
+    .tg { padding: 0 8px; gap: 5px; }
+  }
   @media (max-width: 560px) {
     .brand span { display: none; }
-    nav { margin-left: 0; }
     nav a { padding: 0 8px; font-size: 14px; }
   }
   footer.site {
