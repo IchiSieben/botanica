@@ -1,4 +1,4 @@
-# HANDOFF — Botánica v2 (explorable atlas)
+# HANDOFF — Botánica (explorable atlas) · current: v3.1.0
 
 ## Why the plant radial looked sparse (v3.1)
 
@@ -35,60 +35,67 @@ regardless of open/closed state, so the plant sunburst reads full even where the
 looked empty) — recorded here because SPEC asks for the explanation before radial is removed.
 
 
-## v3.1 tree work — status (this branch, not yet merged)
+## v3.1.0 — release state (2026-09-25) — contract: SPEC.md (v3.1)
 
-Scope: SPEC v3.1 item 2 (tree) and the tree part of item 4 (housekeeping), on `v3.1-tree`. Not
-done: item 0 (dossier facts), item 1 (filter clarity), item 3 (species page). Those are separate
-tasks.
+Items 0–4 delivered on main; worktrees for each item merged and removed (`git worktree list`
+shows only main). Release commit tagged **v3.1.0** (see "LIVE" below once deployed).
 
-Delivered: linear (orthogonal) is the default view; radial replaced by a zoomable ECharts
-sunburst (angle = species, click-to-zoom via `nodeClick:'rootToNode'`, own HTML breadcrumb since
-sunburst has no native one and a canvas one would not be keyboard-reachable, same clade/order
-palette as the linear tree); an optional lazy 3D view (vanilla Three.js + OrbitControls, tier
->= 2 and no reduced-motion only); the tree lede names clades in both locales; the tree, orders
-list and department bars fit above the fold at 1440x900; `window.__phylo` gated out of
-production; `scripts/gate-tree.mjs` extended with cases for all of the above, plus a `dist/`
-grep for the hook.
+- **Item 0 (dossier):** 10 intro facts (4 own-data, 6 from `docs/RESEARCH-PERU.md`, each with its
+  source) and a 12-row timeline 1777 → 2026. `ROADMAP.md` from dossier §5. **Excluded on purpose**
+  (dossier marks them ⚠️ or unverifiable): facts #4, #10, #12, the Humboldt 1802 row, the Brack
+  year; 1753 dropped as out of scope for Peru. URL check: 53/56 resolve; BHL `bibliography/194092`
+  and iNaturalist answer 403 to bots, Conosur only over http. Brako & Zarucchi cited via archive.org.
+- **Item 1 (filter clarity):** question bar, zero-results state with per-filter "without X → n",
+  crossfilter note per chart, compositor-only flash on changed panels, department detail families
+  from the same filtered set (`facets.ts familyCounts`), rescale note in the map legend, tour step.
+- **Item 2 (tree):** linear default, zoomable sunburst (radial retired, `?view=radial` → sunburst),
+  lazy 3D (see sections below), clade-aware lede, one-glance layout at 1440×900.
+- **Item 3 (species):** virtual list/grid, sort, endemic/department/family filters; drawer with
+  mini map, year-described position, same-genus, IPNI/GBIF/POWO links, photo + threat slots
+  inside the render template (`src/lib/drawer.ts`) for session B.
+- **Toggle bug (item 3):** NOT reproducible as a count bug — `#sp-count` and the explorer KPIs
+  already followed the kingdom. What stayed frozen was the species page **lede**, which had both
+  kingdoms' numbers typed into i18n. Fixed (`f6c6094`): kingdom-aware lede, numbers from
+  `mart_kpis`.
+- **Item 4:** `window.__phylo` only in the `PUBLIC_TEST_HOOKS=1` build (`dist-test/`, 0 hits in
+  `dist/`); `scripts/gate-pinch.mjs` (CDP touch + synthetic pointer replay for one-finger lift).
+- **Reviewer (Opus, read-only, v3.1 diff):** 12 findings, no high severity, security pass. All
+  applied (`2b37efc`, `f70542c`): species Enter crash, filter dropdowns after populate, keyboard
+  focus/active row, `aria-rowcount`, dossier wording (ANP/ACR/ACP, "thought to remain
+  undescribed"), false panel flashes + forced reflow, 3D mount race + `attachResize`, 3D render
+  on demand + material disposal + `forceContextLoss`, expedition dated 1777–1788, v3.1.0 in the
+  releases fact, deterministic `ORDER BY` for accepted IPNI ids (ETL re-run: exports byte-identical).
+- **Gates (local, quiet machine):** `astro check` 0 errors (tsconfig now excludes `dist-test`,
+  whose bundles crashed the checker's heap) · `npm test` all pass · `check:dois` 13/13 ·
+  intro, explorer, tree (4401), changes, pinch, clarity, species, `npm run gate`: all pass ·
+  axe dark 1280+360 EN+ES: 0 violations (only the two known script flags).
+- **Lighthouse mobile, median of 3 (local `dist`, 4400):** perf / a11y / LCP / TBT / CLS —
+  `/` 98/97/1.88 s/103/0 · `?dep=LORETO` 99/97/1.86/90/0.047 · `especies` 99/100/1.78/28/0 ·
+  `filogenia` 96/100/1.71/184/0.077 · `cambios` 99/96/1.39/4/0 · `es/` 98/97/1.83/93/0 ·
+  `es/?dep=LORETO` 97/97/1.86/145/0.047 · `es/especies` 97/100/1.83/48/0.081 ·
+  `es/filogenia` 93/100/1.68/273/0.075 · `es/cambios` 100/96/1.38/36/0. BP and SEO 100 everywhere.
+  `es/especies` CLS 0.081 vs 0 in EN: not investigated, under the 0.1 budget.
+- **Measurement hygiene:** an orphaned `find / -iname *research*peru*` from the v3-A dossier
+  search ran ~4 h at ~65 % CPU (stopped by PID). Earlier Lighthouse tries in this session showed
+  `?dep=LORETO` at 47–89 with a 41 s "last visual change": contention (that `find`, other
+  sessions' Python jobs, my own probes), not code. Clean single run: 95 with last visual change 2.35 s.
+  `scripts/lighthouse.mjs` now keeps a report written before chrome-launcher's EBUSY cleanup error.
+  From Git Bash, page args get MSYS path mangling (`/` → `C:/Program Files/Git/`): run it from PowerShell.
+- **Agent INP flakiness:** the item agents saw INP failures in `gate.mjs` while 4 worktrees built
+  and tested at once. On main with a quiet machine it passes (search keystrokes ~40 ms). Machine
+  contention, not code; the 700 ms numbers recorded by the tree agent are not a regression.
 
-`?view=` is read once at boot (not written back — `lib/store.ts` is shared and out of this
-feature's scope): `radial` and `sunburst` both land on the sunburst, `3d` only on a capable
-device, anything else (including absent) is linear.
-
-**Gates, this session (local, Windows, worktree `agent-af628b569724efa9f`):**
-- `npx astro check`: 0 errors, 0 warnings, 4 pre-existing `is:inline` hints (none in files this
-  task touched, except `PhyloTree.astro`'s new `data-howto` script tag, same pattern as its
-  existing `data-tree` one).
-- `npm test`: 16/17. The one failure (`sources.ts versions and DOIs match data/raw/manifest.json`)
-  is `ENOENT` on `data/raw/manifest.json`, which is gitignored and not present in this worktree —
-  unrelated to the tree (facets/sources test, not touched by this task) and not something this
-  task's scope can regenerate.
-- `npm run check:dois`: 8/8.
-- `npm run gate:v3`'s tree step (`gate-tree.mjs` against `dist-test` on 4401, the
-  `PUBLIC_TEST_HOOKS=1` build): full pass, including every new v3.1 case (default view, sunburst
-  zoom + breadcrumb, 3D lazy-and-gated, `__phylo` absent from `dist/`, one-glance layout). One
-  transient failure on an earlier run (INP median 248 ms, and separately a `page.goto` timeout)
-  traced to ~11 leaked `chrome.exe` processes from earlier runs in this same session competing
-  for CPU under the gate's 4x throttle; both cleared on a clean rerun (160 ms median) and are not
-  attributed to the code.
-- `npm run gate` (production `dist` on 4412): fails on 2 of the INP checks unrelated to this
-  task's scope — `search keystrokes: INP ~700 ms` and `decade tap: INP ~450 ms` (budget 200 ms),
-  both against `Explorer.astro`'s search box and year brush, neither touched by this branch.
-  Reproduced twice (696/448 ms and 760/520 ms). Every other check in `gate.mjs` passes, including
-  the tree page's own checks and its `tree order tap: 112-128 ms`. Historical HANDOFF numbers for
-  these same two interactions were 48 ms and 32 ms (v3.0), so this reads as a real regression on
-  this machine right now, not code this branch wrote — but it was not isolated further (would
-  need a clean-machine run against `main` at the same commit to confirm it predates this branch).
-  **Flagged, not fixed**: out of the tree/item-6 scope this task was given, and every file
-  `git diff --stat` shows changed is inside this task's listed scope (see the diff), so there is
-  no code path from this branch into `Explorer.astro`'s search or decade-brush handlers.
-- Lighthouse mobile on `/filogenia/` (single run, `CHROME_PATH=... RUNS=1 node
-  scripts/lighthouse.mjs 4412 lh-tree filogenia/`, production `dist`, EN only): **perf 95 · a11y
-  100 · best-practices 100 · SEO 100 · LCP 1.84 s · TBT 206 ms · CLS 0.077 · 280 KB transferred.**
-  Comfortably above the >=90 floor despite the always-loaded tree chunk growing (TreeChart ->
-  TreeChart+SunburstChart, see "3D tree: port decision" for exact sizes) — it is still fetched
-  lazily on intersection, after LCP. Single run, not the median-of-3/5 HANDOFF otherwise records;
-  a full median run (ES too) is still worth doing before merging, but this rules out a gross
-  regression.
+### Open items / known gaps
+- **COL XR backbone migration** (dossier §0): out of scope for v3.1; the atlas still uses WCVP as
+  backbone for plants. Decide before v4.
+- **Photos and threat status** (session B): slots exist in the drawer template, no data yet.
+- **`ATLAS_DUCKDB_PATH`** (`etl/config.py`) redirects every ETL script, including the ones that
+  WRITE to the DuckDB file — pointing it at a copy for a read-only run is safe, pointing it at
+  another project's DB is not.
+- The tree's canvases (ECharts, WebGL) are not axe-checkable; the orders list and bars are the
+  accessible path.
+- `?view=` is read at boot, not written back to the URL.
+- 3D chunk: 547 KB raw / 137 KB gzip, only fetched on opt-in at tier ≥ 2 without reduced motion.
 
 ## window.__phylo (test hook) — v3.1
 
