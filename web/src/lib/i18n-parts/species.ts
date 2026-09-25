@@ -1,0 +1,71 @@
+import { part } from './part';
+
+// v3.1: drawer additions (mini map, timeline, same genus, external links) and the
+// species page's virtual list (view toggle, sort, filters). Keys never reuse one
+// from i18n.ts or another part (see explorer.ts's file comment).
+export default part(
+  {
+    // Drawer additions, shared by the explorer's drawer and the species page's detail pane.
+    'dr.mapLabel': 'Departments with a record of this species',
+    'dr.mapNone': 'No department has a geo-referenced record.',
+    'dr.timelineLabel': 'Year described, among species of this kingdom',
+    'dr.sameGenus': 'Same genus',
+    'dr.sameGenusNone': 'No other species of this genus in the checklist.',
+    'dr.links': 'More',
+    'dr.linkIpni': 'IPNI',
+    'dr.linkGbif': 'GBIF (Peru)',
+    'dr.linkPowo': 'POWO',
+    'dr.photoPlaceholder': 'No photo yet',
+    'dr.threatPlaceholder': 'Conservation status: not loaded yet',
+
+    // Species page: view/sort/filter controls.
+    'species.view.list': 'List',
+    'species.view.grid': 'Grid',
+    'species.view.label': 'View',
+    'species.sort.label': 'Sort by',
+    'species.sort.name': 'Name',
+    'species.sort.year': 'Year described',
+    'species.sort.records': 'Records',
+    'species.sort.family': 'Family',
+    'species.filters.label': 'Filters',
+    'species.filters.endemic': 'Endemic only',
+    'species.filters.dept': 'Department',
+    'species.filters.family': 'Family',
+    'species.filters.anyDept': 'Any department',
+    'species.filters.anyFamily': 'Any family',
+    'species.filters.clear': 'Clear filters',
+    'species.grid.records': 'records',
+    'species.grid.noYear': 'year unknown',
+  },
+  {
+    'dr.mapLabel': 'Departamentos con un registro de esta especie',
+    'dr.mapNone': 'Ningún departamento tiene un registro georreferenciado.',
+    'dr.timelineLabel': 'Año de descripción, entre las especies de este reino',
+    'dr.sameGenus': 'Mismo género',
+    'dr.sameGenusNone': 'No hay otras especies de este género en el checklist.',
+    'dr.links': 'Más',
+    'dr.linkIpni': 'IPNI',
+    'dr.linkGbif': 'GBIF (Perú)',
+    'dr.linkPowo': 'POWO',
+    'dr.photoPlaceholder': 'Sin foto todavía',
+    'dr.threatPlaceholder': 'Estado de conservación: aún no cargado',
+
+    'species.view.list': 'Lista',
+    'species.view.grid': 'Cuadrícula',
+    'species.view.label': 'Vista',
+    'species.sort.label': 'Ordenar por',
+    'species.sort.name': 'Nombre',
+    'species.sort.year': 'Año de descripción',
+    'species.sort.records': 'Registros',
+    'species.sort.family': 'Familia',
+    'species.filters.label': 'Filtros',
+    'species.filters.endemic': 'Solo endémicas',
+    'species.filters.dept': 'Departamento',
+    'species.filters.family': 'Familia',
+    'species.filters.anyDept': 'Cualquier departamento',
+    'species.filters.anyFamily': 'Cualquier familia',
+    'species.filters.clear': 'Limpiar filtros',
+    'species.grid.records': 'registros',
+    'species.grid.noYear': 'año desconocido',
+  },
+);

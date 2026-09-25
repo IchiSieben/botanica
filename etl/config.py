@@ -27,7 +27,10 @@ RAW = DATA / "raw"
 CACHE = DATA / "cache"
 EXPORTS = DATA / "exports"
 DOCS = ROOT / "docs"
-DUCKDB_PATH = DATA / "atlas.duckdb"
+
+# Overridable so a worktree without its own copy of the (large, gitignored) DB
+# can point at the shared one without copying it.
+DUCKDB_PATH = Path(os.environ.get("ATLAS_DUCKDB_PATH", DATA / "atlas.duckdb"))
 MANIFEST_PATH = RAW / "manifest.json"
 
 for _d in (DATA, RAW, CACHE, EXPORTS):

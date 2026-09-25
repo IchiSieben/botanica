@@ -171,7 +171,9 @@ async function exploreChecks(page, url) {
 async function speciesChecks(page, url) {
   await page.waitForSelector('#sp-list [data-i]');
   await page.fill('#sp-q', 'Cinchona');
-  await page.waitForFunction(() => document.querySelectorAll('#sp-list [data-i]').length < 50);
+  // v3.1: virtual scroll always paints ~20-25 rows regardless of filter state
+  // (no more 200-row cap to shrink below), so wait for the filtered text itself.
+  await page.waitForFunction(() => document.querySelector('#sp-list [data-i] .sci')?.textContent.includes('Cinchona'));
   await page.click('#sp-list [data-i]');
   await page.waitForFunction(() => location.search.includes('sp=') && (document.querySelector('[data-explorer]')?.dataset.painted ?? location.search) === location.search);
   const href = await page.getAttribute('#sp-detail a.btn', 'href');
