@@ -48,17 +48,17 @@ export const TOURS: Record<'explore' | 'species' | 'tree', Record<Locale, Step[]
   tree: {
     en: [
       { title: 'How to read this tree', body: 'How Peru’s <b>21,585 plant species</b> split across the major taxonomic groups. Four steps.' },
-      { target: '#phylo-plantae-chart', title: 'Each dot is a group', body: 'The centre is the kingdom; grey dots are <b>clades</b> and the coloured ones <b>orders</b>. Dot size is the number of species and colour the clade.', placement: 'right' },
+      { target: '#phylo-plantae-chart', title: 'Each dot is a group', body: 'The root is the kingdom; grey dots are <b>clades</b> and the coloured ones <b>orders</b>. Dot size is the number of species and colour the clade.', placement: 'right' },
       { target: '#phylo-plantae-chart', title: 'Open and select', body: '<b>Click</b> an order to expand its families and select it: the department bars and the explorer link follow. <b>Wheel</b> to zoom, <b>drag</b> to pan.', placement: 'right' },
       { target: '#phylo-plantae-side', title: 'Where it lives', body: 'Species of the selected group per department, from the same data as the explorer.', placement: 'left' },
-      { target: '#phylo-plantae .phylo-tools', title: 'If you get lost', body: '<b>Reset</b> recentres the tree. <b>Linear</b> lays it out horizontally, easier for long names.', placement: 'bottom' },
+      { target: '#phylo-plantae .phylo-tools', title: 'Two more ways to see it', body: '<b>Sunburst</b> zooms by clicking a slice, with a breadcrumb to step back out — better for how full each group looks. <b>Reset</b> reframes the current view.', placement: 'bottom' },
     ],
     es: [
       { title: 'Cómo se lee este árbol', body: 'Cómo se reparten las <b>21 585 especies</b> de plantas del Perú entre los grandes grupos taxonómicos. Cuatro pasos.' },
-      { target: '#phylo-plantae-chart', title: 'Cada punto es un grupo', body: 'El centro es el reino; los puntos grises son <b>clados</b> y los de color, <b>órdenes</b>. El tamaño del punto es el número de especies y el color, el clado.', placement: 'right' },
+      { target: '#phylo-plantae-chart', title: 'Cada punto es un grupo', body: 'La raíz es el reino; los puntos grises son <b>clados</b> y los de color, <b>órdenes</b>. El tamaño del punto es el número de especies y el color, el clado.', placement: 'right' },
       { target: '#phylo-plantae-chart', title: 'Abrir y elegir', body: '<b>Clic</b> en un orden despliega sus familias y lo selecciona: las barras por departamento y el enlace al explorador lo siguen. <b>Rueda</b> para acercar, <b>arrastrar</b> para moverte.', placement: 'right' },
       { target: '#phylo-plantae-side', title: 'Dónde vive', body: 'Especies del grupo elegido por departamento, con los mismos datos que el explorador.', placement: 'left' },
-      { target: '#phylo-plantae .phylo-tools', title: 'Si te pierdes', body: '<b>Reencuadrar</b> vuelve a centrar el árbol. <b>Lineal</b> lo despliega en horizontal, más cómodo para nombres largos.', placement: 'bottom' },
+      { target: '#phylo-plantae .phylo-tools', title: 'Dos formas más de verlo', body: '<b>Sunburst</b> se acerca al tocar un sector, con una ruta para volver a salir — se nota mejor qué tan lleno está cada grupo. <b>Reencuadrar</b> vuelve a centrar la vista actual.', placement: 'bottom' },
     ],
   },
 };

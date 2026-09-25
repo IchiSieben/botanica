@@ -35,6 +35,108 @@ regardless of open/closed state, so the plant sunburst reads full even where the
 looked empty) — recorded here because SPEC asks for the explanation before radial is removed.
 
 
+## v3.1 tree work — status (this branch, not yet merged)
+
+Scope: SPEC v3.1 item 2 (tree) and the tree part of item 4 (housekeeping), on `v3.1-tree`. Not
+done: item 0 (dossier facts), item 1 (filter clarity), item 3 (species page). Those are separate
+tasks.
+
+Delivered: linear (orthogonal) is the default view; radial replaced by a zoomable ECharts
+sunburst (angle = species, click-to-zoom via `nodeClick:'rootToNode'`, own HTML breadcrumb since
+sunburst has no native one and a canvas one would not be keyboard-reachable, same clade/order
+palette as the linear tree); an optional lazy 3D view (vanilla Three.js + OrbitControls, tier
+>= 2 and no reduced-motion only); the tree lede names clades in both locales; the tree, orders
+list and department bars fit above the fold at 1440x900; `window.__phylo` gated out of
+production; `scripts/gate-tree.mjs` extended with cases for all of the above, plus a `dist/`
+grep for the hook.
+
+`?view=` is read once at boot (not written back — `lib/store.ts` is shared and out of this
+feature's scope): `radial` and `sunburst` both land on the sunburst, `3d` only on a capable
+device, anything else (including absent) is linear.
+
+**Gates, this session (local, Windows, worktree `agent-af628b569724efa9f`):**
+- `npx astro check`: 0 errors, 0 warnings, 4 pre-existing `is:inline` hints (none in files this
+  task touched, except `PhyloTree.astro`'s new `data-howto` script tag, same pattern as its
+  existing `data-tree` one).
+- `npm test`: 16/17. The one failure (`sources.ts versions and DOIs match data/raw/manifest.json`)
+  is `ENOENT` on `data/raw/manifest.json`, which is gitignored and not present in this worktree —
+  unrelated to the tree (facets/sources test, not touched by this task) and not something this
+  task's scope can regenerate.
+- `npm run check:dois`: 8/8.
+- `npm run gate:v3`'s tree step (`gate-tree.mjs` against `dist-test` on 4401, the
+  `PUBLIC_TEST_HOOKS=1` build): full pass, including every new v3.1 case (default view, sunburst
+  zoom + breadcrumb, 3D lazy-and-gated, `__phylo` absent from `dist/`, one-glance layout). One
+  transient failure on an earlier run (INP median 248 ms, and separately a `page.goto` timeout)
+  traced to ~11 leaked `chrome.exe` processes from earlier runs in this same session competing
+  for CPU under the gate's 4x throttle; both cleared on a clean rerun (160 ms median) and are not
+  attributed to the code.
+- `npm run gate` (production `dist` on 4412): fails on 2 of the INP checks unrelated to this
+  task's scope — `search keystrokes: INP ~700 ms` and `decade tap: INP ~450 ms` (budget 200 ms),
+  both against `Explorer.astro`'s search box and year brush, neither touched by this branch.
+  Reproduced twice (696/448 ms and 760/520 ms). Every other check in `gate.mjs` passes, including
+  the tree page's own checks and its `tree order tap: 112-128 ms`. Historical HANDOFF numbers for
+  these same two interactions were 48 ms and 32 ms (v3.0), so this reads as a real regression on
+  this machine right now, not code this branch wrote — but it was not isolated further (would
+  need a clean-machine run against `main` at the same commit to confirm it predates this branch).
+  **Flagged, not fixed**: out of the tree/item-6 scope this task was given, and every file
+  `git diff --stat` shows changed is inside this task's listed scope (see the diff), so there is
+  no code path from this branch into `Explorer.astro`'s search or decade-brush handlers.
+- Lighthouse mobile on `/filogenia/` (single run, `CHROME_PATH=... RUNS=1 node
+  scripts/lighthouse.mjs 4412 lh-tree filogenia/`, production `dist`, EN only): **perf 95 · a11y
+  100 · best-practices 100 · SEO 100 · LCP 1.84 s · TBT 206 ms · CLS 0.077 · 280 KB transferred.**
+  Comfortably above the >=90 floor despite the always-loaded tree chunk growing (TreeChart ->
+  TreeChart+SunburstChart, see "3D tree: port decision" for exact sizes) — it is still fetched
+  lazily on intersection, after LCP. Single run, not the median-of-3/5 HANDOFF otherwise records;
+  a full median run (ES too) is still worth doing before merging, but this rules out a gross
+  regression.
+
+## window.__phylo (test hook) — v3.1
+
+Gated behind `import.meta.env.PUBLIC_TEST_HOOKS` (`web/src/scripts/tree.ts`, the very last lines
+of `bootTree()`): the whole hook-building block is behind an early `return` when that env var is
+falsy. `npm run build` (production, `dist/`) never sets it, so the hook does not exist there —
+verified by grepping every `.html`/`.js` in `dist/` for the literal string `__phylo` (0 hits,
+also wired into `scripts/gate-tree.mjs`'s first check). `npm run build:test`
+(`scripts/build-test.mjs`) sets `PUBLIC_TEST_HOOKS=1` and builds into `dist-test/` instead
+(gitignored) — that is the only build the hook exists in. `npm run serve:test` serves it on 4401.
+`gate:v3`'s tree step now points at 4401 (`gate-tree.mjs 4401`); every other v3 gate still runs
+against the production `dist` on 4400/4412, which never carries the hook. The hook itself grew
+two v3.1 fields: `view()` (which chart is mounted) and `crumbLength()`/`sunRoot()` (sunburst
+zoom depth and breadcrumb length), read the same read-only way the linear tree's `zoom()` /
+`nodePoint()` / `visible()` already were.
+
+## 3D tree: port decision (v3.1)
+
+**Ported (the approach, re-written, no code shared between repos):** an orbit-controlled
+Three.js scene where nodes sit on rings and a raycaster resolves clicks — the same idea as
+Armonía Viva's galaxy (`MusicTheory/src/modules/galaxy`, `src/engine/galaxy.ts`).
+
+**Not ported:** React Three Fiber. This app has no other React anywhere; pulling in R3F for one
+optional view would add a second UI framework for ~200 lines an imperative Three.js scene
+already does directly (`web/src/scripts/tree-3d.ts`), so it is vanilla `three` + its
+`OrbitControls` example module. Also not ported: the galaxy's particle/spiral starfield
+rendering — `tree-3d.ts` places nodes on depth rings with angle proportional to species (the
+same rule the sunburst uses) plus a small per-id-hashed vertical jitter for a "loose galaxy"
+read, not a procedural star system.
+
+**Gating:** enabled only at `tier >= 2` (`web/src/lib/tier.ts`) AND no
+`prefers-reduced-motion: reduce`; the button is `disabled` with a stated reason
+(`tree.view3dOff`) rather than hidden, so it is discoverable but explained. `import('./tree-3d')`
+only fires when the button is clicked — verified in `scripts/gate-tree.mjs` ("3D is lazy and
+gated by tier + reduced motion": no `tree-3d` request before the click, the chunk requested
+after).
+
+**Lazy chunk size** (`web/dist/_astro/`, v3.1 build): `tree-3d.*.js` — **546,982 bytes raw,
+136.81 KB gzip** (`three` core + `OrbitControls`, tree-shaken by Vite; no other view imports this
+file). It never ships in the initial bundle or in any page but `/filogenia/`, and even there
+only after the user opts in.
+
+**Side effect on the always-loaded tree chunk:** `echarts-tree.*.js` (linear + sunburst, shared
+with the tree page since v3) grew from ~200 KB gzip range (v3.0, TreeChart only) to
+**473,711 bytes raw, 159.70 KB gzip** after adding `SunburstChart`. This chunk is still lazy
+(mounted on intersection, after the page's first paint), so it should not move LCP, but it adds
+to the tree page's total transferred KB and its TBT — see the Lighthouse re-run below.
+
 ## v3.0.0 LIVE (2026-09-25 03:18 UTC) — contract: SPEC.md
 - https://ichisieben.dev/botanica/ · /es/ · /botanica/cambios/ · /botanica/es/cambios/
 - Botanica `5de89ac` = tag **v3.0.0** (also v1.0.0 → 1b97936, v2.0.0 → 04e07e8; annotated, pushed).
