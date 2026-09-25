@@ -22,15 +22,18 @@ const dateFmt = new Intl.DateTimeFormat(BCP47[locale], { day: 'numeric', month: 
 const date = (iso: string) => dateFmt.format(new Date(`${iso}T00:00:00Z`));
 
 const esc = (s: string) => s.replace(/[&<>"]/g, (c) => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;' })[c]!);
-const YEAR_KEYS = new Set(['y0', 'y1', 'peak', 'median']);
+const YEAR_KEYS = new Set(['y0', 'y1', 'peak', 'median', 'from']);
 const DEPT_KEYS = new Set(['dep', 'fewest', 'a', 'b', 'c']);
 /** A detail value as text: years ungrouped, departments by name, counts grouped. */
 const show = (k: string, v: number | string): string =>
   typeof v === 'string' ? (DEPT_KEYS.has(k) ? deptName(v) : v) : YEAR_KEYS.has(k) ? String(v) : nf(v);
 /** Fill `{key}` placeholders; values are HTML (already escaped). */
 const fill = (s: string, vars: Record<string, string>) => esc(s).replace(/\{(\w+)\}/g, (_, k) => vars[k] ?? `{${k}}`);
-const tx = (key: string, vars: Record<string, number | string> = {}) =>
-  fill(t(locale, key as Key), Object.fromEntries(Object.entries(vars).map(([k, v]) => [k, esc(show(k, v))])));
+type Src = SourceKey | 'changes';
+/** Fill a string; every number becomes a link to `src` (department/family names stay text). */
+const tx = (key: string, vars: Record<string, number | string>, src: Src) =>
+  fill(t(locale, key as Key), Object.fromEntries(Object.entries(vars).map(([k, v]) =>
+    [k, typeof v === 'number' || (src === 'changes' && /\d/.test(v)) ? link(show(k, v), src) : esc(show(k, v))])));
 
 const srcTitle = (k: SourceKey) => {
   const s = SOURCES[k] as { label: string; version?: string; doi?: string };
@@ -39,6 +42,9 @@ const srcTitle = (k: SourceKey) => {
 /** A number that is a link to its source (brief: every number links to its source). */
 const numLink = (text: string, k: SourceKey) =>
   `<a class="in-num" href="${sourceHref(SOURCES[k])}" rel="noopener" target="_blank" title="${esc(srcTitle(k))}">${esc(text)}</a>`;
+/** Same, including our own changelog (same origin, same tab). */
+const link = (text: string, src: Src) =>
+  src === 'changes' ? `<a class="in-num" href="${changesHref}">${esc(text)}</a>` : numLink(text, src);
 const value = (f: Fact) => (f.format === 'pct' ? `${nf(f.value)}${pctSign}` : f.format === 'year' ? String(f.value) : nf(f.value));
 
 const byId = Object.fromEntries(data.facts.map((f) => [f.id, f]));
@@ -57,8 +63,8 @@ const when = (m: Milestone) =>
     : m.id === 'peak-decade' && locale === 'es' ? `${m.year}–${m.year + 9}` : m.when;
 const mDetail = (m: Milestone) =>
   m.id === 'releases'
-    ? tx('intro.tl.releases', { v1: date(String(m.detail.v1)), v3: date(String(m.detail.v3)) })
-    : tx(`intro.tl.${m.id}`, m.detail);
+    ? tx('intro.tl.releases', { ...m.detail, v1: date(String(m.detail.v1)), v3: date(String(m.detail.v3)) }, 'changes')
+    : tx(`intro.tl.${m.id}`, m.detail, m.source);
 const mHref = (m: Milestone) => (m.source === 'changes' ? changesHref : sourceHref(SOURCES[m.source]));
 const mSrc = (m: Milestone) => (m.source === 'changes' ? t(locale, 'intro.tl.changes') : t(locale, 'intro.source'));
 
@@ -103,9 +109,9 @@ const spMax = c ? Math.max(c.a.species, c.b.species) : 1;
             <span class="in-v">{value(f)}</span>
             <span class="in-src">{t(locale, 'intro.source')}</span>
           </a>
-          <p class="in-label" set:html={tx(`intro.fact.${f.id}.label`, f.detail ?? {})} />
+          <p class="in-label" set:html={tx(`intro.fact.${f.id}.label`, f.detail ?? {}, f.source)} />
           {f.detail && t(locale, `intro.fact.${f.id}.detail` as Key) && (
-            <p class="in-detail" set:html={tx(`intro.fact.${f.id}.detail`, f.detail)} />
+            <p class="in-detail" set:html={tx(`intro.fact.${f.id}.detail`, f.detail, f.source)} />
           )}
         </li>
       ))}
@@ -152,7 +158,7 @@ const spMax = c ? Math.max(c.a.species, c.b.species) : 1;
     {c && (
       <div class="in-rr in-anim">
         <h3>{t(locale, 'intro.how.rr.title')}</h3>
-        <p set:html={tx('intro.how.rr.body', { a: c.a.dep, b: c.b.dep, ratio: c.ratio })} />
+        <p set:html={tx('intro.how.rr.body', { a: c.a.dep, b: c.b.dep, ratio: c.ratio }, 'gbifPlantae')} />
         <div class="in-rr-grid">
           {([['records', 'intro.how.rr.records', recMax], ['species', 'intro.how.rr.species', spMax]] as const).map(([k, key, max]) => (
             <div class="in-rr-group">
