@@ -1,0 +1,198 @@
+---
+/**
+ * Intro infographic (v3 item 1): the first screen of the explorer pages.
+ * Every figure comes from lib/intro-facts.ts (computed at build time from our exports)
+ * and is rendered as a link to its source (lib/sources.ts). No client JS except the
+ * deep-link check below and the "Explore" focus hand-off.
+ */
+import { t, fmt, localePath, BCP47, type Locale, type Key } from '../lib/i18n';
+import { SOURCES, sourceHref, type SourceKey } from '../lib/sources';
+import { computeFacts, loadIntroInputs, type Fact, type Milestone } from '../lib/intro-facts';
+import { deptName } from '../lib/depts';
+import '../styles/intro.css';
+
+interface Props { locale: Locale }
+const { locale } = Astro.props;
+
+const data = computeFacts(loadIntroInputs());
+const nf = fmt(locale);
+const pctSign = locale === 'es' ? ' %' : '%';
+const changesHref = localePath(locale, 'cambios/');
+const dateFmt = new Intl.DateTimeFormat(BCP47[locale], { day: 'numeric', month: 'short', year: 'numeric', timeZone: 'UTC' });
+const date = (iso: string) => dateFmt.format(new Date(`${iso}T00:00:00Z`));
+
+const esc = (s: string) => s.replace(/[&<>"]/g, (c) => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;' })[c]!);
+const YEAR_KEYS = new Set(['y0', 'y1', 'peak', 'median', 'from']);
+const DEPT_KEYS = new Set(['dep', 'fewest', 'a', 'b', 'c']);
+/** A detail value as text: years ungrouped, departments by name, counts grouped. */
+const show = (k: string, v: number | string): string =>
+  typeof v === 'string' ? (DEPT_KEYS.has(k) ? deptName(v) : v) : YEAR_KEYS.has(k) ? String(v) : nf(v);
+/** Fill `{key}` placeholders; values are HTML (already escaped). */
+const fill = (s: string, vars: Record<string, string>) => esc(s).replace(/\{(\w+)\}/g, (_, k) => vars[k] ?? `{${k}}`);
+type Src = SourceKey | 'changes';
+/** Fill a string; every number becomes a link to `src` (department/family names stay text). */
+const tx = (key: string, vars: Record<string, number | string>, src: Src) =>
+  fill(t(locale, key as Key), Object.fromEntries(Object.entries(vars).map(([k, v]) =>
+    [k, typeof v === 'number' || (src === 'changes' && /\d/.test(v)) ? link(show(k, v), src) : esc(show(k, v))])));
+
+const srcTitle = (k: SourceKey) => {
+  const s = SOURCES[k] as { label: string; version?: string; doi?: string };
+  return [s.label, s.version, s.doi && `doi:${s.doi}`].filter(Boolean).join(' · ');
+};
+/** A number that is a link to its source (brief: every number links to its source). */
+const numLink = (text: string, k: SourceKey) =>
+  `<a class="in-num" href="${sourceHref(SOURCES[k])}" rel="noopener" target="_blank" title="${esc(srcTitle(k))}">${esc(text)}</a>`;
+/** Same, including our own changelog (same origin, same tab). */
+const link = (text: string, src: Src) =>
+  src === 'changes' ? `<a class="in-num" href="${changesHref}">${esc(text)}</a>` : numLink(text, src);
+const value = (f: Fact) => (f.format === 'pct' ? `${nf(f.value)}${pctSign}` : f.format === 'year' ? String(f.value) : nf(f.value));
+
+const byId = Object.fromEntries(data.facts.map((f) => [f.id, f]));
+const kpSpecies = byId.species.value;
+const recordsTotal = Number(byId.top3Records.detail!.total);
+const placed = kpSpecies - Number(byId.noRecords.detail!.n);
+
+const why = fill(t(locale, 'intro.why'), {
+  species: numLink(nf(kpSpecies), 'wcvp'),
+  endemic: numLink(value(byId.endemic), 'wcvp'),
+  norec: numLink(value(byId.noRecords), 'gbifPlantae'),
+});
+
+const when = (m: Milestone) =>
+  m.id === 'snapshot' || m.id === 'releases' ? date(m.when)
+    : m.id === 'peak-decade' && locale === 'es' ? `${m.year}–${m.year + 9}` : m.when;
+const mDetail = (m: Milestone) =>
+  m.id === 'releases'
+    ? tx('intro.tl.releases', { ...m.detail, v1: date(String(m.detail.v1)), v3: date(String(m.detail.v3)) }, 'changes')
+    : tx(`intro.tl.${m.id}`, m.detail, m.source);
+const mHref = (m: Milestone) => (m.source === 'changes' ? changesHref : sourceHref(SOURCES[m.source]));
+const mSrc = (m: Milestone) => (m.source === 'changes' ? t(locale, 'intro.tl.changes') : t(locale, 'intro.source'));
+
+const c = data.contrast;
+const bar = (v: number, max: number) => `width:${Math.max(2, Math.round((1000 * v) / max) / 10)}%`;
+const recMax = c ? Math.max(c.a.records, c.b.records) : 1;
+const spMax = c ? Math.max(c.a.species, c.b.species) : 1;
+---
+
+<div class="intro" id="intro" data-intro>
+  <script is:inline>
+    // Deep links (explorer state in the URL, or #explorar) land on the explorer:
+    // runs before the sections below are parsed, so nothing shifts after first paint.
+    (function () {
+      var p = new URLSearchParams(location.search);
+      var keys = ['k', 'dep', 'ord', 'fam', 'st', 'lf', 'y0', 'y1', 'sp', 'm'];
+      if (location.hash === '#explorar' || keys.some(function (k) { return p.has(k); })) {
+        document.documentElement.classList.add('has-state');
+      }
+    })();
+  </script>
+  <a class="in-reveal wrap" href="#intro" data-intro-reveal>{t(locale, 'intro.reveal')}</a>
+
+  <section class="in-open wrap" aria-labelledby="in-h1">
+    <p class="in-kicker label">{t(locale, 'intro.kicker')}</p>
+    <h1 id="in-h1">{t(locale, 'hero.title')}</h1>
+    <p class="in-lede">{t(locale, 'hero.lede')}</p>
+    <p class="in-why" set:html={why} />
+    <div class="in-actions">
+      <a class="in-cta" href="#explorar" data-intro-explore>{t(locale, 'intro.cta')} <span aria-hidden="true">↓</span></a>
+      <a class="in-skip" href="#explorar" data-intro-explore>{t(locale, 'intro.skip')}</a>
+    </div>
+  </section>
+
+  <section class="in-facts wrap" aria-labelledby="in-facts-h">
+    <h2 id="in-facts-h">{t(locale, 'intro.facts.title')}</h2>
+    <p class="in-sub">{t(locale, 'intro.facts.lede')}</p>
+    <ul class="in-grid" role="list">
+      {data.facts.map((f) => (
+        <li class="in-card in-anim" data-fact={f.id}>
+          <a class="in-big" href={sourceHref(SOURCES[f.source])} rel="noopener" target="_blank" title={srcTitle(f.source)}>
+            <span class="in-v">{value(f)}</span>
+            <span class="in-src">{t(locale, 'intro.source')}</span>
+          </a>
+          <p class="in-label" set:html={tx(`intro.fact.${f.id}.label`, f.detail ?? {}, f.source)} />
+          {f.detail && t(locale, `intro.fact.${f.id}.detail` as Key) && (
+            <p class="in-detail" set:html={tx(`intro.fact.${f.id}.detail`, f.detail, f.source)} />
+          )}
+        </li>
+      ))}
+    </ul>
+  </section>
+
+  <section class="in-tl wrap" aria-labelledby="in-tl-h">
+    <h2 id="in-tl-h">{t(locale, 'intro.tl.title')}</h2>
+    <p class="in-sub">{t(locale, 'intro.tl.lede')}</p>
+    <ol class="in-tl-list" role="list">
+      {data.milestones.map((m) => (
+        <li class="in-tl-item in-anim" data-year={m.year} data-milestone={m.id}>
+          <a class="in-when" href={mHref(m)} rel="noopener" target={m.source === 'changes' ? undefined : '_blank'}
+            title={m.source === 'changes' ? undefined : srcTitle(m.source)}>
+            <span class="in-v">{when(m)}</span>
+            <span class="in-src">{mSrc(m)}</span>
+          </a>
+          <p set:html={mDetail(m)} />
+        </li>
+      ))}
+    </ol>
+  </section>
+
+  <section class="in-how wrap" aria-labelledby="in-how-h">
+    <h2 id="in-how-h">{t(locale, 'intro.how.title')}</h2>
+    <div class="in-flow">
+      <div class="in-box in-anim" data-box="wcvp">
+        <h3>{t(locale, 'intro.how.wcvp')}</h3>
+        <p set:html={fill(t(locale, 'intro.how.wcvp.sub'), { n: numLink(nf(kpSpecies), 'wcvp') })} />
+      </div>
+      <span class="in-op" aria-hidden="true">+</span>
+      <span class="sr-only">{t(locale, 'intro.how.plus')}</span>
+      <div class="in-box in-anim" data-box="gbif">
+        <h3>{t(locale, 'intro.how.gbif')}</h3>
+        <p set:html={fill(t(locale, 'intro.how.gbif.sub'), { n: numLink(nf(recordsTotal), 'gbifPlantae') })} />
+      </div>
+      <span class="in-op" aria-hidden="true">=</span>
+      <div class="in-box in-box-atlas in-anim" data-box="atlas">
+        <h3>{t(locale, 'intro.how.atlas')}</h3>
+        <p set:html={fill(t(locale, 'intro.how.atlas.sub'), { n: numLink(nf(placed), 'gbifPlantae') })} />
+      </div>
+    </div>
+
+    {c && (
+      <div class="in-rr in-anim">
+        <h3>{t(locale, 'intro.how.rr.title')}</h3>
+        <p set:html={tx('intro.how.rr.body', { a: c.a.dep, b: c.b.dep, ratio: c.ratio }, 'gbifPlantae')} />
+        <div class="in-rr-grid">
+          {([['records', 'intro.how.rr.records', recMax], ['species', 'intro.how.rr.species', spMax]] as const).map(([k, key, max]) => (
+            <div class="in-rr-group">
+              <p class="label">{t(locale, key)}</p>
+              {[c.a, c.b].map((d) => (
+                <div class="in-rr-row">
+                  <span class="in-rr-name">{deptName(d.dep)}</span>
+                  <span class="in-rr-track"><span class="in-rr-bar" style={bar(d[k], max)} data-kind={k}></span></span>
+                  <Fragment set:html={numLink(nf(d[k]), 'gbifPlantae')} />
+                </div>
+              ))}
+            </div>
+          ))}
+        </div>
+      </div>
+    )}
+  </section>
+
+  <section class="in-end wrap" aria-labelledby="in-end-h">
+    <h2 id="in-end-h">{t(locale, 'intro.end.title')}</h2>
+    <p class="in-sub">{t(locale, 'intro.end.body')}</p>
+    <a class="in-cta" href="#explorar" data-intro-explore>{t(locale, 'intro.cta')} <span aria-hidden="true">↓</span></a>
+  </section>
+</div>
+
+<script>
+  // "Explore": after the jump, hand keyboard focus to the explorer (no extra scroll).
+  // "About this atlas": un-collapse the intro for deep links, then the #intro jump runs.
+  for (const a of document.querySelectorAll<HTMLAnchorElement>('[data-intro-explore]')) {
+    a.addEventListener('click', () => {
+      requestAnimationFrame(() => document.getElementById('explorar')?.focus({ preventScroll: true }));
+    });
+  }
+  document.querySelector('[data-intro-reveal]')?.addEventListener('click', () => {
+    document.documentElement.classList.remove('has-state');
+  });
+</script>

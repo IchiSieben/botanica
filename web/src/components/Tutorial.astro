@@ -18,8 +18,12 @@ interface Props {
   id: string;
   steps: Step[];
   locale: Locale;
+  /** CSS selector. When set, the first-visit tour waits until this element fills most of
+   *  the viewport (or an `[data-intro-explore]` link is used) instead of opening on load.
+   *  The seen flag is the library's `ic7-tutorial:seen:<id>`. Unset = open on load. */
+  gate?: string;
 }
-const { id, steps, locale } = Astro.props;
+const { id, steps, locale, gate = '' } = Astro.props;
 const base = import.meta.env.BASE_URL;
 // The library is byte-identical to radar-precios' copy: only its strings are
 // localised, here, through its `labels` option.
@@ -35,7 +39,7 @@ const labels = {
   ? {t(locale, 'tut.open')}
 </button>
 
-<script type="module" define:vars={{ id, steps, base, labels }}>
+<script type="module" define:vars={{ id, steps, base, labels, gate }}>
   // The tour starts after the first paint, so it never delays the page itself.
   await new Promise((r) => requestAnimationFrame(() => setTimeout(r, 0)));
   const { createTutorial } = await import(`${base}tutorial/tutorial.js`);
@@ -43,7 +47,24 @@ const labels = {
     id,
     steps,
     labels,
+    auto: !gate,
   });
+  // Gated first visit (explorer behind the intro): open once the target's top edge is in
+  // the upper 40 % of the viewport, i.e. it covers ≥ ~60 % of it. A plain `threshold: 0.4`
+  // never fires when the target is taller than 2.5 viewports (the explorer at 360 px).
+  const target = gate ? document.querySelector(gate) : null;
+  if (target && !tour.seen()) {
+    let started = false;
+    const start = () => {
+      if (started || tour.seen()) return;
+      started = true;
+      io.disconnect();
+      requestAnimationFrame(() => requestAnimationFrame(tour.open));
+    };
+    const io = new IntersectionObserver((es) => { if (es.some((e) => e.isIntersecting)) start(); }, { rootMargin: '0px 0px -60% 0px' });
+    io.observe(target);
+    for (const a of document.querySelectorAll('[data-intro-explore]')) a.addEventListener('click', () => setTimeout(start, 300));
+  }
   // Reapertura manual: el tutorial se descarta para siempre, pero tiene que
   // poder volver a verse sin borrar el localStorage a mano.
   document.getElementById('tut-open')?.addEventListener('click', () => tour.open());

@@ -1,15 +1,23 @@
 ---
-/** The explorer page, shared by EN (/) and ES (/es/). */
+/** The explorer page, shared by EN (/) and ES (/es/): the intro infographic, then the explorer. */
 import Base from '../layouts/Base.astro';
+import Intro from '../components/Intro.astro';
 import Explorer from '../components/Explorer.astro';
 import Tutorial from '../components/Tutorial.astro';
 import { TOURS } from '../lib/tours';
 import type { Locale } from '../lib/i18n';
 
 const { locale } = Astro.props as { locale: Locale };
+// The page's <h1> lives in the intro. `h1: false` asks the explorer not to render its own
+// (prop added on another branch; spread so this branch type-checks before that merge).
+const explorerProps = { h1: false };
 ---
 
 <Base locale={locale} page="explore">
-  <Explorer locale={locale} />
-  <Tutorial id="botanica-explorar" locale={locale} steps={TOURS.explore[locale]} />
+  <Intro locale={locale} />
+  <div id="explorar" tabindex="-1">
+    <Explorer locale={locale} {...explorerProps} />
+  </div>
+  <!-- The tour waits for the explorer: it opens when #explorar reaches the viewport. -->
+  <Tutorial id="botanica-explorar" locale={locale} steps={TOURS.explore[locale]} gate="#explorar" />
 </Base>
