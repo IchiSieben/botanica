@@ -37,6 +37,18 @@ looked empty) — recorded here because SPEC asks for the explanation before rad
 
 ## v3.1.0 — release state (2026-09-25) — contract: SPEC.md (v3.1)
 
+**LIVE (2026-09-25 09:40 UTC).** Landing `367c20d` mirrors tag v3.1.0 (`web/dist` from
+`f70542c`, 38 tracked = 38 on disk); `7d62b0d` allowlists the public `.gob.pe` sources the intro
+cites (SERNANP, MINCETUR, BNP) in Landing's public-audit. Hostinger build
+`01a0d7ef-10ad-707d-ba75-791e7eb22539` completed. Landing pre-push: build + public-audit 0,
+check 0 errors, linkcheck 0, i18n-leaks 0, smoke 0 errors / 11 routes. Live smoke 72/72 (v3 checks
++ question bar, `/cambios/` v3.1.0, `?view=radial` → sunburst, species grid, drawer POWO/GBIF/IPNI,
+photo/threat slots). Live axe dark, 72 states: 0 violations. XSS probe live: 0 hits (9 params × 5
+pages + `sort`/`view`/`q`/`end` × 3 pages). Live files == Landing `dist` (modulo CRLF of a Windows
+checkout); every non-HTML file byte-identical to `web/dist`.
+The mirror was committed from a separate Landing worktree because another session had
+uncommitted gallery work in `Landing/`; that working tree was not touched.
+
 Items 0–4 delivered on main; worktrees for each item merged and removed (`git worktree list`
 shows only main). Release commit tagged **v3.1.0** (see "LIVE" below once deployed).
 
