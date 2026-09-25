@@ -8,6 +8,8 @@ export interface Source {
   /** Short label shown in source lines. Proper names, never translated. */
   label: string;
   version?: string;
+  /** Publication or retrieval year, for dossier sources without a `version` snapshot. */
+  year?: number;
   doi?: string;
   url?: string;
   license?: string;
@@ -62,6 +64,64 @@ export const SOURCES = {
     label: 'International Plant Names Index (IPNI)',
     url: 'https://www.ipni.org/',
     license: 'CC BY 4.0',
+  },
+
+  // --- Owner's dossier (docs/RESEARCH-PERU.md, consulted 2026-09-24) ------------------------
+  megadiverse: {
+    label: 'Biodiversity A-Z, megadiverse countries',
+    year: 2026,
+    url: 'https://www.biodiversitya-z.org/content/megadiverse-countries',
+  },
+  mincetur: {
+    label: 'MINCETUR, Ficha de Inventario de Recursos Turísticos — Huascarán',
+    year: 2026,
+    url: 'https://consultasenlinea.mincetur.gob.pe/fichaInventario/index.aspx?cod_Ficha=568',
+  },
+  libroRojo: {
+    label: 'León, Pitman & Roque (eds.) 2006, Revista Peruana de Biología 13(2): Libro Rojo de las Plantas Endémicas del Perú',
+    year: 2006,
+    doi: '10.15381/rpb.v13i2.1782',
+  },
+  sernanp: {
+    label: 'SERNANP, áreas naturales protegidas del Perú',
+    version: '19 June 2026',
+    year: 2026,
+    url: 'https://biodiversidadanp.sernanp.gob.pe/en/areas-naturales-protegidas/',
+  },
+  mondragon2024: {
+    label: 'Mondragón et al. 2024, Revista Peruana de Biología 31(1)',
+    year: 2024,
+    doi: '10.15381/rpb.v31i1.27006',
+  },
+  terSteege2016: {
+    label: 'ter Steege et al. 2016, Scientific Reports 6: 29549',
+    year: 2016,
+    doi: '10.1038/srep29549',
+  },
+  ruizPavonBiology2023: {
+    label: 'Biology 12(2): 294, 2023 (modern review of the Ruiz, Pavón & Dombey expedition)',
+    year: 2023,
+    doi: '10.3390/biology12020294',
+  },
+  raimondiBNP: {
+    label: 'Biblioteca Nacional del Perú, on Antonio Raimondi',
+    year: 2024,
+    url: 'https://www.bnp.gob.pe/bnp-recuerda-a-antonio-raimondi-al-cumplirse-200-anos-de-su-natalicio/',
+  },
+  weberbauerDB: {
+    label: 'Deutsche Biographie, August Weberbauer',
+    year: 2026,
+    url: 'https://www.deutsche-biographie.de/sfz139422.html',
+  },
+  brakoZarucchi1993: {
+    label: 'Brako & Zarucchi 1993, Catálogo de las Angiospermas y Gimnospermas del Perú',
+    year: 1993,
+    url: 'https://archive.org/details/mobot31753003155055',
+  },
+  ulloaUlloa2017: {
+    label: 'Ulloa Ulloa et al. 2017, Science 358: 1614–1617',
+    year: 2017,
+    doi: '10.1126/science.aao0398',
   },
 } satisfies Record<string, Source>;
 

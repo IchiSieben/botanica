@@ -1,6 +1,7 @@
 // Intro gate (v3 item 1), Playwright. EN + ES:
-//   - 8–10 fact cards; every fact number is an <a> to doi.org / ipni.org / gbif.org / the changelog
-//   - the timeline's first year equals the earliest year described (recomputed from the JSON)
+//   - 8–10 fact cards; every fact number is an <a> to its source (doi.org / ipni.org / gbif.org /
+//     the dossier's non-DOI domains / the changelog)
+//   - the timeline starts in 1777 (dossier anchor) and ends in 2026 (this atlas)
 //   - exactly one <h1> inside the intro
 //   - prefers-reduced-motion: reduce → every intro element has opacity 1 and no transform
 //   - ?dep=LORETO → the explorer is within 120 px of the viewport top; CLS ≤ 0.05
@@ -12,14 +13,15 @@
 //   node --experimental-strip-types scripts/gate-intro.mjs [port=4440]
 // Needs a served build (scripts/serve.mjs dist <port>). Exit 1 on any failure.
 import { chromium } from 'playwright-core';
-import { readFileSync } from 'node:fs';
 
 const port = process.argv[2] ?? '4440';
 const BASE = `http://localhost:${port}/botanica/`;
 const SHOTS = process.env.SHOTS; // optional dir for screenshots
-const facets = JSON.parse(readFileSync(new URL('../public/data/facets-plantae.json', import.meta.url), 'utf8'));
-const EARLIEST = Math.min(...facets.year.filter((y) => y > 0));
 const TOUR_ID = 'botanica-explorar';
+// Timeline anchors (v3.1 item 0): 1777 (dossier, Ruiz/Pavón/Dombey expedition start) to
+// 2026 (this atlas) — no longer the raw earliest WCVP year (1753, Linnaeus, dropped per SPEC).
+const TL_START = 1777;
+const TL_END = 2026;
 
 const failures = [];
 const fail = (m) => { failures.push(m); console.log(`  ✗ ${m}`); };
@@ -63,6 +65,7 @@ for (const locale of ['en', 'es']) {
         links: cards.map((c) => { const a = c.querySelector('.in-big'); return a ? { tag: a.tagName, href: a.href, text: a.querySelector('.in-v')?.textContent } : null; }),
         tlFirst: intro.querySelector('.in-tl-item')?.getAttribute('data-year'),
         tlFirstText: intro.querySelector('.in-tl-item .in-v')?.textContent,
+        tlLast: intro.querySelector('.in-tl-item:last-child')?.getAttribute('data-year'),
         tlLinks: [...intro.querySelectorAll('.in-tl-item')].map((li) => li.querySelector('a.in-when')?.href ?? null),
         h1: intro.querySelectorAll('h1').length,
         // Every digit shown in the intro sits inside a link (brief: every number links to its source).
@@ -79,13 +82,16 @@ for (const locale of ['en', 'es']) {
     });
     check(!s.unlinked.length, 'every digit in the intro is inside a source link', `${url}: unlinked numbers ${JSON.stringify(s.unlinked.slice(0, 6))}`);
     check(s.cards >= 8 && s.cards <= 10, `${s.cards} fact cards`, `${url}: ${s.cards} fact cards (want 8–10)`);
-    const allowed = (h) => /^https:\/\/(doi\.org|www\.ipni\.org|ipni\.org|www\.gbif\.org|gbif\.org)\//.test(h) || /\/botanica\/(es\/)?cambios\/$/.test(h);
+    // doi.org / IPNI / GBIF (own data) + the dossier's non-DOI domains (docs/RESEARCH-PERU.md) + the changelog.
+    const allowed = (h) => /^https:\/\/(doi\.org|www\.ipni\.org|ipni\.org|www\.gbif\.org|gbif\.org|www\.biodiversitya-z\.org|consultasenlinea\.mincetur\.gob\.pe|biodiversidadanp\.sernanp\.gob\.pe|www\.bnp\.gob\.pe|www\.deutsche-biographie\.de|archive\.org)\//.test(h) || /\/botanica\/(es\/)?cambios\/$/.test(h);
     const bad = s.links.filter((l) => !l || l.tag !== 'A' || !allowed(l.href) || !/\d/.test(l.text ?? ''));
     check(!bad.length, 'every fact number is a link to its source', `${url}: fact links ${JSON.stringify(bad)}`);
     const badTl = s.tlLinks.filter((h) => !h || !allowed(h));
     check(!badTl.length, 'every timeline year links to its source', `${url}: timeline links ${JSON.stringify(badTl)}`);
-    check(Number(s.tlFirst) === EARLIEST && s.tlFirstText === String(EARLIEST),
-      `timeline starts at ${EARLIEST}`, `${url}: timeline first year ${s.tlFirst}/${s.tlFirstText}, expected ${EARLIEST}`);
+    check(Number(s.tlFirst) === TL_START && s.tlFirstText === String(TL_START),
+      `timeline starts at ${TL_START}`, `${url}: timeline first year ${s.tlFirst}/${s.tlFirstText}, expected ${TL_START}`);
+    check(Number(s.tlLast) === TL_END,
+      `timeline ends at ${TL_END}`, `${url}: timeline last year ${s.tlLast}, expected ${TL_END}`);
     check(s.h1 === 1, 'intro has exactly one <h1>', `${url}: intro has ${s.h1} <h1>`);
     // "Explore" → explorer at the top and focused.
     await page.click('.in-open .in-cta');
