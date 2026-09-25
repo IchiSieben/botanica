@@ -7,13 +7,23 @@
  * (species-*.json, built by etl/build_species_index.py) downloads once and the
  * search runs in the browser, with no backend and no per-query cost.
  *
- * v2: shares the explorer's URL state (?k=, ?sp=), so a selected species is a
- * link, and "Show on map" opens it in the explorer with the map following.
+ * v3.1: virtual scrolling replaced the 200-row cap (the list can now reach the
+ * last of 21,585 rows), a list/grid toggle, sort (name/year/records/family) and
+ * filters (endemic, department, family) that share the explorer's URL fields
+ * (?dep=, ?fam=, ?st=endemica) so a link round-trips between the two pages. The
+ * detail pane now renders through the same drawer.ts template as the explorer's
+ * drawer (mini map, timeline, same-genus, IPNI/GBIF/POWO).
  */
 import { t, type Locale } from '../lib/i18n';
+import { departmentPaths } from '../lib/geo';
 
 interface Props { locale: Locale }
 const { locale } = Astro.props;
+
+// Build-time only: the same department polygons the explorer's #map uses, so the
+// drawer's mini map on this page (which has no #map to clone paths from) matches.
+const { paths: deptPaths, width: mapW, height: mapH } = departmentPaths();
+const mapAsset = { paths: deptPaths.map((p) => ({ name: p.name, d: p.d })), width: mapW, height: mapH };
 ---
 
 <div class="sp" data-species-root>
@@ -29,25 +39,68 @@ const { locale } = Astro.props;
     </div>
   </header>
 
+  <div class="sp-tools">
+    <div class="sp-tool">
+      <label class="sr-only" for="sp-sort">{t(locale, 'species.sort.label')}</label>
+      <select id="sp-sort" class="btn">
+        <option value="name">{t(locale, 'species.sort.label')}: {t(locale, 'species.sort.name')}</option>
+        <option value="year">{t(locale, 'species.sort.label')}: {t(locale, 'species.sort.year')}</option>
+        <option value="records">{t(locale, 'species.sort.label')}: {t(locale, 'species.sort.records')}</option>
+        <option value="family">{t(locale, 'species.sort.label')}: {t(locale, 'species.sort.family')}</option>
+      </select>
+    </div>
+    <div class="sp-tool">
+      <label class="sr-only" for="sp-fam">{t(locale, 'species.filters.family')}</label>
+      <select id="sp-fam" class="btn"><option value="">{t(locale, 'species.filters.anyFamily')}</option></select>
+    </div>
+    <div class="sp-tool">
+      <label class="sr-only" for="sp-dep">{t(locale, 'species.filters.dept')}</label>
+      <select id="sp-dep" class="btn"><option value="">{t(locale, 'species.filters.anyDept')}</option></select>
+    </div>
+    <label class="sp-tool sp-check">
+      <input type="checkbox" id="sp-endemic" /> {t(locale, 'species.filters.endemic')}
+    </label>
+    <button type="button" class="btn" id="sp-clear">{t(locale, 'species.filters.clear')}</button>
+    <div class="sp-view seg" role="group" aria-label={t(locale, 'species.view.label')}>
+      <button type="button" class="btn on" data-view="list" aria-pressed="true">{t(locale, 'species.view.list')}</button>
+      <button type="button" class="btn" data-view="grid" aria-pressed="false">{t(locale, 'species.view.grid')}</button>
+    </div>
+  </div>
+
   <div class="sp-body">
-    <ol class="sp-list" id="sp-list" aria-label={t(locale, 'species.results')}></ol>
+    <div class="sp-list-wrap" id="sp-list-wrap">
+      <div class="sp-list" id="sp-list" role="listbox" aria-label={t(locale, 'species.results')} tabindex="0">
+        <div class="sp-spacer" id="sp-spacer">
+          <div class="sp-viewport" id="sp-viewport"></div>
+        </div>
+      </div>
+    </div>
     <aside class="sp-detail" id="sp-detail" aria-live="polite">
       <p class="note">{t(locale, 'species.pick')}</p>
     </aside>
   </div>
+
+  <script type="application/json" id="sp-map" set:html={JSON.stringify(mapAsset)} />
 </div>
 
 <script>
-  import { createStore, serialize, EMPTY } from '../lib/store';
+  import { createStore, serialize, EMPTY, type SpSort, type SpView } from '../lib/store';
   import { t, fmt, localePath, type Locale } from '../lib/i18n';
   import { deptName } from '../lib/depts';
   import { afterPaint } from '../lib/after-paint';
+  import { renderDrawer, yearHistogram, type DrawerMap, type DrawerSpecies, type DrawerYearDist } from '../lib/drawer';
 
   type Row = [string, number, number, number, [number, number][], number, number];
   interface Index {
     meta: { flags: Record<'native' | 'introduced' | 'endemic', number> };
     families: string[]; orders: string[]; depts: string[]; lifeforms: string[]; rows: Row[];
   }
+  interface Facets {
+    meta: { flags: Record<'native' | 'introduced' | 'endemic', number> };
+    depts: string[]; families: string[]; orders: string[]; lifeforms: string[];
+    fam: number[]; ord: number[]; life: number[]; flags: number[]; mask: number[]; year: number[] | null;
+  }
+  interface Proto { rows: [ipniId: string, authors: string, acceptedIpniId: string][] }
   type K = 'plantae' | 'fungi';
 
   const root = document.querySelector<HTMLElement>('[data-species-root]');
@@ -56,95 +109,204 @@ const { locale } = Astro.props;
     const n = fmt(locale);
     const store = createStore();
     const $q = document.getElementById('sp-q') as HTMLInputElement;
-    const $list = document.getElementById('sp-list')!;
+    const $sort = document.getElementById('sp-sort') as HTMLSelectElement;
+    const $fam = document.getElementById('sp-fam') as HTMLSelectElement;
+    const $dep = document.getElementById('sp-dep') as HTMLSelectElement;
+    const $endemic = document.getElementById('sp-endemic') as HTMLInputElement;
+    const $clear = document.getElementById('sp-clear') as HTMLButtonElement;
+    const $list = document.getElementById('sp-list') as HTMLDivElement;
+    const $spacer = document.getElementById('sp-spacer') as HTMLDivElement;
+    const $viewport = document.getElementById('sp-viewport') as HTMLDivElement;
     const $detail = document.getElementById('sp-detail')!;
     const $count = document.getElementById('sp-count')!;
+    const mapAsset = JSON.parse(document.getElementById('sp-map')!.textContent!) as DrawerMap;
     const esc = (s: string) => s.replace(/[<>&"]/g, (c) => ({ '<': '&lt;', '>': '&gt;', '&': '&amp;', '"': '&quot;' })[c] as string);
 
-    const cache = new Map<K, Promise<Index>>();
+    const cache = new Map<K, Promise<{ idx: Index; f: Facets }>>();
     const load = (k: K) => {
       if (!cache.has(k)) {
-        const url = `${import.meta.env.BASE_URL}data/species-${k}.json`;
-        cache.set(k, fetch(url, { priority: 'low' }).then((r) => {
-          if (!r.ok) throw new Error(`${r.status} ${url}`);
-          return r.json();
-        }));
+        const base = import.meta.env.BASE_URL;
+        cache.set(k, Promise.all([
+          fetch(`${base}data/species-${k}.json`, { priority: 'low' }).then((r) => { if (!r.ok) throw new Error(`${r.status} species-${k}`); return r.json() as Promise<Index>; }),
+          fetch(`${base}data/facets-${k}.json`, { priority: 'low' }).then((r) => { if (!r.ok) throw new Error(`${r.status} facets-${k}`); return r.json() as Promise<Facets>; }),
+        ]).then(([idx, f]) => ({ idx, f })));
       }
       return cache.get(k)!;
     };
+    // Protologue (IPNI/POWO ids): plants only, lazy, on the first drawer open.
+    let proto: Proto | null = null;
+    let protoReq: Promise<void> | null = null;
+    const loadProto = () => {
+      protoReq ??= fetch(`${import.meta.env.BASE_URL}data/protologue-plantae.json`, { priority: 'low' })
+        .then((r) => { if (!r.ok) throw new Error(`${r.status} protologue`); return r.json() as Promise<Proto>; })
+        .then((d) => { proto = d; renderDetail(store.get().sp); })
+        .catch((e) => { protoReq = null; console.warn(e); });
+      return protoReq;
+    };
 
-    // Cap on DOM rows: painting 21,585 freezes the page, and this is used by
-    // typing, not by scrolling 21k rows.
-    const CAP = 200;
     let idx: Index | null = null;
-    let shown: number[] = [];
+    let f: Facets | null = null;
+    let matched: number[] = [];
+    const yearDist = new Map<K, DrawerYearDist | null>();
 
-    function match(q: string): number[] {
-      if (!idx) return [];
-      if (!q) return idx.rows.map((_, i) => i);
-      const needle = q.toLowerCase();
+    // ---- sort permutations, computed once per kingdom load, not per keystroke ----
+    let order: Record<SpSort, number[]> = { name: [], year: [], records: [], family: [] };
+    function buildOrder() {
+      const rows = idx!.rows;
+      const all = rows.map((_, i) => i);
+      order = {
+        name: all, // species-*.json is already ORDER BY taxon_name
+        records: [...all].sort((a, b) => rows[b][3] - rows[a][3] || rows[a][0].localeCompare(rows[b][0])),
+        year: [...all].sort((a, b) => {
+          const ya = f!.year?.[a] || 0, yb = f!.year?.[b] || 0;
+          if (!ya && !yb) return rows[a][0].localeCompare(rows[b][0]);
+          if (!ya) return 1;
+          if (!yb) return -1;
+          return ya - yb || rows[a][0].localeCompare(rows[b][0]);
+        }),
+        family: [...all].sort((a, b) => {
+          const fa = rows[a][1] >= 0 ? idx!.families[rows[a][1]] : '￿';
+          const fb = rows[b][1] >= 0 ? idx!.families[rows[b][1]] : '￿';
+          return fa.localeCompare(fb) || rows[a][0].localeCompare(rows[b][0]);
+        }),
+      };
+    }
+
+    function populateFilters() {
+      const famNames = [...idx!.families].sort((a, b) => a.localeCompare(b));
+      $fam.innerHTML = `<option value="">${t(locale, 'species.filters.anyFamily')}</option>` +
+        famNames.map((x) => `<option value="${esc(x)}">${esc(x)}</option>`).join('');
+      const depNames = f!.depts.map((d) => [d, deptName(d)] as const).sort((a, b) => a[1].localeCompare(b[1]));
+      $dep.innerHTML = `<option value="">${t(locale, 'species.filters.anyDept')}</option>` +
+        depNames.map(([code, name]) => `<option value="${esc(code)}">${esc(name)}</option>`).join('');
+    }
+
+    function match(): number[] {
+      if (!idx || !f) return [];
+      const s = store.get();
+      const q = $q.value.trim().toLowerCase();
+      const famFilter = s.fam;
+      const depIdx = s.dep[0] ? f.depts.indexOf(s.dep[0]) : -1;
+      const endemicOnly = s.st === 'endemica';
+      const F = idx.meta.flags;
+      const base = order[s.sort];
       const out: number[] = [];
-      idx.rows.forEach((r, i) => {
-        const fam = r[1] >= 0 ? idx!.families[r[1]] : '';
-        if (r[0].toLowerCase().includes(needle) || fam.toLowerCase().includes(needle)) out.push(i);
-      });
+      for (const i of base) {
+        const r = idx.rows[i];
+        if (q) {
+          const fam = r[1] >= 0 ? idx.families[r[1]] : '';
+          if (!r[0].toLowerCase().includes(q) && !fam.toLowerCase().includes(q)) continue;
+        }
+        if (famFilter && (r[1] < 0 || idx.families[r[1]] !== famFilter)) continue;
+        if (depIdx >= 0 && !((f.mask[i] >> depIdx) & 1)) continue;
+        if (endemicOnly && !(r[5] & F.endemic)) continue;
+        out.push(i);
+      }
       return out;
     }
 
-    let listFor: number[] | null = null;
-    function renderList() {
+    // ---- virtual list: fixed row height, windowed rendering ----------------------
+    const ROW_H = 44;
+    const CARD_MIN = 200;
+    const OVERSCAN = 6;
+    function cols(): number {
+      if (store.get().view !== 'grid') return 1;
+      return Math.max(1, Math.floor($list.clientWidth / CARD_MIN));
+    }
+    function rowH(): number {
+      return store.get().view === 'grid' ? 120 : ROW_H;
+    }
+
+    function rowHtml(i: number, posinset: number): string {
+      const r = idx!.rows[i];
+      const fam = r[1] >= 0 ? idx!.families[r[1]] : '—';
+      const sel = r[0] === store.get().sp;
+      const grid = store.get().view === 'grid';
+      const year = f!.year?.[i];
+      if (grid) {
+        return `<button type="button" class="sp-card" role="option" id="sp-opt-${i}" data-i="${i}" aria-selected="${sel}" aria-posinset="${posinset}" aria-setsize="${matched.length}">
+          <span class="sci">${esc(r[0])}</span><span class="sp-fam">${esc(fam)}</span>
+          <span class="sp-meta mono">${r[3] ? n(r[3]) + ' ' + t(locale, 'species.grid.records') : t(locale, 'species.grid.records')} · ${year ? year : t(locale, 'species.grid.noYear')}</span></button>`;
+      }
+      return `<button type="button" class="sp-row" role="option" id="sp-opt-${i}" data-i="${i}" aria-selected="${sel}" aria-posinset="${posinset}" aria-setsize="${matched.length}">
+        <span class="sci">${esc(r[0])}</span><span class="sp-fam">${esc(fam)}</span><span class="sp-occ mono">${r[3] ? n(r[3]) : '·'}</span></button>`;
+    }
+
+    function renderWindow() {
       if (!idx) return;
-      listFor = shown;
-      const sel = store.get().sp;
-      $list.innerHTML = shown.slice(0, CAP).map((i) => {
-        const r = idx!.rows[i];
-        const fam = r[1] >= 0 ? idx!.families[r[1]] : '—';
-        return `<li><button type="button" data-i="${i}" aria-pressed="${r[0] === sel}">
-          <span class="sci">${esc(r[0])}</span><span class="sp-fam">${esc(fam)}</span><span class="sp-occ mono">${r[3] ? n(r[3]) : '·'}</span></button></li>`;
-      }).join('');
-      const extra = shown.length > CAP ? ` · ${t(locale, 'species.showing')} ${CAP}` : '';
-      $count.textContent = `${n(shown.length)} ${t(locale, 'species.of')} ${n(idx.rows.length)}${extra}`;
+      const total = matched.length;
+      const c = cols();
+      const rh = rowH();
+      const rows = Math.ceil(total / c);
+      $spacer.style.height = `${rows * rh}px`;
+      $list.setAttribute('aria-rowcount', String(total));
+      const scrollTop = $list.scrollTop;
+      const firstRow = Math.max(0, Math.floor(scrollTop / rh) - OVERSCAN);
+      const visibleRows = Math.ceil($list.clientHeight / rh) + OVERSCAN * 2;
+      const lastRow = Math.min(rows, firstRow + visibleRows);
+      $viewport.style.transform = `translateY(${firstRow * rh}px)`;
+      $viewport.className = `sp-viewport ${c > 1 ? 'grid' : 'list'}`;
+      if (c > 1) $viewport.style.setProperty('--sp-cols', String(c));
+      let html = '';
+      for (let row = firstRow; row < lastRow; row++) {
+        for (let ci = 0; ci < c; ci++) {
+          const pos = row * c + ci;
+          if (pos >= total) break;
+          html += rowHtml(matched[pos], pos + 1);
+        }
+      }
+      $viewport.innerHTML = html;
+    }
+
+    function renderList() {
+      matched = match();
+      const extra = ` · ${t(locale, 'species.of')} ${n(idx!.rows.length)}`;
+      $count.textContent = `${n(matched.length)}${extra}`;
+      renderWindow();
     }
 
     function renderDetail(name: string | null) {
       const i = name && idx ? idx.rows.findIndex((r) => r[0] === name) : -1;
-      if (!idx || i < 0) {
+      if (!idx || !f || i < 0) {
         $detail.innerHTML = `<p class="note">${t(locale, 'species.pick')}</p>`;
         return;
       }
+      const s = store.get();
       const r = idx.rows[i];
       const fam = r[1] >= 0 ? idx.families[r[1]] : null;
       const ord = r[2] >= 0 ? idx.orders[r[2]] : null;
-      const life = r[6] >= 0 ? idx.lifeforms[r[6]] : null;
-      const F = idx.meta.flags;
-      const tags = [
-        r[5] & F.endemic ? `<span class="tag endem">${t(locale, 'sp.endemic')}</span>` : '',
-        r[5] & F.native ? `<span class="tag">${t(locale, 'sp.native')}</span>` : '',
-        r[5] & F.introduced ? `<span class="tag intro">${t(locale, 'sp.introduced')}</span>` : '',
-      ].join('');
-      const max = r[4][0]?.[1] ?? 1;
-      const s = store.get();
+      const group = f.life[i] >= 0 ? f.lifeforms[f.life[i]] : null;
+      const raw = r[6] >= 0 ? idx.lifeforms[r[6]] : null;
+      const year = f.year?.[i] || null;
+      const plant = s.k === 'plantae';
+      if (plant && !proto) void loadProto();
+      const genus = r[0].split(' ')[0];
+      const sameGenus = idx.rows
+        .filter((row) => row[0] !== r[0] && row[0].split(' ')[0] === genus)
+        .map((row) => row[0])
+        .slice(0, 12);
+      if (!yearDist.has(s.k)) yearDist.set(s.k, yearHistogram(f.year));
+      const sp: DrawerSpecies = {
+        name: r[0], kingdom: s.k, family: fam, order: ord,
+        flags: r[5], flagBits: idx.meta.flags, records: r[3],
+        topDepts: r[4].map(([d, c]) => [deptName(idx!.depts[d]), c]),
+        lifeformGroup: group, lifeformRaw: raw, year,
+        proto: plant && proto ? { authors: proto.rows[i]?.[1] ?? '', ipniId: proto.rows[i]?.[0] ?? '', acceptedIpniId: proto.rows[i]?.[2] ?? '' } : null,
+        deptMask: f.mask[i] ?? null,
+        sameGenus,
+      };
       const mapHref = `${localePath(locale)}${serialize({ ...EMPTY, k: s.k, sp: r[0] })}`;
-      const famHref = fam ? `${localePath(locale)}${serialize({ ...EMPTY, k: s.k, fam })}` : '';
-      $detail.innerHTML = `
-        <p class="label">${esc(ord ?? '—')} › ${esc(fam ?? '—')}</p>
-        <h2 class="sci">${esc(r[0])}</h2>
-        ${tags ? `<div class="tags">${tags}</div>` : ''}
-        <dl class="dr-facts">
-          ${life ? `<div><dt>${t(locale, 'sp.lifeform')}</dt><dd>${esc(life)}</dd></div>` : ''}
-          <div><dt>${t(locale, 'sp.records')}</dt><dd class="mono">${r[3] ? n(r[3]) : t(locale, 'sp.noRecords')}</dd></div>
-        </dl>
-        ${r[4].length
-          ? `<p class="label">${t(locale, 'sp.topDepts')}</p><ul class="dr-bars">${r[4].map(([d, c]) =>
-              `<li><span>${esc(deptName(idx!.depts[d]))}</span><i style="transform:scaleX(${(c / max).toFixed(3)})"></i><b class="mono">${n(c)}</b></li>`).join('')}</ul>`
-          : `<p class="note">${t(locale, 'sp.noDepts')}</p>`}
-        <div class="dr-actions">
-          <a class="btn" href="${mapHref}">${t(locale, 'sp.showMap')} →</a>
-          ${famHref ? `<a class="btn" href="${famHref}">${t(locale, 'sp.filterFamily')} →</a>` : ''}
-        </div>`;
+      const links = {
+        mapHref,
+        famHref: fam ? `${localePath(locale, 'especies/')}${serialize({ ...EMPTY, k: s.k, fam })}` : null,
+        speciesHref: (nm: string) => `${localePath(locale, 'especies/')}${serialize({ ...store.get(), sp: nm })}`,
+      };
+      // The mini map's paths are shared across kingdoms; facetDepts (mask bit order) is not.
+      const mapCtx: DrawerMap = { ...mapAsset, facetDepts: f.depts };
+      $detail.innerHTML = renderDrawer(locale, sp, mapCtx, plant ? yearDist.get(s.k) ?? null : null, links);
     }
 
-    let loadedK: K | null = null;
+    let loadedFor: K | null = null;
     async function render() {
       const s = store.get();
       root!.querySelectorAll<HTMLButtonElement>('[data-kingdom]').forEach((b) => {
@@ -152,47 +314,88 @@ const { locale } = Astro.props;
         b.classList.toggle('on', on);
         b.setAttribute('aria-pressed', String(on));
       });
-      if (loadedK !== s.k) {
+      root!.querySelectorAll<HTMLButtonElement>('[data-view]').forEach((b) => {
+        const on = b.dataset.view === s.view;
+        b.classList.toggle('on', on);
+        b.setAttribute('aria-pressed', String(on));
+      });
+      $sort.value = s.sort;
+      $fam.value = s.fam ?? '';
+      $dep.value = s.dep[0] ?? '';
+      $endemic.checked = s.st === 'endemica';
+      if (loadedFor !== s.k) {
         $count.textContent = t(locale, 'search.loading');
         try {
-          idx = await load(s.k);
+          ({ idx, f } = await load(s.k));
         } catch (e) {
           $count.textContent = t(locale, 'species.error');
           console.warn(e);
           return;
         }
         if (store.get() !== s) return;
-        loadedK = s.k;
-        shown = match($q.value.trim());
+        loadedFor = s.k;
+        buildOrder();
+        populateFilters();
       }
-      // Picking a row only flips aria-pressed: re-rendering the list would drop keyboard focus.
-      if (listFor !== shown) renderList();
-      else $list.querySelectorAll<HTMLButtonElement>('button[data-i]').forEach((b) =>
-        b.setAttribute('aria-pressed', String(idx!.rows[Number(b.dataset.i)][0] === s.sp)));
+      renderList();
       renderDetail(s.sp);
     }
 
     let timer: number | undefined;
     $q.addEventListener('input', () => {
-      // Search walks 21k rows: debounce so it doesn't run on every key.
       clearTimeout(timer);
-      timer = window.setTimeout(() => {
-        shown = match($q.value.trim());
-        renderList();
-      }, 120);
+      timer = window.setTimeout(renderList, 120);
     });
+    $sort.addEventListener('change', () => store.set({ sort: $sort.value as SpSort }));
+    $fam.addEventListener('change', () => store.set({ fam: $fam.value || null }));
+    $dep.addEventListener('change', () => store.set({ dep: $dep.value ? [$dep.value] : [] }));
+    $endemic.addEventListener('change', () => store.set({ st: $endemic.checked ? 'endemica' : null }));
+    $clear.addEventListener('click', () => store.set({ dep: [], fam: null, st: null }, { push: false }));
+
+    root.querySelectorAll<HTMLButtonElement>('[data-kingdom]').forEach((b) =>
+      b.addEventListener('click', () => store.set({ k: b.dataset.kingdom as K })));
+    root.querySelectorAll<HTMLButtonElement>('[data-view]').forEach((b) =>
+      b.addEventListener('click', () => { store.set({ view: b.dataset.view as SpView }, { push: false }); renderWindow(); }));
 
     $list.addEventListener('click', (e) => {
       const b = (e.target as HTMLElement).closest<HTMLElement>('[data-i]');
       if (b && idx) store.set({ sp: idx.rows[Number(b.dataset.i)][0] });
     });
+    // Same-genus / family links inside the detail pane share the page's own store.
+    $detail.addEventListener('click', (e) => {
+      const a = (e.target as HTMLElement).closest<HTMLElement>('a[data-sp], a[data-fam]');
+      if (!a) return;
+      e.preventDefault();
+      if (a.dataset.sp) store.set({ sp: a.dataset.sp });
+      else if (a.dataset.fam != null) store.set({ fam: a.dataset.fam, sp: null });
+    });
 
-    root.querySelectorAll<HTMLButtonElement>('[data-kingdom]').forEach((b) =>
-      b.addEventListener('click', () => store.set({ k: b.dataset.kingdom as K })),
-    );
+    // Keyboard: arrows move one row (or one card, Left/Right in grid), Home/End jump.
+    let active = -1;
+    $list.addEventListener('keydown', (e) => {
+      if (!matched.length) return;
+      const c = cols();
+      const step: Record<string, number> = { ArrowDown: c, ArrowUp: -c, ArrowRight: store.get().view === 'grid' ? 1 : 0, ArrowLeft: store.get().view === 'grid' ? -1 : 0 };
+      if (e.key === 'Home') { active = 0; }
+      else if (e.key === 'End') { active = matched.length - 1; }
+      else if (e.key in step && step[e.key]) { active = Math.min(matched.length - 1, Math.max(0, (active < 0 ? 0 : active) + step[e.key])); }
+      else if (e.key === 'Enter' && active >= 0) { store.set({ sp: idx!.rows[matched[active]][0] }); return; }
+      else return;
+      e.preventDefault();
+      const rh = rowH(), row = Math.floor(active / c);
+      $list.scrollTop = Math.min(Math.max($list.scrollTop, (row + 1) * rh - $list.clientHeight), row * rh);
+      requestAnimationFrame(() => {
+        renderWindow();
+        $list.setAttribute('aria-activedescendant', `sp-opt-${matched[active]}`);
+        document.getElementById(`sp-opt-${matched[active]}`)?.scrollIntoView({ block: 'nearest' });
+      });
+    });
+
+    $list.addEventListener('scroll', () => requestAnimationFrame(renderWindow));
+    addEventListener('resize', () => requestAnimationFrame(renderWindow));
 
     store.subscribe(() => void render());
-    // The index (309 KB) is fetched once the page has painted.
+    // The index (~1.6 MB combined) is fetched once the page has painted.
     void afterPaint().then(render);
   }
 </script>
@@ -206,44 +409,67 @@ const { locale } = Astro.props;
     border: 1px solid rgb(var(--border)); background: rgb(var(--surface)); color: inherit;
   }
   #sp-q:focus { outline: none; border-color: rgb(var(--accent)); }
-  /* Own line, fixed height: its text changes length after the fetch and, sharing
-     a row, it re-wrapped the header (CLS 0.17). */
   .sp-count { order: 2; flex-basis: 100%; min-height: 1.6em; font-size: 12px; color: rgb(var(--muted)); white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+  .sp-tools { display: flex; flex-wrap: wrap; align-items: center; gap: 8px; }
+  .sp-tool select { min-height: 40px; font: inherit; font-size: 14px; border-radius: 8px; border: 1px solid rgb(var(--border)); background: rgb(var(--surface)); color: inherit; padding: 0 8px; }
+  .sp-check { display: flex; align-items: center; gap: 6px; font-size: 14px; min-height: 40px; }
+  .sp-view { margin-left: auto; }
   .sp-body { display: grid; grid-template-columns: minmax(0, 1fr); gap: 12px; }
   @media (min-width: 900px) { .sp-body { grid-template-columns: minmax(0, 1fr) 340px; } }
-  /* Fixed height: the list fills after the fetch, and a growing box shifted
-     the whole page (CLS 0.2–0.3 in the v1 audit). */
+  .sp-list-wrap { min-width: 0; }
   .sp-list {
-    list-style: none; margin: 0; padding: 0; height: min(66vh, 560px); overflow-y: auto;
+    list-style: none; margin: 0; padding: 0; height: min(66vh, 560px); overflow-y: auto; position: relative;
     border: 1px solid rgb(var(--border)); border-radius: 12px; background: rgb(var(--surface));
   }
-  .sp-list li + li { border-top: 1px solid rgb(var(--border) / 0.5); }
-  .sp-list button {
-    display: grid; grid-template-columns: minmax(0, 1fr) auto 56px; gap: 10px; align-items: baseline;
-    width: 100%; min-height: 44px; text-align: left; font-size: 15px; padding: 10px 12px;
-    background: transparent; border: 0; cursor: pointer;
+  .sp-list:focus-visible { outline: 2px solid rgb(var(--accent)); outline-offset: -2px; }
+  .sp-spacer { position: relative; width: 100%; }
+  .sp-viewport { position: absolute; top: 0; left: 0; right: 0; }
+  .sp-viewport.grid { display: grid; grid-template-columns: repeat(var(--sp-cols, 2), 1fr); gap: 8px; padding: 8px; }
+  .sp-row, .sp-card {
+    display: grid; width: 100%; min-height: 44px; text-align: left; font-size: 15px; padding: 10px 12px;
+    background: transparent; border: 0; border-bottom: 1px solid rgb(var(--border) / 0.5); cursor: pointer;
   }
-  .sp-list button:hover { background: rgb(var(--surface-2)); }
-  .sp-list button[aria-pressed='true'] { background: rgb(var(--accent) / 0.12); box-shadow: inset 3px 0 0 rgb(var(--accent)); }
-  .sp-list .sci { overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+  .sp-row { grid-template-columns: minmax(0, 1fr) auto 56px; gap: 10px; align-items: baseline; height: 44px; }
+  .sp-card { grid-template-rows: auto auto auto; gap: 4px; height: 120px; border: 1px solid rgb(var(--border) / 0.5); border-radius: 10px; }
+  .sp-row:hover, .sp-card:hover { background: rgb(var(--surface-2)); }
+  .sp-row[aria-selected='true'], .sp-card[aria-selected='true'] { background: rgb(var(--accent) / 0.12); box-shadow: inset 3px 0 0 rgb(var(--accent)); }
+  .sp-row .sci, .sp-card .sci { overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
   .sp-fam { font-size: 13px; color: rgb(var(--muted)); }
-  .sp-occ { font-size: 12px; color: rgb(var(--muted)); text-align: right; }
-  @media (max-width: 480px) { .sp-list button { grid-template-columns: minmax(0, 1fr) 48px; } .sp-fam { display: none; } }
+  .sp-occ, .sp-meta { font-size: 12px; color: rgb(var(--muted)); text-align: right; }
+  .sp-card .sp-meta { text-align: left; }
+  @media (max-width: 480px) { .sp-row { grid-template-columns: minmax(0, 1fr) 48px; } .sp-row .sp-fam { display: none; } }
   .sp-detail {
     border: 1px solid rgb(var(--border)); border-radius: 12px; padding: 16px; background: rgb(var(--surface));
     min-height: 200px; align-self: start;
   }
   .sp-detail :global(h2) { font-size: 22px; font-weight: 500; margin: 4px 0 10px; }
-  .sp-detail :global(.tags) { display: flex; flex-wrap: wrap; gap: 6px; margin-bottom: 12px; }
+  .sp-detail :global(.dr-head) { display: flex; gap: 12px; align-items: flex-start; }
+  .sp-detail :global(.dr-photo) { flex: none; width: 64px; height: 64px; border-radius: 10px; background: rgb(var(--surface-2)); display: grid; place-items: center; color: rgb(var(--muted)); }
+  .sp-detail :global(.dr-photo svg) { width: 32px; height: 32px; }
+  .sp-detail :global(.dr-crumbs) { display: flex; flex-wrap: wrap; gap: 4px; list-style: none; margin: 4px 0 0; padding: 0; font-size: 12px; color: rgb(var(--muted)); }
+  .sp-detail :global(.dr-crumbs li:not(:last-child))::after { content: '›'; margin-left: 4px; }
+  .sp-detail :global(.tags) { display: flex; flex-wrap: wrap; gap: 6px; margin: 10px 0 12px; }
   .sp-detail :global(.tag) { font-family: var(--font-mono); font-size: 12px; padding: 2px 8px; border-radius: 999px; border: 1px solid rgb(var(--border)); color: rgb(var(--muted)); }
   .sp-detail :global(.tag.endem) { border-color: rgb(var(--accent)); color: rgb(var(--accent-strong)); }
   .sp-detail :global(.tag.intro) { border-color: var(--warn); color: var(--warn); }
+  .sp-detail :global(.dr-threat:empty) { display: none; }
   .sp-detail :global(.dr-facts) { display: grid; gap: 4px; margin: 0 0 12px; font-size: 14px; }
   .sp-detail :global(.dr-facts div) { display: flex; justify-content: space-between; border-bottom: 1px dotted rgb(var(--border)); padding: 4px 0; }
   .sp-detail :global(.dr-facts dt) { color: rgb(var(--muted)); }
-  .sp-detail :global(.dr-facts dd) { margin: 0; }
+  .sp-detail :global(.dr-facts dd) { margin: 0; text-align: right; }
   .sp-detail :global(.dr-bars) { list-style: none; margin: 6px 0 14px; padding: 0; display: grid; gap: 6px; }
   .sp-detail :global(.dr-bars li) { display: grid; grid-template-columns: 110px 1fr auto; align-items: center; gap: 8px; font-size: 13px; }
   .sp-detail :global(.dr-bars i) { height: 8px; border-radius: 4px; background: rgb(var(--accent)); transform-origin: left; }
+  .sp-detail :global(.dr-mini-map) { width: 100%; max-width: 160px; height: auto; margin: 6px 0 12px; }
+  .sp-detail :global(.dr-mini-map path) { fill: rgb(var(--border)); stroke: rgb(var(--surface)); stroke-width: 0.6; }
+  .sp-detail :global(.dr-mini-map path.on) { fill: rgb(var(--accent)); }
+  .sp-detail :global(.dr-timeline) { position: relative; height: 40px; margin: 4px 0 14px; }
+  .sp-detail :global(.dr-yr-bars) { display: flex; align-items: flex-end; gap: 1px; height: 100%; }
+  .sp-detail :global(.dr-yr-bars i) { flex: 1; background: rgb(var(--border)); min-height: 2px; }
+  .sp-detail :global(.dr-yr-mark) { position: absolute; bottom: 0; width: 2px; height: 100%; background: rgb(var(--accent-strong)); transform: translateX(-1px); }
+  .sp-detail :global(.dr-genus) { list-style: none; margin: 4px 0 12px; padding: 0; display: flex; flex-wrap: wrap; gap: 4px 10px; }
+  .sp-detail :global(.dr-genus a) { color: rgb(var(--accent-strong)); }
+  .sp-detail :global(.dr-links) { font-size: 13px; margin: 0 0 12px; }
   .sp-detail :global(.dr-actions) { display: flex; flex-wrap: wrap; gap: 8px; }
+  .sp-detail :global(.label) { font-size: 12px; color: rgb(var(--muted)); margin: 10px 0 4px; }
 </style>

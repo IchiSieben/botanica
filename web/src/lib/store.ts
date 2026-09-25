@@ -15,6 +15,10 @@ import { DEPT_NAME } from './depts.ts';
 
 export type Status = 'endemica' | 'nativa' | 'introducida' | 'nodata';
 export type Metric = 'species' | 'records' | 'coverage';
+/** Species page only (v3.1): sort key and list/grid view. Kept in `State` so the
+ *  page's filters (dep, fam, st) round-trip through the same URL as the explorer. */
+export type SpSort = 'name' | 'year' | 'records' | 'family';
+export type SpView = 'list' | 'grid';
 
 export interface State {
   /** Kingdom: 'plantae' | 'fungi'. */
@@ -32,15 +36,21 @@ export interface State {
   sp: string | null;
   /** Map metric. */
   m: Metric;
+  /** Species page: sort key (default 'name', omitted from the URL). */
+  sort: SpSort;
+  /** Species page: list or grid (default 'list', omitted from the URL). */
+  view: SpView;
 }
 
 export const EMPTY: State = {
   k: 'plantae', dep: [], ord: null, fam: null, st: null, lf: null,
-  y0: null, y1: null, sp: null, m: 'species',
+  y0: null, y1: null, sp: null, m: 'species', sort: 'name', view: 'list',
 };
 
 const STATUSES: Status[] = ['endemica', 'nativa', 'introducida', 'nodata'];
 const METRICS: Metric[] = ['species', 'records', 'coverage'];
+const SORTS: SpSort[] = ['name', 'year', 'records', 'family'];
+const VIEWS: SpView[] = ['list', 'grid'];
 
 const int = (v: string | null): number | null => {
   if (v == null || !/^\d{4}$/.test(v)) return null;
@@ -53,6 +63,8 @@ export function parse(search: string): State {
   const k = p.get('k') === 'fungi' ? 'fungi' : 'plantae';
   const st = p.get('st') as Status | null;
   const m = p.get('m') as Metric | null;
+  const sort = p.get('sort') as SpSort | null;
+  const view = p.get('view') as SpView | null;
   return {
     k,
     // Only known departments: the key is shown in the UI, so a crafted ?dep= must not reach the DOM.
@@ -65,6 +77,8 @@ export function parse(search: string): State {
     y1: int(p.get('y1')),
     sp: p.get('sp') || null,
     m: m && METRICS.includes(m) ? m : 'species',
+    sort: sort && SORTS.includes(sort) ? sort : 'name',
+    view: view && VIEWS.includes(view) ? view : 'list',
   };
 }
 
@@ -81,6 +95,8 @@ export function serialize(s: State): string {
   if (s.y1 != null) p.set('y1', String(s.y1));
   if (s.sp) p.set('sp', s.sp);
   if (s.m !== 'species') p.set('m', s.m);
+  if (s.sort !== 'name') p.set('sort', s.sort);
+  if (s.view !== 'list') p.set('view', s.view);
   const q = p.toString();
   return q ? `?${q}` : '';
 }

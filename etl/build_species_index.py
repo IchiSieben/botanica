@@ -211,12 +211,25 @@ def build_facets(con: duckdb.DuckDBPyConnection, kingdom: str, index: dict) -> d
 
 
 def build_protologue(con: duckdb.DuckDBPyConnection, index: dict) -> dict:
-    """IPNI id + autores del nombre que fija el "año de descripcion" (v3, ficha de especie).
+    """IPNI id + autores del nombre que fija el "año de descripcion" (v3, ficha de especie),
+    mas el IPNI id del nombre ACEPTADO (v3.1, enlace a POWO).
 
-    Misma regla que `year` en build_facets: el basionimo si existe y es mas antiguo (la
-    descripcion original), si no el nombre aceptado. Alineado fila a fila con el indice.
-    Se carga diferido, solo al abrir una ficha: no pesa en la primera pintura.
+    `ipniId` sigue la misma regla que `year` en build_facets: el basionimo si existe y es
+    mas antiguo (la descripcion original), si no el nombre aceptado -- ese id enlaza al
+    protologo. POWO en cambio resuelve por el nombre aceptado, nunca por el basionimo, asi
+    que `acceptedIpniId` es un campo aparte (a veces el mismo, a veces no).
+    Alineado fila a fila con el indice. Se carga diferido, solo al abrir una ficha.
     """
+    accepted_ipni: dict[str, str] = {
+        name: ipni or ""
+        for name, ipni in con.execute(
+            """
+            SELECT a.taxon_name, w.ipni_id
+            FROM wcvp_accepted a JOIN raw_wcvp_names w ON w.plant_name_id = a.plant_name_id
+            WHERE a.taxon_rank = 'Species'
+            """
+        ).fetchall()
+    }
     best: dict[str, tuple[int, str, str]] = {}
     for name, y, ipni, authors in con.execute(
         r"""
@@ -245,11 +258,15 @@ def build_protologue(con: duckdb.DuckDBPyConnection, index: dict) -> dict:
         "meta": {
             "kingdom": "Plantae",
             "species": len(rows),
-            "schema": ["ipniId", "authors"],
+            "schema": ["ipniId", "authors", "acceptedIpniId"],
             "source": "WCVP raw_wcvp_names.ipni_id / taxon_authors (basionym when it is the original description)",
             "link": "https://www.ipni.org/n/{ipniId}",
+            "acceptedLink": "https://powo.science.kew.org/taxon/urn:lsid:ipni.org:names:{acceptedIpniId}",
         },
-        "rows": [[best.get(r[0], (0, "", ""))[1], best.get(r[0], (0, "", ""))[2]] for r in rows],
+        "rows": [
+            [best.get(r[0], (0, "", ""))[1], best.get(r[0], (0, "", ""))[2], accepted_ipni.get(r[0], "")]
+            for r in rows
+        ],
     }
 
 

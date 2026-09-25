@@ -17,13 +17,14 @@ import { t, fmt, type Locale } from '../lib/i18n';
 import { deptName } from '../lib/depts';
 import { afterPaint } from '../lib/after-paint';
 import { mapZoom } from '../lib/map-zoom';
+import { renderDrawer, yearHistogram, type DrawerMap, type DrawerSpecies, type DrawerYearDist } from '../lib/drawer';
 
 interface Config { orderColor: Record<string, string>; records: Record<'plantae' | 'fungi', Record<string, number>>; base: string }
 type SpRow = [string, number, number, number, [number, number][], number, number];
 interface Names { families: string[]; orders: string[]; depts: string[]; lifeforms: string[]; rows: SpRow[]; meta: { flags: Facets['meta']['flags'] }; byName: Map<string, number> }
 type K = 'plantae' | 'fungi';
 /** data/protologue-plantae.json: rows aligned with species-plantae.json. */
-interface Proto { rows: [ipniId: string, authors: string][] }
+interface Proto { rows: [ipniId: string, authors: string, acceptedIpniId: string][] }
 
 const $ = <T extends Element = HTMLElement>(sel: string, root: ParentNode = document) => root.querySelector(sel) as T;
 
@@ -291,31 +292,37 @@ export function boot() {
       (c.length > 1 ? `<button type="button" class="chip clear-all" data-clear="all">${t(locale, 'filters.clear')}</button>` : '');
   }
 
-  // Protologue (author + IPNI id): plants only, fetched once, on the first drawer open.
+  // Protologue (author + IPNI ids): plants only, fetched once, on the first drawer open.
   let proto: Proto | null = null;
   let protoReq: Promise<void> | null = null;
   const loadProto = () => {
     protoReq ??= fetch(`${cfg.base}data/protologue-plantae.json`, { priority: 'low' })
       .then((r) => { if (!r.ok) throw new Error(`${r.status} protologue`); return r.json() as Promise<Proto>; })
-      .then((d) => {
-        proto = d;
-        // Patch the open drawer in place (a full re-render would wait for the next state).
-        const s = store.get(), i = s.k === 'plantae' && s.sp ? names.plantae?.byName.get(s.sp) : undefined;
-        const slot = el.drBody.querySelector<HTMLElement>('[data-proto]');
-        if (i != null && slot) slot.innerHTML = protoHtml(i);
-      })
+      .then((d) => { proto = d; drawer(store.get(), facets[store.get().k]!); })
       .catch((e) => { protoReq = null; console.warn(e); });
     return protoReq;
   };
-  function protoHtml(i: number): string {
-    const row = proto?.rows[i];
-    if (!row) return '';
-    const [ipni, authors] = row;
-    return (authors ? ` ${t(locale, 'dr.by')} <span class="dr-auth">${V.esc(authors)}</span>` : '') +
-      (ipni ? ` · <a class="dr-ipni" href="https://www.ipni.org/n/${encodeURIComponent(ipni)}" rel="noopener" target="_blank">${t(locale, 'dr.protologue')}</a>` : '');
-  }
 
-  const LEAF = '<svg viewBox="0 0 24 24" aria-hidden="true"><path d="M12 21V11m0 0C12 6 8 3 4 3c0 4 3 8 8 8Zm0 0c0-4 3-7 8-7 0 4-3 7-8 7Z" fill="none" stroke="currentColor" stroke-width="1.4" stroke-linejoin="round"/></svg>';
+  // Mini department map for the drawer: cloned from the big map's own <path> data
+  // (same geometry, no second GeoJSON fetch). Built once, lazily, on first open.
+  let drawerMap: DrawerMap | null = null;
+  function getDrawerMap(f: Facets): DrawerMap {
+    if (!drawerMap) {
+      const vb = el.map.getAttribute('viewBox')!.split(/\s+/).map(Number);
+      drawerMap = {
+        paths: paths.map((p) => ({ name: p.dataset.dep!, d: p.getAttribute('d')! })),
+        width: vb[2], height: vb[3],
+        facetDepts: f.depts,
+      };
+    }
+    return drawerMap;
+  }
+  // Year histogram: one per kingdom's facets, cached (not recomputed per drawer open).
+  const yearDist = new Map<K, DrawerYearDist | null>();
+  function getYearDist(k: K, f: Facets): DrawerYearDist | null {
+    if (!yearDist.has(k)) yearDist.set(k, yearHistogram(f.year));
+    return yearDist.get(k)!;
+  }
 
   function drawer(s: State, f: Facets) {
     const nm = names[s.k];
@@ -333,41 +340,29 @@ export function boot() {
     // Growth form: the group from the facets, the raw WCVP string from the species index.
     const group = f.life[i] >= 0 ? f.lifeforms[f.life[i]] : null;
     const raw = r[6] >= 0 ? nm!.lifeforms[r[6]] : null;
-    const F = nm!.meta.flags;
-    const year = f.year?.[i];
+    const year = f.year?.[i] || null;
     const plant = s.k === 'plantae';
     if (plant && !proto) void loadProto();
-    const tags = [
-      r[5] & F.endemic ? `<span class="tag endem">${t(locale, 'sp.endemic')}</span>` : '',
-      r[5] & F.native ? `<span class="tag">${t(locale, 'sp.native')}</span>` : '',
-      r[5] & F.introduced ? `<span class="tag intro">${t(locale, 'sp.introduced')}</span>` : '',
-    ].join('');
-    const max = r[4][0]?.[1] ?? 1;
     const genus = r[0].split(' ')[0];
-    el.drBody.innerHTML = `
-      <div class="dr-head">
-        <figure class="dr-photo" data-photo-slot aria-hidden="true">${LEAF}</figure>
-        <div class="dr-id">
-          <h2 id="dr-title" class="sci">${V.esc(r[0])}</h2>
-          <ol class="dr-crumbs" aria-label="${t(locale, 'dr.taxonomy')}">
-            <li>${plant ? 'Plantae' : 'Fungi'}</li><li>${V.esc(ord ?? '—')}</li><li>${V.esc(fam ?? '—')}</li><li class="g">${V.esc(genus)}</li>
-          </ol>
-        </div>
-      </div>
-      ${tags ? `<div class="tags">${tags}</div>` : ''}
-      ${year ? `<p class="dr-desc">${t(locale, 'dr.described').replace('{year}', `<b class="mono">${year}</b>`)}<span data-proto>${plant ? protoHtml(i) : ''}</span></p>` : ''}
-      <dl class="dr-facts">
-        ${group ? `<div><dt>${t(locale, 'sp.lifeform')}</dt><dd><span class="dr-lf" title="${V.esc(`${t(locale, 'lf.rawOne')}: ${raw ?? '—'}`)}">${V.esc(V.lfLabel(locale, group))}</span>${raw ? `<span class="dr-sub">${t(locale, 'dr.wcvp')}: ${V.esc(raw)}</span>` : ''}</dd></div>` : ''}
-        <div><dt>${t(locale, 'sp.records')}</dt><dd class="mono">${r[3] ? n(r[3]) : t(locale, 'sp.noRecords')}</dd></div>
-      </dl>
-      ${r[4].length
-        ? `<p class="label">${t(locale, 'sp.topDepts')}</p><ul class="dr-bars">${r[4].map(([d, c]) =>
-            `<li><span>${V.esc(deptName(nm!.depts[d]))}</span><i style="transform:scaleX(${(c / max).toFixed(3)})"></i><b class="mono">${n(c)}</b></li>`).join('')}</ul>`
-        : `<p class="note">${t(locale, 'sp.noDepts')}</p>`}
-      <div class="dr-actions">
-        <button type="button" class="btn" data-act="show-map">${t(locale, 'sp.showMap')}</button>
-        ${fam ? `<button type="button" class="btn" data-fam="${V.esc(fam)}">${t(locale, 'sp.filterFamily')}</button>` : ''}
-      </div>`;
+    const sameGenus = nm!.rows
+      .filter((row) => row[0] !== r[0] && row[0].split(' ')[0] === genus)
+      .map((row) => row[0])
+      .slice(0, 12);
+    const sp: DrawerSpecies = {
+      name: r[0], kingdom: s.k, family: fam, order: ord,
+      flags: r[5], flagBits: nm!.meta.flags, records: r[3],
+      topDepts: r[4].map(([d, c]) => [deptName(nm!.depts[d]), c]),
+      lifeformGroup: group, lifeformRaw: raw, year,
+      proto: plant && proto ? { authors: proto.rows[i]?.[1] ?? '', ipniId: proto.rows[i]?.[0] ?? '', acceptedIpniId: proto.rows[i]?.[2] ?? '' } : null,
+      deptMask: f.mask[i] ?? null,
+      sameGenus,
+    };
+    const links = {
+      mapHref: '#cf-map',
+      famHref: fam ? `?${new URLSearchParams({ ...(s.k !== 'plantae' ? { k: s.k } : {}), fam }).toString()}` : null,
+      speciesHref: (name: string) => `?${new URLSearchParams({ ...(s.k !== 'plantae' ? { k: s.k } : {}), sp: name }).toString()}`,
+    };
+    el.drBody.innerHTML = renderDrawer(locale, sp, getDrawerMap(f), plant ? getYearDist(s.k, f) : null, links);
     if (el.drawer.hidden) {
       el.drawer.hidden = false;
       root.classList.add('drawer-open');
@@ -381,15 +376,23 @@ export function boot() {
     store.set({ [key]: store.get()[key] === v ? null : v } as Partial<State>);
 
   root.addEventListener('click', (e) => {
-    const b = (e.target as Element).closest<HTMLElement>('button, [data-dep]');
+    // The drawer's family/same-genus/show-map controls are real <a href> (so a
+    // no-JS or middle click still works); everything else stays a <button>.
+    const b = (e.target as Element).closest<HTMLElement>('button, [data-dep], a[data-fam], a[data-sp], a[data-act]');
     if (!b || !root.contains(b)) return;
     const d = b.dataset;
     if (d.k) return store.set({ k: d.k as K });
     if (d.m && !(b as HTMLButtonElement).disabled) return store.set({ m: d.m as State['m'] });
     if (d.fam != null) {
+      if (b.tagName === 'A') e.preventDefault();
       const s = store.get();
       // From the drawer or a department panel: filter, and close the drawer.
       return store.set({ fam: s.fam === d.fam ? null : d.fam, sp: b.closest('#drawer') ? null : s.sp });
+    }
+    if (d.sp != null) {
+      // Same-genus link in the drawer: select that species, same kingdom.
+      e.preventDefault();
+      return store.set({ sp: d.sp });
     }
     if (d.lf) return toggle('lf', d.lf);
     if (d.st) return toggle('st', d.st as Status);
@@ -400,6 +403,7 @@ export function boot() {
     }
     if (d.clear) return clear(d.clear);
     if (d.act === 'show-map') {
+      e.preventDefault();
       el.drawer.classList.add('peek');
       el.map.scrollIntoView({ block: 'center', behavior: matchMedia('(prefers-reduced-motion: reduce)').matches ? 'auto' : 'smooth' });
       return;
