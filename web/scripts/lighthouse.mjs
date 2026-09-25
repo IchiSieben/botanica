@@ -5,7 +5,7 @@
 //
 // Set CHROME_PATH to Playwright's Chromium so no system Chrome is needed.
 import { execFileSync } from 'node:child_process';
-import { mkdirSync, readFileSync, writeFileSync } from 'node:fs';
+import { existsSync, mkdirSync, readFileSync, statSync, writeFileSync } from 'node:fs';
 import { join } from 'node:path';
 
 const [port = '4400', out = 'lh', ...rest] = process.argv.slice(2);
@@ -29,6 +29,17 @@ function once(url, file) {
 }
 
 function run(url, file) {
+  const t0 = Date.now();
+  try {
+    lighthouse(url, file);
+  } catch (e) {
+    // On Windows chrome-launcher can fail to delete its temp profile (EBUSY) AFTER the report
+    // was written: the run itself succeeded, so keep a report written by this attempt.
+    if (!(existsSync(file) && statSync(file).mtimeMs >= t0)) throw e;
+  }
+}
+
+function lighthouse(url, file) {
   execFileSync(
     process.platform === 'win32' ? 'npx.cmd' : 'npx',
     ['-y', 'lighthouse@12', url, '--quiet', '--output=json', `--output-path=${file}`,
