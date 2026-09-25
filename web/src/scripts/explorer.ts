@@ -141,14 +141,22 @@ export function boot() {
   // (the CSS drops the animation there); skipped on the very first paint (nothing "changed"
   // relative to an empty page).
   let painted = false;
+  // Last HTML string each panel was rendered from. Comparing strings with strings (not with
+  // the serialized innerHTML, which never matches a multi-line template) flashes only the
+  // panels whose content really changed.
+  const lastHtml = new WeakMap<Element, string>();
   function morphFlash(target: Element, html: string) {
-    const changed = target.innerHTML !== html;
+    const prev = lastHtml.get(target);
+    lastHtml.set(target, html);
+    if (prev === html) return;
     morph(target, html);
-    if (!changed || !painted) return;
+    if (prev === undefined || !painted) return;
     const card = (target.closest('.cf') as HTMLElement | null) ?? (target as HTMLElement);
-    card.classList.remove('cf-flash');
-    void card.offsetWidth; // restart the animation
+    // Two classes with the same animation: swapping restarts it without forcing a layout
+    // (the old remove / offsetWidth / add dance ran a synchronous reflow inside the click).
+    const on = card.classList.contains('cf-flash') && !card.classList.contains('cf-flash-b');
     card.classList.add('cf-flash');
+    card.classList.toggle('cf-flash-b', on);
   }
 
   async function render(s: State) {

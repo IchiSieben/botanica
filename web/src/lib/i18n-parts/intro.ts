@@ -37,10 +37,10 @@ export default part(
     'intro.fact.endemicCompare.detail': 'this atlas’ WCVP checklist counts {ownPct} endemic ({ownN} of {ownTotal}) — a different taxonomy and a newer snapshot explain the gap',
     'intro.fact.megadiverse.label': 'megadiverse countries in the world — Peru is one of them',
     'intro.fact.altitude.label': 'metres: from the Pacific coast to the summit of Huascarán, Peru’s highest point',
-    'intro.fact.protectedAreas.label': 'of Peru’s land is protected: {anp} national reserves, {acr} regional and {acp} conservation areas',
+    'intro.fact.protectedAreas.label': 'of Peru’s land is protected: {anp} national protected areas, {acr} regional and {acp} private conservation areas',
     'intro.fact.epiphytes.label': 'vascular epiphyte species recorded — the third-highest count of any country',
     'intro.fact.epiphytes.detail': 'including {orchids} epiphytic orchid species',
-    'intro.fact.amazonTrees.label': 'tree species in the Peruvian Amazon are thought to remain undescribed',
+    'intro.fact.amazonTrees.label': 'Amazonian tree species are thought to remain undescribed',
     'intro.fact.amazonTrees.detail': 'at today’s pace, cataloguing them would take about {years} years',
 
     'intro.tl.title': 'Names through the centuries',
@@ -56,7 +56,7 @@ export default part(
     'intro.tl.libroRojo2006': 'The Libro Rojo assesses Peru’s endemic flora for the first time.',
     'intro.tl.ulloa2017': 'Ulloa Ulloa et al., in Science, catalogue {n} vascular plant species across the Americas.',
     'intro.tl.snapshot': 'The WCVP and GBIF snapshots this atlas is built on.',
-    'intro.tl.releases': 'This atlas: {r1} on {v1}; {r2} and {r3} on {v3}.',
+    'intro.tl.releases': 'This atlas: {r1} on {v1}; {r2} and {r3} on {v3}; {r4} on {v4}.',
     'intro.tl.changes': 'changelog',
 
     'intro.how.title': 'How the atlas works',
@@ -109,10 +109,10 @@ export default part(
     'intro.fact.endemicCompare.detail': 'la lista WCVP de este atlas cuenta un {ownPct} de endémicas ({ownN} de {ownTotal}): otra taxonomía y una fecha más reciente explican la diferencia',
     'intro.fact.megadiverse.label': 'países megadiversos hay en el mundo — el Perú es uno de ellos',
     'intro.fact.altitude.label': 'metros: desde la costa del Pacífico hasta la cumbre del Huascarán, el punto más alto del Perú',
-    'intro.fact.protectedAreas.label': 'del territorio del Perú está protegido: {anp} reservas nacionales, {acr} regionales y {acp} áreas de conservación',
+    'intro.fact.protectedAreas.label': 'del territorio del Perú está protegido: {anp} áreas naturales protegidas nacionales, {acr} áreas de conservación regional y {acp} privadas',
     'intro.fact.epiphytes.label': 'especies de epífitas vasculares registradas: la tercera cifra más alta de cualquier país',
     'intro.fact.epiphytes.detail': 'de ellas, {orchids} son orquídeas epífitas',
-    'intro.fact.amazonTrees.label': 'especies de árboles de la Amazonía peruana aún no se habrían descrito',
+    'intro.fact.amazonTrees.label': 'especies de árboles de la Amazonía aún no se habrían descrito',
     'intro.fact.amazonTrees.detail': 'al ritmo actual, catalogarlas tomaría unos {years} años',
 
     'intro.tl.title': 'Nombres a lo largo de los siglos',
@@ -128,7 +128,7 @@ export default part(
     'intro.tl.libroRojo2006': 'El Libro Rojo evalúa por primera vez la flora endémica del Perú.',
     'intro.tl.ulloa2017': 'Ulloa Ulloa et al., en Science, catalogan {n} especies de plantas vasculares de las Américas.',
     'intro.tl.snapshot': 'Las instantáneas de WCVP y GBIF sobre las que se construye este atlas.',
-    'intro.tl.releases': 'Este atlas: {r1} el {v1}; {r2} y {r3} el {v3}.',
+    'intro.tl.releases': 'Este atlas: {r1} el {v1}; {r2} y {r3} el {v3}; {r4} el {v4}.',
     'intro.tl.changes': 'cambios',
 
     'intro.how.title': 'Cómo funciona el atlas',

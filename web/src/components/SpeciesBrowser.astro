@@ -224,13 +224,16 @@ const mapAsset = { paths: deptPaths.map((p) => ({ name: p.name, d: p.d })), widt
       const grid = store.get().view === 'grid';
       const year = f!.year?.[i];
       if (grid) {
-        return `<button type="button" class="sp-card" role="option" id="sp-opt-${i}" data-i="${i}" aria-selected="${sel}" aria-posinset="${posinset}" aria-setsize="${matched.length}">
+        return `<button type="button" class="sp-card" role="option" tabindex="-1" id="sp-opt-${i}" data-i="${i}" aria-selected="${sel}" aria-posinset="${posinset}" aria-setsize="${matched.length}">
           <span class="sci">${esc(r[0])}</span><span class="sp-fam">${esc(fam)}</span>
           <span class="sp-meta mono">${r[3] ? n(r[3]) + ' ' + t(locale, 'species.grid.records') : t(locale, 'species.grid.records')} · ${year ? year : t(locale, 'species.grid.noYear')}</span></button>`;
       }
-      return `<button type="button" class="sp-row" role="option" id="sp-opt-${i}" data-i="${i}" aria-selected="${sel}" aria-posinset="${posinset}" aria-setsize="${matched.length}">
+      return `<button type="button" class="sp-row" role="option" tabindex="-1" id="sp-opt-${i}" data-i="${i}" aria-selected="${sel}" aria-posinset="${posinset}" aria-setsize="${matched.length}">
         <span class="sci">${esc(r[0])}</span><span class="sp-fam">${esc(fam)}</span><span class="sp-occ mono">${r[3] ? n(r[3]) : '·'}</span></button>`;
     }
+
+    /** Keyboard cursor: an index into `matched`. -1 = none; reset whenever `matched` changes. */
+    let active = -1;
 
     function renderWindow() {
       if (!idx) return;
@@ -260,6 +263,7 @@ const mapAsset = { paths: deptPaths.map((p) => ({ name: p.name, d: p.d })), widt
 
     function renderList() {
       matched = match();
+      active = -1;
       const extra = ` · ${t(locale, 'species.of')} ${n(idx!.rows.length)}`;
       $count.textContent = `${n(matched.length)}${extra}`;
       renderWindow();
@@ -320,10 +324,6 @@ const mapAsset = { paths: deptPaths.map((p) => ({ name: p.name, d: p.d })), widt
         b.classList.toggle('on', on);
         b.setAttribute('aria-pressed', String(on));
       });
-      $sort.value = s.sort;
-      $fam.value = s.fam ?? '';
-      $dep.value = s.dep[0] ?? '';
-      $endemic.checked = s.st === 'endemica';
       if (loadedFor !== s.k) {
         $count.textContent = t(locale, 'search.loading');
         try {
@@ -338,6 +338,11 @@ const mapAsset = { paths: deptPaths.map((p) => ({ name: p.name, d: p.d })), widt
         buildOrder();
         populateFilters();
       }
+      // After populateFilters(): a family or department option only exists once its kingdom loaded.
+      $sort.value = s.sort;
+      $fam.value = s.fam ?? '';
+      $dep.value = s.dep[0] ?? '';
+      $endemic.checked = s.st === 'endemica';
       renderList();
       renderDetail(s.sp);
     }
@@ -360,7 +365,11 @@ const mapAsset = { paths: deptPaths.map((p) => ({ name: p.name, d: p.d })), widt
 
     $list.addEventListener('click', (e) => {
       const b = (e.target as HTMLElement).closest<HTMLElement>('[data-i]');
-      if (b && idx) store.set({ sp: idx.rows[Number(b.dataset.i)][0] });
+      if (!b || !idx) return;
+      // Keep focus on the listbox and move the keyboard cursor to the clicked row.
+      active = matched.indexOf(Number(b.dataset.i));
+      $list.focus({ preventScroll: true });
+      store.set({ sp: idx.rows[Number(b.dataset.i)][0] });
     });
     // Same-genus / family links inside the detail pane share the page's own store.
     $detail.addEventListener('click', (e) => {
@@ -372,7 +381,6 @@ const mapAsset = { paths: deptPaths.map((p) => ({ name: p.name, d: p.d })), widt
     });
 
     // Keyboard: arrows move one row (or one card, Left/Right in grid), Home/End jump.
-    let active = -1;
     $list.addEventListener('keydown', (e) => {
       if (!matched.length) return;
       const c = cols();

@@ -31,6 +31,7 @@ export const RELEASES = [
   { version: 'v1.0.0', date: '2026-09-22' },
   { version: 'v2.0.0', date: '2026-09-24' },
   { version: 'v3.0.0', date: '2026-09-24' },
+  { version: 'v3.1.0', date: '2026-09-25' },
 ] as const;
 
 export type FactFormat = 'int' | 'pct' | 'year';
@@ -76,7 +77,7 @@ export interface Milestone {
 /** Timeline rows hard-coded from the dossier §2 (NOT the ⚠️ 1802 Humboldt row). Years/ranges are
  *  as given there; the 2026 "this atlas" row is covered by our own `snapshot` + `releases`. */
 const DOSSIER_MILESTONES: Milestone[] = [
-  { id: 'rp-expedition', year: 1777, when: '1777', source: 'ruizPavonBiology2023', detail: { specimens: 3000, species: 500 } },
+  { id: 'rp-expedition', year: 1777, when: '1777–1788', source: 'ruizPavonBiology2023', detail: { specimens: 3000, species: 500 } },
   { id: 'raimondi', year: 1850, when: '1850–1890', source: 'raimondiBNP', detail: {} },
   { id: 'weberbauer', year: 1901, when: '1901–1948', source: 'weberbauerDB', detail: {} },
   { id: 'brakoZarucchi', year: 1993, when: '1993', source: 'brakoZarucchi1993', detail: { n: 17000 } },
@@ -230,7 +231,7 @@ export function computeFacts(inp: IntroInputs): IntroData {
     { id: 'peak-decade', year: peakDecade, when: `${peakDecade}s`, source: 'wcvp', detail: { n: peakDecadeN } },
     { id: 'since2000', year: 2000, when: `2000–${yMax}`, source: 'wcvp', detail: { n: since2000 } },
     { id: 'snapshot', year: Number(snap.slice(0, 4)), when: snap, source: 'wcvp', detail: {} },
-    { id: 'releases', year: Number(RELEASES[0].date.slice(0, 4)), when: RELEASES[0].date, source: 'changes', detail: { r1: RELEASES[0].version, r2: RELEASES[1].version, r3: RELEASES[2].version, v1: RELEASES[0].date, v3: RELEASES[2].date } },
+    { id: 'releases', year: Number(RELEASES[0].date.slice(0, 4)), when: RELEASES[0].date, source: 'changes', detail: { r1: RELEASES[0].version, r2: RELEASES[1].version, r3: RELEASES[2].version, r4: RELEASES[3].version, v1: RELEASES[0].date, v3: RELEASES[2].date, v4: RELEASES[3].date } },
     ...DOSSIER_MILESTONES,
   ].sort((a, b) => a.year - b.year || 0) as Milestone[];
 

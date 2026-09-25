@@ -67,7 +67,7 @@ const when = (m: Milestone) =>
     : m.id === 'peak-decade' && locale === 'es' ? `${m.year}–${m.year + 9}` : m.when;
 const mDetail = (m: Milestone) =>
   m.id === 'releases'
-    ? tx('intro.tl.releases', { ...m.detail, v1: date(String(m.detail.v1)), v3: date(String(m.detail.v3)) }, 'changes')
+    ? tx('intro.tl.releases', { ...m.detail, v1: date(String(m.detail.v1)), v3: date(String(m.detail.v3)), v4: date(String(m.detail.v4)) }, 'changes')
     : tx(`intro.tl.${m.id}`, m.detail, m.source);
 const mHref = (m: Milestone) => (m.source === 'changes' ? changesHref : sourceHref(SOURCES[m.source]));
 const mSrc = (m: Milestone) => (m.source === 'changes' ? t(locale, 'intro.tl.changes') : t(locale, 'intro.source'));

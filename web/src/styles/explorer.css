@@ -124,6 +124,12 @@
   from { opacity: 0.6; transform: scale(1); }
   to { opacity: 0; transform: scale(1.015); }
 }
+/* Same pulse under a second name: explorer.ts swaps cf-flash-b to restart it without a reflow. */
+.ex .cf.cf-flash-b::after, .ex #kpis.cf-flash-b::after { animation-name: cf-flash-pulse-b; }
+@keyframes cf-flash-pulse-b {
+  from { opacity: 0.6; transform: scale(1); }
+  to { opacity: 0; transform: scale(1.015); }
+}
 @media (prefers-reduced-motion: reduce) {
   .ex .cf.cf-flash::after, .ex #kpis.cf-flash::after { animation: none; display: none; }
 }

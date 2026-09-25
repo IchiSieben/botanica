@@ -63,6 +63,8 @@ interface Tree {
   ro?: ResizeObserver;
   size?: string;
   mounting?: Promise<void>;
+  /** Mount token: a view switch while a chunk loads makes the older mount give up. */
+  gen?: number;
   /** Node id the chart is highlighting and centred on. */
   focusId: string | null;
   /** Sunburst's current zoom root (kingdom id when fully zoomed out). */
@@ -454,12 +456,14 @@ export function bootTree() {
     await syncFocus(k, store.get(), { now: true });
   }
 
-  async function mount3d(k: K) {
+  async function mount3d(k: K, gen: number) {
     const tr = treeOf(k);
     const el = chartEl(k);
     delete el.dataset.focus;
     tree3dMod ??= import('./tree-3d');
     const mod = await tree3dMod;
+    // The user switched view while the 547 KB chunk loaded: do not mount over the new view.
+    if (gen !== tr.gen || tr.view !== '3d') return;
     const ix = indexOf(k);
     const cs = getComputedStyle(document.documentElement);
     const rgb = (name: string) => `rgb(${cs.getPropertyValue(name).trim().split(/\s+/).join(',')})`;
@@ -473,7 +477,7 @@ export function bootTree() {
       },
     });
     tr.three = handle;
-    el.dataset.ready = '1';
+    attachResize(k, el); // full screen / rotation resize the canvas too
     const target = targetOf(k, store.get());
     handle.select(target);
     if (target) chartEl(k).dataset.focus = ix.byId.get(target)!.meta.key;
@@ -500,10 +504,12 @@ export function bootTree() {
 
   async function mountChart(k: K) {
     const tr = treeOf(k);
+    const gen = (tr.gen = (tr.gen ?? 0) + 1);
     disposeCurrentEngine(k);
-    if (tr.view === '3d') { await mount3d(k); return; }
+    if (tr.view === '3d') { await mount3d(k, gen); return; }
     echartsMod ??= import('../lib/echarts-tree');
     const { echarts, tokens } = await echartsMod;
+    if (gen !== tr.gen) return; // a newer mount owns the element
     T = tokens();
     if (tr.view === 'sunburst') await mountSunburst(k, echarts);
     else await mountLinear(k, echarts);

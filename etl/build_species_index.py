@@ -227,6 +227,7 @@ def build_protologue(con: duckdb.DuckDBPyConnection, index: dict) -> dict:
             SELECT a.taxon_name, w.ipni_id
             FROM wcvp_accepted a JOIN raw_wcvp_names w ON w.plant_name_id = a.plant_name_id
             WHERE a.taxon_rank = 'Species'
+            ORDER BY a.taxon_name, w.ipni_id  -- homonyms: last one wins, deterministically
             """
         ).fetchall()
     }

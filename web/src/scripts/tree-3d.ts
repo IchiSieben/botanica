@@ -103,6 +103,7 @@ export function mountTree3D(el: HTMLElement, root: TreeNode, T: Tree3DTokens): T
   scene.add(group);
 
   const geoms: THREE.BufferGeometry[] = [];
+  const lineMats: THREE.Material[] = [];
   const meshes = new Map<string, THREE.Mesh>();
   const colorOf = (n: TreeNode) => {
     const isGroup = n.meta.rank === 'kingdom' || GROUP_RANKS.has(n.meta.rank);
@@ -124,7 +125,9 @@ export function mountTree3D(el: HTMLElement, root: TreeNode, T: Tree3DTokens): T
     if (parent) {
       const lgeo = new THREE.BufferGeometry().setFromPoints([parent.pos, p.pos]);
       geoms.push(lgeo);
-      const line = new THREE.Line(lgeo, new THREE.LineBasicMaterial({ color: T.muted, transparent: true, opacity: 0.25 }));
+      const lmat = new THREE.LineBasicMaterial({ color: T.muted, transparent: true, opacity: 0.25 });
+      lineMats.push(lmat);
+      const line = new THREE.Line(lgeo, lmat);
       group.add(line);
     }
   }
@@ -168,18 +171,24 @@ export function mountTree3D(el: HTMLElement, root: TreeNode, T: Tree3DTokens): T
     if (p && p.node.meta.rank !== 'kingdom' && !GROUP_RANKS.has(p.node.meta.rank)) T.onSelect(p.node);
   });
 
+  // Render on demand: a frame only while the camera moves (drag, zoom, damping) or after a
+  // select/resize. A still scene costs nothing and does not compete with input.
   let raf = 0;
-  const tick = () => {
-    controls.update();
+  const frame = () => {
+    raf = 0;
+    const moving = controls.update(); // true while damping is still settling
     renderer.render(scene, camera);
-    raf = requestAnimationFrame(tick);
+    if (moving) request();
   };
-  tick();
+  const request = () => { if (!raf) raf = requestAnimationFrame(frame); };
+  controls.addEventListener('change', request);
+  request();
 
   return {
     select(id) {
       selectedId = id;
       applyHighlight();
+      request();
       const p = id && byId.get(id);
       if (p) {
         const target = p.pos.clone();
@@ -192,13 +201,18 @@ export function mountTree3D(el: HTMLElement, root: TreeNode, T: Tree3DTokens): T
       camera.aspect = w() / h();
       camera.updateProjectionMatrix();
       renderer.setSize(w(), h());
+      request();
     },
     dispose() {
       cancelAnimationFrame(raf);
+      controls.removeEventListener('change', request);
       controls.dispose();
-      renderer.dispose();
       for (const g of geoms) g.dispose();
       for (const mesh of meshes.values()) (mesh.material as THREE.Material).dispose();
+      for (const m of lineMats) m.dispose();
+      // Browsers cap live WebGL contexts (~16): release this one now, not at GC.
+      renderer.forceContextLoss();
+      renderer.dispose();
       renderer.domElement.remove();
     },
   };

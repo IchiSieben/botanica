@@ -88,7 +88,7 @@ for (const locale of ['en', 'es']) {
     check(!bad.length, 'every fact number is a link to its source', `${url}: fact links ${JSON.stringify(bad)}`);
     const badTl = s.tlLinks.filter((h) => !h || !allowed(h));
     check(!badTl.length, 'every timeline year links to its source', `${url}: timeline links ${JSON.stringify(badTl)}`);
-    check(Number(s.tlFirst) === TL_START && s.tlFirstText === String(TL_START),
+    check(Number(s.tlFirst) === TL_START && String(s.tlFirstText).startsWith(String(TL_START)),
       `timeline starts at ${TL_START}`, `${url}: timeline first year ${s.tlFirst}/${s.tlFirstText}, expected ${TL_START}`);
     check(Number(s.tlLast) === TL_END,
       `timeline ends at ${TL_END}`, `${url}: timeline last year ${s.tlLast}, expected ${TL_END}`);
