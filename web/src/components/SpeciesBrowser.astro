@@ -239,7 +239,7 @@ const mapAsset = { paths: deptPaths.map((p) => ({ name: p.name, d: p.d })), widt
       const rh = rowH();
       const rows = Math.ceil(total / c);
       $spacer.style.height = `${rows * rh}px`;
-      $list.setAttribute('aria-rowcount', String(total));
+      // Row and set size are on each option (aria-posinset/setsize): aria-rowcount is not allowed on a listbox.
       const scrollTop = $list.scrollTop;
       const firstRow = Math.max(0, Math.floor(scrollTop / rh) - OVERSCAN);
       const visibleRows = Math.ceil($list.clientHeight / rh) + OVERSCAN * 2;
