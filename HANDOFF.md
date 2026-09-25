@@ -1,20 +1,40 @@
 # HANDOFF — Botánica v2 (explorable atlas)
 
-## v3-A IN PROGRESS (2026-09-24) — contract: SPEC.md
-- Dossier `docs/RESEARCH-PERU.md`: NOT FOUND (disk, Drive by name and full text, Gmail, Notion).
-  Intro uses only computed own-data figures; 1777 anchor and ROADMAP.md wait for it.
-- Done on main: SPEC `91b14a5`; contracts `7e1b031` (lib/sources.ts with verified DOIs,
-  ChartFrame, `npm run check:dois`, i18n-parts/*); header toggles `6d2754f`; growth-form groups
-  + IPNI protologue export `2b8ef52`; changelog + /cambios/ merged `0790a14`, footer link `4102879`.
-- Agents in worktrees (branches `worktree-agent-*`): tree (item 6), explorer (2,3,4,7,9),
-  intro (1). Each writes `web/scripts/gate-<feature>.mjs`; wire them into the gate at merge.
-- Tags proposed: v1.0.0 → 1b97936 (CITATION date-released 2026-09-22), v2.0.0 → 04e07e8 (went
-  live), v3.0.0 → release commit. CITATION.cff → 3.0.0.
-- Explained for item 4: since v2 a species counts in a department only if it is in the WCVP
-  checklist for Peru AND has a GBIF record there; v1 counted every GBIF name (Loreto 7,905 →
-  5,821, AUDIT-v2 §2).
+## v3.0.0 LIVE (2026-09-25 03:18 UTC) — contract: SPEC.md
+- https://ichisieben.dev/botanica/ · /es/ · /botanica/cambios/ · /botanica/es/cambios/
+- Botanica `5de89ac` = tag **v3.0.0** (also v1.0.0 → 1b97936, v2.0.0 → 04e07e8; annotated, pushed).
+  Landing `26d4253` mirrors it; Hostinger build `01a0d691-1c23-7080-9273-e712c27836ab` completed.
+- **Dossier `docs/RESEARCH-PERU.md` NOT FOUND** (disk, Drive by name and full text, Gmail, Notion).
+  Partial: item 1 ships own-data facts only (no dossier facts, no 1777 anchor); item 10 ships without
+  `ROADMAP.md`. Both land when the dossier exists (SPEC "Out of scope").
+- Item 4, Loreto 7,905 → 5,821: since v2 a species counts in a department only if it is in the WCVP
+  checklist for Peru AND has a GBIF record there; v1 counted every GBIF name (AUDIT-v2 §2). The KPI
+  now reads "species with GBIF records in <dep>" and says so beside the number.
+- Gates (local, 4400): `npm test` 17/17 · `npm run gate` · `npm run gate:v3` (intro, explorer, tree,
+  changes) · `npm run check:dois` 8/8 · astro check 0. `gate.mjs` waits on `[data-explorer]
+  [data-painted]` (render yields a frame for INP, so the URL runs one frame ahead of the DOM).
+- Lighthouse mobile, median of 3 (local): perf 96–100 on /, ?dep=LORETO, especies, filogenia, cambios
+  (EN+ES); a11y 96–100; BP/SEO 100. CLS ?dep=LORETO 0.047 (the treemap re-layout; was 0.085 before
+  preloading JetBrains Mono and keeping the map hint's line).
+- Live smoke 62/62 (under the real CSP, cache-busted): v2 checks + IPNI protologue link in the drawer,
+  /cambios/ with 3 sections and 3 tag links, hostile `?dep=` inert, fungi tree mounts after a click.
+  Live HTML == Landing `dist` by sha256 (the Landing build strips comments, so it differs from
+  `web/dist`; JSON and tutorial files match `web/dist`).
+- axe dark (WCAG 2 A/AA), live, 1280 + 360, EN + ES, 56 states (v2 states + intro scrolled, map
+  zoomed, tree expanded, /cambios/, light theme): 0 violations. Two script flags are not defects: the
+  pixel sampler reads 1.69:1 on the pressed "species" button with the map zoomed (a screenshot shows
+  no overlap, `.map-vp` clips), and "LIGHT!" is the light-theme state asserting dark on purpose.
+- Reviewer (Opus, read-only, f8aacb6..642cc40): 12 findings, all applied in `5de89ac` — incl. a script
+  injection via `?dep=` (now whitelisted + escaped), a blank fungi tree after a kingdom switch, and
+  `/es/cambios/` rendering raw markdown. Regression checks added to the gates.
+- Known, not fixed: the tree's ECharts canvas is not axe-checkable; `window.__phylo` ships as a test
+  hook (read-only); the tree lede still says "órdenes y familias" although clades now show; the fungi
+  source line lives in the legend slot (CSS swaps it by `data-k`); the drawer rebuilds `#dr-body`
+  with innerHTML, so session B must render the photo inside that template, not append to
+  `[data-photo-slot]` after the fact. `Portfolio/shared/changelog/` is not under git (like
+  `shared/tutorial`): the vendored copy in `web/src/lib/changelog/` is the versioned one.
 
-## LIVE (2026-09-24)
+## v2 LIVE (2026-09-24)
 - https://ichisieben.dev/botanica/ (EN) · https://ichisieben.dev/botanica/es/ (ES)
 - Botanica `04e07e8` (site + canonical + AA treemap ink), mirrored by Landing `43fb9bc`
   (git auto-deploy, Hostinger build `01a0d597-a573-73f7-8fc5-41284b18b9d7` completed 22:45 UTC).
@@ -173,13 +193,16 @@ especies/index.html            EN species finder
 es/especies/index.html         ES species finder
 filogenia/index.html           EN tree
 es/filogenia/index.html        ES tree
+cambios/index.html             EN changelog (v3; from CHANGELOG.md + git tags)
+es/cambios/index.html          ES changelog (from CHANGELOG.es.md)
 fungi/index.html               redirect stub → ?k=fungi (keeps old links alive)
 favicon.svg
-_astro/*                       17 hashed JS/CSS/font files (self-hosted fonts, no Google Fonts)
+_astro/*                       18 hashed JS/CSS/font files (self-hosted fonts, no Google Fonts)
 data/facets-plantae.json       fetched by the explorer (98 KB gz)
 data/facets-fungi.json
 data/species-plantae.json      fetched on search / species page
 data/species-fungi.json
+data/protologue-plantae.json   fetched when the species drawer opens (v3: IPNI id + authors)
 data/peru_departamentos.geojson  build-time only; not fetched, safe to omit
 tutorial/tutorial.js · tutorial.css · (library, byte-identical to radar-precios)
 ```
