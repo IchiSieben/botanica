@@ -1,0 +1,55 @@
+/* Minimal changelog styles. Custom properties with fallbacks — no hard
+   dependency on a host's design tokens. A host may redefine --changelog-*
+   to match its own palette instead of touching these rules. */
+
+.changelog-entry {
+  padding-block: var(--changelog-gap, 28px);
+  border-bottom: 1px solid var(--changelog-border, #30363d);
+}
+.changelog-entry:last-child {
+  border-bottom: none;
+}
+.changelog-entry h2 {
+  font-size: var(--changelog-h2-size, 1.4rem);
+  color: var(--changelog-fg, #e6edf3);
+  letter-spacing: -0.01em;
+}
+.changelog-entry h3 {
+  margin-top: 14px;
+  font-size: var(--changelog-h3-size, 0.95rem);
+  text-transform: uppercase;
+  letter-spacing: 0.04em;
+  color: var(--changelog-accent, #2dd4bf);
+}
+.changelog-meta {
+  display: flex;
+  gap: 12px;
+  align-items: baseline;
+  margin-top: 4px;
+  font: var(--changelog-mono, 13px/1.4 ui-monospace, monospace);
+  color: var(--changelog-dim, #8b949e);
+}
+.changelog-ref {
+  color: var(--changelog-accent, #2dd4bf);
+  text-decoration: none;
+}
+.changelog-ref:hover {
+  text-decoration: underline;
+}
+.changelog-notes {
+  margin-top: 8px;
+  color: var(--changelog-dim, #8b949e);
+  white-space: pre-line;
+}
+.changelog-entry ul {
+  margin-top: 6px;
+  padding-left: 1.2em;
+  color: var(--changelog-fg, #e6edf3);
+  line-height: 1.6;
+}
+.changelog-entry code {
+  font: var(--changelog-mono, 13px/1.4 ui-monospace, monospace);
+  background: var(--changelog-code-bg, rgba(255, 255, 255, 0.08));
+  padding: 0.1em 0.35em;
+  border-radius: 4px;
+}
