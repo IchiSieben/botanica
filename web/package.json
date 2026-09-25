@@ -9,7 +9,7 @@
     "build": "astro build",
     "preview": "astro preview",
     "check": "astro check",
-    "test": "node --experimental-strip-types --test tests/facets.test.ts",
+    "test": "node --experimental-strip-types --test tests/facets.test.ts tests/intro-facts.test.ts",
     "serve": "node scripts/serve.mjs dist 4400",
     "gate": "node --experimental-strip-types scripts/gate.mjs 4400",
     "lighthouse": "node scripts/lighthouse.mjs 4400 lh-report",

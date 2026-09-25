@@ -1,0 +1,165 @@
+/* Intro infographic (v3 item 1). Tokens from global.css only.
+   Static by default: every element is fully visible without the motion guards below. */
+
+.intro { --in-gap: clamp(56px, 8vw, 104px); }
+.intro h2 { font-size: clamp(1.5rem, 1.1rem + 1.6vw, 2.25rem); letter-spacing: -0.02em; }
+.intro h3 { font-size: 17px; }
+.in-sub { margin-top: 8px; max-width: 62ch; color: rgb(var(--muted)); }
+
+/* Links that carry a number: the number is the link, "source" is a quiet suffix. */
+.in-num {
+  font-family: var(--font-mono); font-weight: 600; color: rgb(var(--accent-strong));
+  text-decoration: underline; text-decoration-color: rgb(var(--accent-strong) / 0.45);
+  font-variant-numeric: tabular-nums; white-space: nowrap;
+}
+.in-num:hover { text-decoration-color: currentColor; }
+.in-src {
+  font-family: var(--font-mono); font-size: 12px; color: rgb(var(--muted));
+  letter-spacing: 0.02em; text-transform: lowercase;
+}
+.in-src::before { content: '↗ '; }
+
+/* a. Opening screen ------------------------------------------------------- */
+.in-open {
+  min-height: calc(100svh - 57px);
+  display: flex; flex-direction: column; justify-content: center; gap: 18px;
+  padding-top: 40px; padding-bottom: 48px;
+}
+.in-kicker { color: rgb(var(--accent-strong)); }
+.in-open h1 { font-size: clamp(2.25rem, 1.2rem + 4.6vw, 4.5rem); line-height: 1; letter-spacing: -0.03em; max-width: 16ch; }
+.in-lede { max-width: 58ch; font-size: clamp(1.0625rem, 1rem + 0.3vw, 1.1875rem); color: rgb(var(--muted)); }
+.in-why { max-width: 58ch; font-size: clamp(1.125rem, 1rem + 0.5vw, 1.375rem); line-height: 1.5; }
+.in-actions { display: flex; flex-wrap: wrap; align-items: center; gap: 8px 20px; margin-top: 8px; }
+.in-cta {
+  display: inline-flex; align-items: center; gap: 8px; min-height: 48px; padding: 0 22px;
+  border-radius: 999px; background: rgb(var(--accent-strong)); color: rgb(var(--bg));
+  font-weight: 600; text-decoration: none;
+  transition: background-color var(--ic7-t-hover) ease;
+}
+.in-cta:hover { background: rgb(var(--accent)); }
+.in-skip {
+  display: inline-flex; align-items: center; min-height: 44px; color: rgb(var(--muted)); font-size: 15px;
+}
+.in-skip:hover { color: rgb(var(--fg)); }
+
+/* b. Facts grid -------------------------------------------------------------- */
+.in-facts { padding-top: var(--in-gap); }
+.in-grid {
+  list-style: none; margin: 24px 0 0; padding: 0;
+  display: grid; gap: 12px; grid-template-columns: repeat(auto-fill, minmax(min(100%, 210px), 1fr));
+}
+.in-card {
+  display: flex; flex-direction: column; gap: 6px; padding: 16px 18px 18px;
+  background: rgb(var(--surface)); border: 1px solid rgb(var(--border)); border-radius: 12px;
+}
+.in-big {
+  display: inline-flex; align-items: baseline; flex-wrap: wrap; gap: 4px 10px; min-height: 44px;
+  text-decoration: none; color: rgb(var(--fg)); align-self: flex-start;
+}
+.in-big .in-v {
+  font-family: var(--font-mono); font-weight: 600; font-variant-numeric: tabular-nums;
+  font-size: clamp(1.875rem, 1.4rem + 1.8vw, 2.5rem); line-height: 1.1; letter-spacing: -0.03em;
+  color: rgb(var(--accent-strong));
+  text-decoration: underline; text-decoration-thickness: 2px; text-underline-offset: 6px;
+  text-decoration-color: rgb(var(--accent-strong) / 0.35);
+}
+.in-big:hover .in-v { text-decoration-color: currentColor; }
+.in-label { font-size: 15px; line-height: 1.45; }
+.in-detail { font-size: 13px; color: rgb(var(--muted)); font-family: var(--font-mono); }
+
+/* c. Timeline ------------------------------------------------------------------ */
+.in-tl { padding-top: var(--in-gap); }
+.in-tl-list { list-style: none; margin: 24px 0 0; padding: 0; max-width: 760px; }
+.in-tl-item {
+  position: relative; display: grid; grid-template-columns: 1fr; gap: 2px;
+  padding: 0 0 22px 28px; border-left: 2px solid rgb(var(--border)); margin-left: 7px;
+}
+.in-tl-item:last-child { padding-bottom: 0; }
+.in-tl-item::before {
+  content: ''; position: absolute; left: -8px; top: 12px; width: 14px; height: 14px; border-radius: 50%;
+  background: rgb(var(--bg)); border: 2px solid rgb(var(--accent-strong));
+}
+.in-when {
+  display: inline-flex; align-items: baseline; flex-wrap: wrap; gap: 4px 10px; min-height: 44px; align-self: start;
+  text-decoration: none; color: rgb(var(--fg));
+}
+.in-when .in-v {
+  font-family: var(--font-mono); font-weight: 600; font-size: 1.375rem; color: rgb(var(--accent-strong));
+  text-decoration: underline; text-underline-offset: 5px; text-decoration-color: rgb(var(--accent-strong) / 0.35);
+  padding-top: 4px;
+}
+.in-when:hover .in-v { text-decoration-color: currentColor; }
+@media (min-width: 720px) {
+  .in-tl-item { grid-template-columns: 250px 1fr; gap: 16px; align-items: baseline; }
+}
+
+/* d. How the atlas works ------------------------------------------------------------ */
+.in-how { padding-top: var(--in-gap); }
+.in-flow {
+  margin-top: 24px; display: grid; gap: 10px; align-items: stretch;
+  grid-template-columns: 1fr;
+}
+.in-box {
+  padding: 16px 18px; border-radius: 12px; border: 1px solid rgb(var(--border)); background: rgb(var(--surface));
+  display: flex; flex-direction: column; gap: 6px;
+}
+.in-box p { color: rgb(var(--muted)); }
+.in-box-atlas { border-color: rgb(var(--accent-strong)); background: rgb(var(--accent) / 0.08); }
+.in-op {
+  justify-self: center; font-family: var(--font-mono); font-size: 22px; color: rgb(var(--accent-strong)); line-height: 1;
+}
+@media (min-width: 900px) {
+  .in-flow { grid-template-columns: 1fr auto 1fr auto 1fr; align-items: center; }
+  .in-box { height: 100%; }
+}
+.in-rr {
+  margin-top: 28px; padding: 18px; border-radius: 12px; border: 1px dashed rgb(var(--border));
+  display: grid; gap: 10px; max-width: 900px;
+}
+.in-rr > p { max-width: 64ch; }
+.in-rr-grid { display: grid; gap: 16px; grid-template-columns: 1fr; margin-top: 6px; }
+@media (min-width: 720px) { .in-rr-grid { grid-template-columns: 1fr 1fr; } }
+.in-rr-group { display: grid; gap: 4px; }
+.in-rr-row { display: grid; grid-template-columns: 7.5em 1fr auto; align-items: center; gap: 10px; min-height: 44px; }
+.in-rr-name { font-size: 14px; }
+.in-rr-track { height: 12px; border-radius: 6px; background: rgb(var(--surface-2)); overflow: hidden; }
+.in-rr-bar { display: block; height: 100%; border-radius: 6px; background: var(--q4); }
+.in-rr-bar[data-kind='species'] { background: rgb(var(--accent-strong)); }
+.in-rr-row .in-num { display: inline-flex; align-items: center; min-height: 44px; font-size: 14px; }
+
+/* e. Final call to action ---------------------------------------------------------- */
+.in-end { padding-top: var(--in-gap); padding-bottom: var(--in-gap); display: grid; gap: 14px; justify-items: start; }
+
+/* The explorer anchor sits below the sticky header. */
+#explorar { scroll-margin-top: 57px; }
+#explorar:focus { outline: none; }
+
+/* Deep links: collapse the intro to one line; the h1 stays for assistive tech. ----- */
+.in-reveal { display: none; }
+.has-state .in-reveal {
+  display: flex; align-items: center; min-height: 44px; font-size: 14px; color: rgb(var(--muted));
+}
+.has-state .in-reveal:hover { color: rgb(var(--fg)); }
+.has-state .intro > section:not(.in-open) { display: none; }
+.has-state .in-open { min-height: 0; padding: 0; }
+.has-state .in-open > :not(h1) { display: none; }
+.has-state .in-open h1 {
+  position: absolute; width: 1px; height: 1px; padding: 0; margin: -1px;
+  overflow: hidden; clip: rect(0, 0, 0, 0); white-space: nowrap; border: 0;
+}
+
+/* Motion: scroll-driven, compositor-only (transform + opacity), and only when both
+   supported and wanted. Above-the-fold content never animates (LCP). */
+@supports (animation-timeline: view()) {
+  @media (prefers-reduced-motion: no-preference) {
+    .in-anim {
+      animation: in-rise linear both;
+      animation-timeline: view();
+      animation-range: entry 0% cover 28%;
+    }
+  }
+}
+@keyframes in-rise {
+  from { opacity: 0; transform: translateY(28px); }
+  to { opacity: 1; transform: none; }
+}
