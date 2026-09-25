@@ -48,6 +48,7 @@ pages + `sort`/`view`/`q`/`end` × 3 pages). Live files == Landing `dist` (modul
 checkout); every non-HTML file byte-identical to `web/dist`.
 The mirror was committed from a separate Landing worktree because another session had
 uncommitted gallery work in `Landing/`; that working tree was not touched.
+Next session: `Landing/` local main is 3 commits behind origin (pull before any mirror); `docs/handoffs/` (hook drafts) is untracked pending the owner's call.
 
 Items 0–4 delivered on main; worktrees for each item merged and removed (`git worktree list`
 shows only main). Release commit tagged **v3.1.0** (see "LIVE" below once deployed).
