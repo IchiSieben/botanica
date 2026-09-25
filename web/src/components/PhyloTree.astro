@@ -1,150 +1,268 @@
 ---
 /**
- * Taxonomic tree: kingdom → order (APG IV) → family, one block per kingdom.
+ * Taxonomic tree, one block per kingdom:
+ *   Plantae: kingdom → clade(s) (APG IV / PPG I) → order → family
+ *   Fungi:   kingdom → phylum → class (GBIF backbone) → order → family
  *
- * DATA: topology and size from mart_family_composition, clade colour from
- * mart_clade_by_department (the ETL's colour, same as the explorer's family
- * tiles). It is a TAXONOMIC hierarchy, not a phylogeny with branch lengths:
- * the Open Tree file is not versioned, and the UI says so.
+ * DATA: topology and size from mart_family_composition; the groups above order
+ * from etl/mappings/*.csv (lib/clades-map.ts, which fails the build for an order
+ * with no row); order colour from mart_clade_by_department (the explorer's
+ * palette). It is a TAXONOMIC hierarchy, not a phylogeny with branch lengths.
  *
- * v2: the tree joins the shared URL state (`?ord=`, `?fam=`, `?k=`). A click on
- * a node, or on the accessible list next to it (the canvas can't take keyboard
- * focus), selects the group; the department view recomputes from the same
- * facet columns as the explorer, and "open in the explorer" carries the state.
+ * v3: the tree and the department bars sit in ChartFrames (how to read, legend
+ * with units, sources). The store drives the chart too: a list click, the URL or
+ * Back expands, highlights and centres the branch (scripts/tree.ts).
  * ECharts (TreeChart only) is initialised when the block scrolls into view.
  */
+import ChartFrame from './ChartFrame.astro';
 import { getFamilies, getCladeByDept, loadFacets } from '../lib/data';
 import { aggregate } from '../lib/facets';
 import { EMPTY } from '../lib/store';
 import { deptName } from '../lib/depts';
-import { t, fmt, type Locale } from '../lib/i18n';
+import { t, fmt, STRINGS, type Key, type Locale } from '../lib/i18n';
+import { buildTree, orderGroups, type OrderIn } from '../lib/clades-map';
+import { nodeSize, sizeSamples, type TreeNode } from '../lib/tree-model';
 
 interface Props { kingdom: 'Plantae' | 'Fungi'; locale: Locale }
 const { kingdom, locale } = Astro.props;
 const n = fmt(locale);
+const k = kingdom.toLowerCase() as 'plantae' | 'fungi';
+const uid = `phylo-${k}`;
 
 const families = getFamilies(kingdom);
 const cladeColor = new Map<string, string>();
 for (const r of getCladeByDept(kingdom)) if (!cladeColor.has(r.clade)) cladeColor.set(r.clade, r.color);
 
-// Families without an APG order go to an explicit bucket: hiding them would
+// Families without an order go to an explicit bucket: hiding them would
 // understate the tree's species total.
-const UNPLACED = t(locale, 'tree.unplaced');
-const byOrder = new Map<string, { family: string; species: number; genera: number }[]>();
+const byOrder = new Map<string | null, { name: string; value: number }[]>();
 for (const f of families) {
-  const key = f.order_apg ?? UNPLACED;
-  const list = byOrder.get(key) ?? [];
-  list.push({ family: f.family, species: f.species, genera: f.genera });
-  byOrder.set(key, list);
+  const list = byOrder.get(f.order_apg) ?? [];
+  list.push({ name: f.family, value: f.species });
+  byOrder.set(f.order_apg, list);
 }
+const ordersIn: OrderIn[] = [...byOrder.entries()].map(([order, fams]) => ({
+  name: order ?? t(locale, 'tree.unplaced'),
+  unplaced: order == null,
+  color: (order && cladeColor.get(order)) || '#8b949e',
+  families: fams,
+}));
 
-const orders = [...byOrder.entries()]
-  .map(([order, fams]) => {
-    const color = cladeColor.get(order) ?? '#8b949e';
-    const species = fams.reduce((s, f) => s + f.species, 0);
-    return {
-      name: order,
-      value: species,
-      itemStyle: { color },
-      meta: { rank: 'order', unplaced: order === UNPLACED },
-      children: fams
-        .sort((a, b) => b.species - a.species)
-        .map((f) => ({ name: f.family, value: f.species, itemStyle: { color }, meta: { rank: 'family', parent: order } })),
-    };
-  })
-  .sort((a, b) => b.value - a.value);
+const cladeLabel = (s: { name: string; rank: string }) => {
+  const key = `tree.clade.${s.name}`;
+  return s.rank === 'clade' && key in STRINGS[locale] ? t(locale, key as Key) : s.name;
+};
+const root = buildTree(kingdom, ordersIn, cladeLabel);
+const groups = orderGroups(root, kingdom === 'Fungi');
 
-const totals = { orders: orders.length, families: families.length, species: families.reduce((s, f) => s + f.species, 0) };
-const tree = [{ name: kingdom, value: totals.species, meta: { rank: 'kingdom' }, children: orders }];
-const k = kingdom.toLowerCase() as 'plantae' | 'fungi';
+let maxV = 1;
+const walk = (x: TreeNode) => { for (const c of x.children ?? []) { maxV = Math.max(maxV, c.value); walk(c); } };
+walk(root);
+const samples = sizeSamples(maxV).map((v) => ({ v, d: nodeSize(v, maxV) }));
+const orderColors = [...new Set(ordersIn.filter((o) => !o.unplaced).map((o) => o.color))].slice(0, 3);
+
+const totals = {
+  orders: ordersIn.filter((o) => !o.unplaced).length,
+  families: families.length,
+  species: root.value,
+};
+
 // Whole-kingdom bars are rendered here, so the page needs no facet download
 // until someone selects a group (the file is 98 KB gzip for plants).
 const f0 = loadFacets(k);
 const agg0 = aggregate(f0, { ...EMPTY, k });
 const depts0 = f0.depts.map((d, i) => [d, agg0.byDept[i]] as const).sort((a, b) => b[1] - a[1]);
 const max0 = Math.max(1, depts0[0][1]);
-const uid = `phylo-${k}`;
 ---
 
 <section class="phylo" id={uid} data-phylo-root data-k={k} hidden={k !== 'plantae'}>
   <header class="phylo-head">
-    <div>
-      <h2>{kingdom}</h2>
-      <p class="phylo-sub mono">{n(totals.orders)} {t(locale, 'kpi.orders')} · {n(totals.families)} {t(locale, 'kpi.families')} · {n(totals.species)} {t(locale, 'kpi.species')}</p>
-    </div>
-    <div class="phylo-tools seg">
-      <button type="button" class="btn on" data-layout="radial" aria-pressed="true">{t(locale, 'tree.radial')}</button>
-      <button type="button" class="btn" data-layout="orthogonal" aria-pressed="false">{t(locale, 'tree.linear')}</button>
-      <button type="button" class="btn" data-reset>{t(locale, 'tree.reset')}</button>
-    </div>
+    <h2>{kingdom}</h2>
+    <p class="phylo-sub mono">{n(totals.orders)} {t(locale, 'kpi.orders')} · {n(totals.families)} {t(locale, 'kpi.families')} · {n(totals.species)} {t(locale, 'kpi.species')}</p>
   </header>
 
   <div class="phylo-body">
-    <div class="phylo-pane">
-      <div id={`${uid}-chart`} class="chart-phylo" role="img" aria-label={`${t(locale, 'tree.title')} · ${kingdom}`}></div>
-      <p class="phylo-hint">{t(locale, 'tree.hint')}</p>
-    </div>
+    <ChartFrame
+      locale={locale}
+      id={`${uid}-frame`}
+      class="phylo-frame"
+      level={3}
+      title={t(locale, k === 'plantae' ? 'tree.frame.plantae' : 'tree.frame.fungi')}
+      howto={t(locale, 'tree.howto')}
+      sources={k === 'plantae' ? ['apg4', 'ppg1', 'wcvp'] : ['gbifBackbone', 'gbifFungi']}
+    >
+      <div slot="tools" class="phylo-tools" role="group" aria-label={t(locale, 'tree.tools')}>
+        <button type="button" class="btn on" data-layout="radial" aria-pressed="true">{t(locale, 'tree.radial')}</button>
+        <button type="button" class="btn" data-layout="orthogonal" aria-pressed="false">{t(locale, 'tree.linear')}</button>
+        <button type="button" class="btn" data-reset aria-label={t(locale, 'tree.resetLabel')}>{t(locale, 'tree.reset')}</button>
+        <button type="button" class="btn ic" data-zoom="in" aria-label={t(locale, 'tree.zoomIn')} title={t(locale, 'tree.zoomIn')}>
+          <svg viewBox="0 0 16 16" aria-hidden="true"><circle cx="7" cy="7" r="4.5" /><path d="M10.4 10.4 14 14M5 7h4M7 5v4" /></svg>
+        </button>
+        <button type="button" class="btn ic" data-zoom="out" aria-label={t(locale, 'tree.zoomOut')} title={t(locale, 'tree.zoomOut')}>
+          <svg viewBox="0 0 16 16" aria-hidden="true"><circle cx="7" cy="7" r="4.5" /><path d="M10.4 10.4 14 14M5 7h4" /></svg>
+        </button>
+        <button type="button" class="btn ic" data-expand="all" aria-label={t(locale, 'tree.expandAll')} title={t(locale, 'tree.expandAll')}>
+          <svg viewBox="0 0 16 16" aria-hidden="true"><rect x="2.5" y="2.5" width="11" height="11" rx="2" /><path d="M5 8h6M8 5v6" /></svg>
+        </button>
+        <button type="button" class="btn ic" data-expand="none" aria-label={t(locale, 'tree.collapseAll')} title={t(locale, 'tree.collapseAll')}>
+          <svg viewBox="0 0 16 16" aria-hidden="true"><rect x="2.5" y="2.5" width="11" height="11" rx="2" /><path d="M5 8h6" /></svg>
+        </button>
+        <button type="button" class="btn ic" data-fs
+          aria-label={t(locale, 'tree.fullscreen')} title={t(locale, 'tree.fullscreen')}
+          data-on-label={t(locale, 'tree.fullscreenExit')} data-off-label={t(locale, 'tree.fullscreen')}>
+          <svg class="fs-in" viewBox="0 0 16 16" aria-hidden="true"><path d="M2.5 6V2.5H6M10 2.5h3.5V6M13.5 10v3.5H10M6 13.5H2.5V10" /></svg>
+          <svg class="fs-out" viewBox="0 0 16 16" aria-hidden="true"><path d="M6 2.5V6H2.5M13.5 6H10V2.5M10 13.5V10h3.5M2.5 10H6v3.5" /></svg>
+        </button>
+      </div>
+
+      <div class="phylo-pane">
+        <div id={`${uid}-chart`} class="chart-phylo" role="img" aria-label={`${t(locale, 'tree.title')} · ${kingdom}`}></div>
+      </div>
+
+      <Fragment slot="legend">
+        <span class="lg">
+          {t(locale, 'tree.legend.size')}:
+          {samples.map((s) => (
+            <span class="lg-size"><i class="lg-dot" style={`width:${s.d.toFixed(1)}px;height:${s.d.toFixed(1)}px`}></i>{n(s.v)}</span>
+          ))}
+          {t(locale, 'kpi.species')}
+        </span>
+        <span class="lg"><i class="lg-sw lg-group"></i>{t(locale, k === 'plantae' ? 'tree.legend.groupPlantae' : 'tree.legend.groupFungi')}</span>
+        <span class="lg"><i class="lg-sw" style={`background:linear-gradient(90deg,${orderColors.map((c, i) => `${c} ${(i * 100) / orderColors.length}% ${((i + 1) * 100) / orderColors.length}%`).join(',')})`}></i>{t(locale, 'tree.legend.order')}</span>
+        <span class="lg"><i class="lg-sw lg-ring"></i>{t(locale, 'tree.legend.ring')}</span>
+        <span class="lg"><i class="lg-sw lg-focus"></i>{t(locale, 'tree.legend.focus')}</span>
+      </Fragment>
+    </ChartFrame>
+
     <div class="phylo-list">
-      <p class="label">{t(locale, 'tree.orders')}</p>
-      <ol class="ord-list">
-        {orders.map((o) => (
-          <li>
-            <button type="button" data-ord={o.meta.unplaced ? '' : o.name} disabled={o.meta.unplaced} aria-pressed="false" style={`--c:${o.itemStyle.color}`}>
-              <span class="sw"></span><span class="nm">{o.name}</span><span class="mono">{n(o.value)}</span>
-            </button>
-          </li>
+      <p class="label" id={`${uid}-ol`}>{t(locale, 'tree.orders')}</p>
+      <div class="ord-list" role="group" aria-labelledby={`${uid}-ol`}>
+        {groups.map((g, gi) => (
+          <Fragment>
+            {g.label && <p class="ord-h" id={`${uid}-g${gi}`}>{g.label}</p>}
+            <ol aria-labelledby={g.label ? `${uid}-g${gi}` : undefined}>
+              {g.orders.map((o) => (
+                <li>
+                  <button type="button" data-ord={o.meta.unplaced ? '' : o.name} disabled={o.meta.unplaced} aria-pressed="false" style={`--c:${o.itemStyle?.color}`}>
+                    <span class="sw"></span><span class="nm">{o.name}</span><span class="mono">{n(o.value)}</span>
+                  </button>
+                </li>
+              ))}
+            </ol>
+          </Fragment>
         ))}
-      </ol>
+      </div>
     </div>
-    <aside class="phylo-side" id={`${uid}-side`} aria-live="polite">
-      <p class="label" data-side-title>{t(locale, 'tree.depts')} · {t(locale, 'tree.all')}</p>
-      <div data-fams></div>
-      <ul class="dept-bars" data-depts>
-        {depts0.map(([d, v]) => (
-          <li><span>{deptName(d)}</span><i style={`transform:scaleX(${(v / max0).toFixed(3)})`}></i><b>{n(v)}</b></li>
-        ))}
-      </ul>
-      <a class="btn open-ex" data-open href="../">{t(locale, 'tree.open')} →</a>
-    </aside>
+
+    <ChartFrame
+      locale={locale}
+      id={`${uid}-side`}
+      class="phylo-side"
+      level={3}
+      title={t(locale, 'tree.depts')}
+      howto={t(locale, 'tree.depts.howto')}
+      sources={k === 'plantae' ? ['wcvp', 'gbifPlantae'] : ['gbifFungi']}
+    >
+      <div class="side-body" aria-live="polite">
+        <p class="label" data-side-title>{t(locale, 'tree.group')}: {t(locale, 'tree.all')}</p>
+        <div data-fams></div>
+        <ul class="dept-bars" data-depts>
+          {depts0.map(([d, v]) => (
+            <li><span>{deptName(d)}</span><i style={`transform:scaleX(${(v / max0).toFixed(3)})`}></i><b>{n(v)}</b></li>
+          ))}
+        </ul>
+        <a class="btn open-ex" data-open href="../">{t(locale, 'tree.open')} →</a>
+      </div>
+      <Fragment slot="legend">
+        <span class="lg"><i class="lg-bar"></i>{t(locale, 'tree.depts.legend')}</span>
+      </Fragment>
+    </ChartFrame>
   </div>
-  <p class="phylo-note note">{t(locale, 'tree.note')}</p>
-  <script type="application/json" data-tree set:html={JSON.stringify(tree)} />
+  <p class="phylo-note note">{t(locale, k === 'plantae' ? 'tree.notePlantae' : 'tree.noteFungi')}</p>
+  <script type="application/json" data-tree set:html={JSON.stringify([root])} />
 </section>
 
 <style>
   .phylo { display: flex; flex-direction: column; gap: 12px; }
   .phylo[hidden] { display: none; }
-  .phylo-head { display: flex; flex-wrap: wrap; gap: 12px; align-items: flex-end; justify-content: space-between; }
+  .phylo-head { display: flex; flex-wrap: wrap; gap: 4px 12px; align-items: baseline; }
   .phylo-head h2 { font-size: 22px; font-style: italic; font-weight: 500; }
   .phylo-sub { font-size: 13px; color: rgb(var(--muted)); }
   .phylo-body { display: grid; gap: 16px; grid-template-columns: minmax(0, 1fr); }
   @media (min-width: 1024px) {
-    .phylo-body { grid-template-columns: minmax(0, 1fr) 240px 280px; }
+    .phylo-body { grid-template-columns: minmax(0, 1fr) 240px 280px; align-items: start; }
   }
+  .phylo-tools { display: flex; flex-wrap: wrap; gap: 4px; }
+  .phylo-tools .ic { justify-content: center; min-width: 36px; padding: 6px; }
+  @media (pointer: coarse) { .phylo-tools .ic { min-width: 44px; } }
+  .phylo-tools svg { width: 16px; height: 16px; fill: none; stroke: currentColor; stroke-width: 1.5; stroke-linecap: round; stroke-linejoin: round; }
+  .phylo-tools .fs-out, .phylo-tools [data-fs][data-on] .fs-in { display: none; }
+  .phylo-tools [data-fs][data-on] .fs-out { display: block; }
   .phylo-pane { position: relative; border: 1px solid rgb(var(--border)); border-radius: 12px; overflow: hidden; background: rgb(var(--surface)); }
   .chart-phylo { width: 100%; height: min(70vh, 620px); }
   @media (max-width: 767px) { .chart-phylo { height: 420px; } }
-  .phylo-hint { position: absolute; left: 10px; bottom: 8px; font-size: 12px; color: rgb(var(--muted)); pointer-events: none; }
+
+  .lg { display: inline-flex; align-items: center; gap: 6px; flex-wrap: wrap; }
+  .lg-size { display: inline-flex; align-items: center; gap: 3px; font-family: var(--font-mono); font-size: 11px; }
+  .lg-dot { display: inline-block; border-radius: 50%; background: rgb(var(--muted)); }
+  .lg-sw { display: inline-block; width: 12px; height: 12px; border-radius: 50%; flex: none; }
+  .lg-group { background: rgb(var(--muted)); }
+  .lg-ring { background: rgb(var(--muted)); box-shadow: 0 0 0 1.5px rgb(var(--fg)); }
+  .lg-focus { background: rgb(var(--muted)); box-shadow: 0 0 0 2px rgb(var(--accent)); }
+  .lg-bar { display: inline-block; width: 28px; height: 8px; border-radius: 4px; background: rgb(var(--accent)); flex: none; }
+
   .phylo-list { min-width: 0; }
-  .ord-list { list-style: none; margin: 6px 0 0; padding: 0; max-height: min(70vh, 620px); overflow-y: auto; border: 1px solid rgb(var(--border)); border-radius: 12px; }
+  .ord-list { margin: 6px 0 0; max-height: min(70vh, 620px); overflow-y: auto; border: 1px solid rgb(var(--border)); border-radius: 12px; }
   @media (max-width: 1023px) { .ord-list { max-height: 264px; } }
+  .ord-list ol { list-style: none; margin: 0; padding: 0; }
+  .ord-h {
+    margin: 0; padding: 8px 12px 4px; font-family: var(--font-mono); font-size: 11px; letter-spacing: 0.02em;
+    color: rgb(var(--muted)); border-top: 1px solid rgb(var(--border));
+  }
+  .ord-list > .ord-h:first-child { border-top: 0; }
   .ord-list button {
+    position: relative; isolation: isolate;
     display: grid; grid-template-columns: 10px minmax(0, 1fr) auto; gap: 8px; align-items: center; width: 100%;
     min-height: 44px; padding: 6px 12px; border: 0; background: transparent; cursor: pointer; text-align: left; font-size: 14px;
   }
+  /* Hover, focus and pressed states only change opacity (and the bar's transform) of
+     pseudo-elements: compositor-only, no background or shadow transitions. */
+  .ord-list button::before,
+  .ord-list button::after {
+    content: ''; position: absolute; inset: 0; z-index: -1; pointer-events: none; opacity: 0;
+    transition: opacity var(--ic7-t-hover) ease, transform var(--ic7-t-hover) ease;
+  }
+  .ord-list button::before { background: rgb(var(--surface-2)); }
+  .ord-list button::after {
+    background: rgb(var(--accent) / 0.12); box-shadow: inset 3px 0 0 rgb(var(--accent));
+    transform: scaleX(0.98); transform-origin: left;
+  }
+  .ord-list button:hover::before, .ord-list button:focus-visible::before { opacity: 1; }
+  .ord-list button[aria-pressed='true']::after { opacity: 1; transform: none; }
   .ord-list li + li button { border-top: 1px solid rgb(var(--border) / 0.5); }
-  .ord-list button:hover { background: rgb(var(--surface-2)); }
-  .ord-list button[aria-pressed='true'] { background: rgb(var(--accent) / 0.12); box-shadow: inset 3px 0 0 rgb(var(--accent)); }
   .ord-list button:disabled { cursor: default; color: rgb(var(--muted)); font-style: italic; }
+  .ord-list button:disabled::before { display: none; }
   .ord-list .sw { width: 10px; height: 10px; border-radius: 3px; background: var(--c); }
   .ord-list .nm { overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
   .ord-list .mono { font-size: 12px; color: rgb(var(--muted)); }
-  .phylo-side { display: grid; gap: 10px; align-content: start; min-width: 0; }
+  .side-body { display: grid; gap: 10px; align-content: start; min-width: 0; }
   .open-ex { justify-self: start; }
   .phylo-note { margin: 0; }
+  @media (prefers-reduced-motion: reduce) {
+    .ord-list button::before, .ord-list button::after { transition: none; }
+  }
 </style>
 
 <style is:global>
+  /* The frame <figure> is rendered by ChartFrame, outside this component's scope. */
+  .phylo-frame:fullscreen {
+    display: flex; flex-direction: column; gap: 8px; width: 100%; height: 100%;
+    padding: 16px; overflow: auto; background: rgb(var(--bg));
+  }
+  .phylo-frame:fullscreen::backdrop { background: rgb(var(--bg)); }
+  .phylo-frame:fullscreen .cf-body { flex: 1 1 auto; min-height: 0; display: flex; }
+  .phylo-frame:fullscreen .phylo-pane { flex: 1 1 auto; display: flex; }
+  .phylo-frame:fullscreen .chart-phylo { flex: 1 1 auto; height: auto; min-height: 240px; }
   .dept-bars { list-style: none; margin: 0; padding: 0; display: grid; gap: 4px; }
   .dept-bars li { display: grid; grid-template-columns: 96px minmax(0, 1fr) auto; gap: 8px; align-items: center; font-size: 13px; }
   .dept-bars i { display: block; height: 8px; border-radius: 4px; background: var(--c, rgb(var(--accent))); transform-origin: left; transition: transform var(--ic7-t-enter) var(--ic7-ease-out); }
