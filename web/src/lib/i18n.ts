@@ -10,7 +10,9 @@ export const LOCALES: Locale[] = ['en', 'es'];
 export const BCP47: Record<Locale, string> = { en: 'en-US', es: 'es-PE' };
 export const LANG_KEY = 'ic7.lang';
 
-const en = {
+import { PARTS_EN, PARTS_ES } from './i18n-parts';
+
+const enBase = {
   'site.title': 'Botánica — an atlas of Peru’s flora',
   'site.brand': 'Botánica',
   'site.tagline': 'Peru’s flora and fungi, from open data',
@@ -138,9 +140,7 @@ const en = {
   'fungi.caveat': 'Peru’s fungi are far less inventoried than its plants. Expect small numbers and many holes: this is what has been collected and digitised, not the real diversity. Nothing is smoothed over.',
 } as const;
 
-export type Key = keyof typeof en;
-
-const es: Record<Key, string> = {
+const esBase: Record<keyof typeof enBase, string> = {
   'site.title': 'Botánica — atlas de la flora del Perú',
   'site.brand': 'Botánica',
   'site.tagline': 'Flora y hongos del Perú, con datos abiertos',
@@ -267,6 +267,11 @@ const es: Record<Key, string> = {
   'tree.loading': 'cargando…',
   'fungi.caveat': 'Los hongos del Perú están muchísimo menos inventariados que sus plantas. Espera números chicos y muchos vacíos: es lo que se ha colectado y digitalizado, no la diversidad real. No se maquilla nada.',
 };
+
+// Feature strings live in src/lib/i18n-parts/<feature>.ts so parallel work never edits this file.
+const en = { ...enBase, ...PARTS_EN };
+export type Key = keyof typeof en;
+const es: Record<Key, string> = { ...esBase, ...PARTS_ES };
 
 export const STRINGS: Record<Locale, Record<Key, string>> = { en, es };
 
