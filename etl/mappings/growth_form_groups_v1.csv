@@ -1,0 +1,180 @@
+raw_wcvp,group,n_species_peru,rule
+tree,tree,3075,rule 7 first term tree
+epiphyte,epiphyte,1916,rule 2 epiphyte/lithophyte
+perennial,herb,1324,rule 7 first term perennial
+shrub or tree,shrub,1232,rule 7 first term shrub
+shrub,shrub,923,rule 7 first term shrub
+pseudobulbous epiphyte,epiphyte,720,rule 2 epiphyte/lithophyte
+subshrub,shrub,717,rule 7 first term subshrub
+climber,climber,697,rule 3 climbing habit
+annual,herb,522,rule 7 first term annual
+liana,climber,488,rule 3 climbing habit
+perennial or rhizomatous geophyte,geophyte,401,rule 6 geophyte
+subshrub or shrub,shrub,377,rule 7 first term subshrub
+tuberous geophyte,geophyte,261,rule 6 geophyte
+climbing shrub,climber,224,rule 3 climbing habit
+rhizomatous geophyte,geophyte,189,rule 6 geophyte
+epiphytic subshrub,epiphyte,188,rule 2 epiphyte/lithophyte
+bulbous geophyte,geophyte,183,rule 6 geophyte
+perennial or subshrub,herb,135,rule 7 first term perennial
+annual or perennial,herb,116,rule 7 first term annual
+succulent subshrub,succulent,106,rule 5 succulent
+scrambling shrub,climber,98,rule 3 climbing habit
+climbing tuberous geophyte,climber,91,rule 3 climbing habit
+annual or subshrub,herb,85,rule 7 first term annual
+epiphytic rhizomatous subshrub,epiphyte,78,rule 2 epiphyte/lithophyte
+bamboo,shrub,71,rule 7 first term bamboo
+scrambling shrub or tree,climber,69,rule 3 climbing habit
+epiphyte or lithophyte,epiphyte,62,rule 2 epiphyte/lithophyte
+annual or biennial,herb,61,rule 7 first term annual
+perennial or epiphyte,epiphyte,51,rule 2 epiphyte/lithophyte
+climbing subshrub,climber,42,rule 3 climbing habit
+climbing perennial,climber,41,rule 3 climbing habit
+climbing shrub or liana,climber,36,rule 3 climbing habit
+climbing annual,climber,32,rule 3 climbing habit
+scrambling tree,climber,31,rule 3 climbing habit
+epiphyte or perennial,epiphyte,30,rule 2 epiphyte/lithophyte
+hydrosubshrub,aquatic,30,rule 4 aquatic
+perennial or lithophyte,epiphyte,30,rule 2 epiphyte/lithophyte
+scrambling rhizomatous geophyte,climber,30,rule 3 climbing habit
+helophyte,aquatic,27,rule 4 aquatic
+hemiparasitic epiphyte,parasite,27,rule 1 parasite
+pseudobulbous geophyte,geophyte,27,rule 6 geophyte
+pseudobulbous geophyte or epiphyte,epiphyte,27,rule 2 epiphyte/lithophyte
+succulent shrub,succulent,24,rule 5 succulent
+climbing epiphyte,epiphyte,23,rule 2 epiphyte/lithophyte
+climbing shrub or tree,climber,23,rule 3 climbing habit
+perennial or annual,herb,23,rule 7 first term perennial
+scrambling subshrub or shrub,climber,23,rule 3 climbing habit
+perennial or tuberous geophyte,geophyte,22,rule 6 geophyte
+scrambling subshrub,climber,22,rule 3 climbing habit
+succulent shrub or tree,succulent,21,rule 5 succulent
+herbaceous bamboo,shrub,20,rule 7 first term bamboo
+scrambling shrub or liana,climber,20,rule 3 climbing habit
+pseudobulbous epiphyte or lithophyte,epiphyte,19,rule 2 epiphyte/lithophyte
+holoparasitic annual,parasite,18,rule 1 parasite
+"annual, perennial or subshrub",herb,17,rule 7 first term annual
+lithophyte,epiphyte,17,rule 2 epiphyte/lithophyte
+"perennial, lithophyte or epiphyte",epiphyte,17,rule 2 epiphyte/lithophyte
+perennial or shrub,herb,16,rule 7 first term perennial
+scrambling tuberous geophyte,climber,16,rule 3 climbing habit
+shrub or liana,climber,15,rule 3 climbing habit
+holoparasite,parasite,14,rule 1 parasite
+hydroannual,aquatic,14,rule 4 aquatic
+annual or helophyte,aquatic,13,rule 4 aquatic
+climbing herbaceous tree,climber,13,rule 3 climbing habit
+subshrub or epiphyte,epiphyte,13,rule 2 epiphyte/lithophyte
+succulent tree,succulent,13,rule 5 succulent
+holomycotrophic rhizomatous geophyte,geophyte,12,rule 6 geophyte
+perennial or helophyte,aquatic,12,rule 4 aquatic
+subshrub or helophyte,aquatic,12,rule 4 aquatic
+biennial,herb,11,rule 7 first term biennial
+holomycotroph,other,11,rule 8 unmatched
+climbing annual or perennial,climber,10,rule 3 climbing habit
+epiphytic shrub,epiphyte,9,rule 2 epiphyte/lithophyte
+hemiepiphytic subshrub,epiphyte,9,rule 2 epiphyte/lithophyte
+rhizomatous geophyte or epiphyte,epiphyte,9,rule 2 epiphyte/lithophyte
+scrambling perennial,climber,9,rule 3 climbing habit
+hemiepiphytic shrub,epiphyte,8,rule 2 epiphyte/lithophyte
+hydroperennial,aquatic,8,rule 4 aquatic
+rhizomatous epiphyte,epiphyte,8,rule 2 epiphyte/lithophyte
+rhizomatous geophyte or lithophyte,epiphyte,8,rule 2 epiphyte/lithophyte
+biennial or perennial,herb,7,rule 7 first term biennial
+rhizomatous hydrogeophyte,aquatic,7,rule 4 aquatic
+scrambling annual or perennial,climber,7,rule 3 climbing habit
+climbing herbaceous tree or liana,climber,6,rule 3 climbing habit
+climbing subshrub or climbing shrub,climber,6,rule 3 climbing habit
+liana or tree,climber,6,rule 3 climbing habit
+lithophyte or epiphyte,epiphyte,6,rule 2 epiphyte/lithophyte
+succulent epiphyte,epiphyte,6,rule 2 epiphyte/lithophyte
+climbing rhizomatous geophyte,climber,5,rule 3 climbing habit
+climbing subshrub or shrub,climber,5,rule 3 climbing habit
+pseudobulbous geophyte or lithophyte,epiphyte,5,rule 2 epiphyte/lithophyte
+scrambling annual,climber,5,rule 3 climbing habit
+scrambling epiphyte,epiphyte,5,rule 2 epiphyte/lithophyte
+succulent perennial,succulent,5,rule 5 succulent
+tuberous shrub,shrub,5,rule 7 first term shrub
+tuberous subshrub,shrub,5,rule 7 first term subshrub
+annual or shrub,herb,4,rule 7 first term annual
+"annual, subshrub or shrub",herb,4,rule 7 first term annual
+climbing succulent,climber,4,rule 3 climbing habit
+hemiparasitic annual,parasite,4,rule 1 parasite
+holomycotrophic tuberous geophyte,geophyte,4,rule 6 geophyte
+liana or subshrub,climber,4,rule 3 climbing habit
+scrambling annual or subshrub,climber,4,rule 3 climbing habit
+climbing perennial or subshrub,climber,3,rule 3 climbing habit
+climbing subshrub or epiphyte,epiphyte,3,rule 2 epiphyte/lithophyte
+epiphytic or lithophytic chamaephyte,epiphyte,3,rule 2 epiphyte/lithophyte
+hemiepiphytic shrub or tree,epiphyte,3,rule 2 epiphyte/lithophyte
+hemiparasitic shrub,parasite,3,rule 1 parasite
+lithophytic subshrub,epiphyte,3,rule 2 epiphyte/lithophyte
+rhizomatous epiphyte or lithophyte,epiphyte,3,rule 2 epiphyte/lithophyte
+scrambling perennial or subshrub,climber,3,rule 3 climbing habit
+subshrub or climbing shrub,climber,3,rule 3 climbing habit
+"subshrub, shrub or tree",shrub,3,rule 7 first term subshrub
+succulent subshrub or lithophyte,epiphyte,3,rule 2 epiphyte/lithophyte
+succulent subshrub or shrub,succulent,3,rule 5 succulent
+tuberous epiphyte,epiphyte,3,rule 2 epiphyte/lithophyte
+"annual, biennial or perennial",herb,2,rule 7 first term annual
+biennial or subshrub,herb,2,rule 7 first term biennial
+climbing helophyte,climber,2,rule 3 climbing habit
+climbing hemiparasite,parasite,2,rule 1 parasite
+climbing perennial or shrub,climber,2,rule 3 climbing habit
+epiphyte or subshrub,epiphyte,2,rule 2 epiphyte/lithophyte
+helophyte or subshrub,aquatic,2,rule 4 aquatic
+holomycotrophic perennial,herb,2,rule 7 first term perennial
+hydroannual or helophyte,aquatic,2,rule 4 aquatic
+hydroannual or tuberous geophyte,aquatic,2,rule 4 aquatic
+hydrosubshrub or subshrub,aquatic,2,rule 4 aquatic
+perennial or bulbous geophyte,geophyte,2,rule 6 geophyte
+pseudobulbous lithophyte,epiphyte,2,rule 2 epiphyte/lithophyte
+rhizomatous geophyte or helophyte,aquatic,2,rule 4 aquatic
+rhizomatous lithophyte,epiphyte,2,rule 2 epiphyte/lithophyte
+semisucculent subshrub or shrub,succulent,2,rule 5 succulent
+succulent epiphyte or lithophyte,epiphyte,2,rule 2 epiphyte/lithophyte
+annual or lithophyte,epiphyte,1,rule 2 epiphyte/lithophyte
+caudex geophyte,geophyte,1,rule 6 geophyte
+climbing annual or biennial,climber,1,rule 3 climbing habit
+climbing caudex geophyte,climber,1,rule 3 climbing habit
+climbing holoparasite,parasite,1,rule 1 parasite
+climbing perennial or herbaceous tree,climber,1,rule 3 climbing habit
+epiphytic caudex subshrub,epiphyte,1,rule 2 epiphyte/lithophyte
+epiphytic rhizomatous geophyte,epiphyte,1,rule 2 epiphyte/lithophyte
+epiphytic scrambling subshrub,epiphyte,1,rule 2 epiphyte/lithophyte
+epiphytic shrub or tree,epiphyte,1,rule 2 epiphyte/lithophyte
+epiphytic subshrub or shrub,epiphyte,1,rule 2 epiphyte/lithophyte
+helophyte or rhizomatous hydrogeophyte,aquatic,1,rule 4 aquatic
+hemiepiphytic perennial,epiphyte,1,rule 2 epiphyte/lithophyte
+hemiepiphytic subshrub or shrub,epiphyte,1,rule 2 epiphyte/lithophyte
+hemiparasitic climber,parasite,1,rule 1 parasite
+hemiparasitic perennial,parasite,1,rule 1 parasite
+hemiparasitic subshrub,parasite,1,rule 1 parasite
+herbaceous tree,tree,1,rule 7 first term tree
+holoparasitic geophyte,parasite,1,rule 1 parasite
+holoparasitic tuberous geophyte,parasite,1,rule 1 parasite
+hydrosubshrub or perennial,aquatic,1,rule 4 aquatic
+liana or shrub,climber,1,rule 3 climbing habit
+lithophyte or perennial,epiphyte,1,rule 2 epiphyte/lithophyte
+monocarpic perennial,herb,1,rule 7 first term perennial
+monocarpic tree,tree,1,rule 7 first term tree
+"perennial, subshrub or shrub",herb,1,rule 7 first term perennial
+pseudobulbous epiphyte or geophyte,epiphyte,1,rule 2 epiphyte/lithophyte
+rhizomatous subshrub,shrub,1,rule 7 first term subshrub
+scrambling herbaceous tree,climber,1,rule 3 climbing habit
+scrambling perennial or epiphyte,epiphyte,1,rule 2 epiphyte/lithophyte
+semiaquatic annual,aquatic,1,rule 4 aquatic
+semiaquatic subshrub,aquatic,1,rule 4 aquatic
+semisucculent subshrub,succulent,1,rule 5 succulent
+subshrub or lithophyte,epiphyte,1,rule 2 epiphyte/lithophyte
+subshrub or perennial,shrub,1,rule 7 first term subshrub
+subshrub or tuberous geophyte,geophyte,1,rule 6 geophyte
+succulent annual or subshrub,succulent,1,rule 5 succulent
+succulent lithophyte,epiphyte,1,rule 2 epiphyte/lithophyte
+tuberous geophyte or epiphyte,epiphyte,1,rule 2 epiphyte/lithophyte
+tuberous geophyte or helophyte,aquatic,1,rule 4 aquatic
+tuberous geophyte or lithophyte,epiphyte,1,rule 2 epiphyte/lithophyte
+tuberous hydrogeophyte,aquatic,1,rule 4 aquatic
+tuberous lithophyte,epiphyte,1,rule 2 epiphyte/lithophyte
+tuberous lithophyte or epiphyte,epiphyte,1,rule 2 epiphyte/lithophyte
+tuberous perennial,herb,1,rule 7 first term perennial
+tuberous shrub or tree,shrub,1,rule 7 first term shrub

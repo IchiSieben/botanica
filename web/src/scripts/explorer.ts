@@ -9,6 +9,7 @@
  * Nothing runs per frame: the only timer is the year "play", one step every
  * 700 ms.
  */
+import { isGroup, toGroup } from '../lib/growth';
 import { createStore, isFiltered, serialize, type State, type Status } from '../lib/store';
 import { aggregate, compare, type Facets } from '../lib/facets';
 import * as V from '../lib/views';
@@ -80,6 +81,8 @@ export function boot() {
   const cfg = JSON.parse($('#ex-config').textContent!) as Config;
   const n = fmt(locale);
   const store = createStore();
+  // Pre-v3 links filter by a raw WCVP string (`lf=shrub or tree`); v3 filters by group.
+  { const lf = store.get().lf; if (lf && !isGroup(lf)) store.set({ lf: toGroup(lf) }, { push: false }); }
   // The build painted unfiltered Plantae; a shared link's numbers are stale until the data lands.
   if (location.search && serialize(store.get()) !== '') root.classList.add('is-stale');
 

@@ -11,7 +11,8 @@
  */
 import { DECADE0, DECADES, type Aggregates, type Facets } from './facets';
 import type { State, Status } from './store';
-import { t, fmt, type Locale } from './i18n';
+import { t, fmt, type Key, type Locale } from './i18n';
+import { isGroup, rawOf } from './growth';
 
 export interface Ctx {
   locale: Locale;
@@ -164,7 +165,7 @@ export function families(c: Ctx): string {
 }
 
 // ---- Generic horizontal bars ---------------------------------------------
-interface Bar { key: string; label: string; value: number; muted?: boolean }
+interface Bar { key: string; label: string; value: number; muted?: boolean; title?: string }
 
 function bars(c: Ctx, items: Bar[], attr: string, selected: string | null): string {
   const n = fmt(c.locale);
@@ -174,7 +175,7 @@ function bars(c: Ctx, items: Bar[], attr: string, selected: string | null): stri
       const on = selected === b.key;
       const tag = b.key ? 'button' : 'div';
       const act = b.key ? ` type="button" data-${attr}="${esc(b.key)}" aria-pressed="${on}"` : '';
-      return `<${tag} class="bar${on ? ' on' : ''}${b.muted ? ' muted' : ''}${b.value ? '' : ' zero'}"${act}>
+      return `<${tag} class="bar${on ? ' on' : ''}${b.muted ? ' muted' : ''}${b.value ? '' : ' zero'}"${act}${b.title ? ` title="${esc(b.title)}"` : ''}>
         <span class="bl">${esc(b.label)}</span><span class="bv">${n(b.value)}</span>
         <span class="bt" aria-hidden="true"><i style="transform:scaleX(${(b.value / max).toFixed(4)})"></i></span></${tag}>`;
     })
@@ -182,6 +183,7 @@ function bars(c: Ctx, items: Bar[], attr: string, selected: string | null): stri
 }
 
 const TOP_LIFE = 10;
+export const lfLabel = (locale: Locale, g: string): string => (isGroup(g) ? t(locale, `lf.${g}` as Key) : g);
 export function lifeforms(c: Ctx): string {
   if (isFungi(c)) return naFungi(c.locale);
   const rows = [...c.agg.byLife].sort((a, b) => b[1] - a[1]);
@@ -190,7 +192,9 @@ export function lifeforms(c: Ctx): string {
   for (const [i, v] of rows) {
     const key = i < 0 ? '' : c.f.lifeforms[i];
     if (i < 0) { items.push({ key: '', label: t(c.locale, 'life.nodata'), value: v, muted: true }); continue; }
-    if (items.filter((x) => x.key).length < TOP_LIFE || key === c.s.lf) items.push({ key, label: key, value: v });
+    // Group label translated; the raw WCVP strings behind it go in the tooltip.
+    const title = `${t(c.locale, 'lf.raw')}: ${rawOf(key).join(' · ')}`;
+    if (items.filter((x) => x.key).length < TOP_LIFE || key === c.s.lf) items.push({ key, label: lfLabel(c.locale, key), value: v, title });
     else { rest += v; restN++; }
   }
   if (rest) items.push({ key: '', label: `+${restN} ${t(c.locale, 'life.others')}`, value: rest, muted: true });

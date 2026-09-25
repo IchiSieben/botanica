@@ -10,6 +10,11 @@ import { EMPTY, parse, serialize } from '../src/lib/store.ts';
 
 const json = (p: string) => JSON.parse(readFileSync(new URL(p, import.meta.url), 'utf8'));
 const mart = (name: string) => json(`../../data/exports/${name}.json`);
+// raw_wcvp -> group, parsed like src/lib/growth.ts (which is bundled with Vite's ?raw).
+const GROWTH = new Map<string, string>(
+  readFileSync(new URL('../../etl/mappings/growth_form_groups_v1.csv', import.meta.url), 'utf8').trim().split(/\r?\n/).slice(1)
+    .map((l) => l.match(/^(?:"((?:[^"]|"")*)"|([^,]*)),([^,]+),/)!).map((m) => [(m[1] ?? m[2]).replace(/""/g, '"'), m[3]]),
+);
 
 for (const kingdom of ['Plantae', 'Fungi']) {
   const f: Facets = json(`../public/data/facets-${kingdom.toLowerCase()}.json`);
@@ -41,13 +46,23 @@ for (const kingdom of ['Plantae', 'Fungi']) {
     }
   });
 
-  test(`${kingdom}: lifeforms match mart_lifeform_spectrum`, () => {
+  test(`${kingdom}: growth-form groups match mart_lifeform_spectrum summed by group`, () => {
+    const want = new Map<number, number>();
     for (const row of mart('mart_lifeform_spectrum').filter((r: any) => r.kingdom === kingdom)) {
-      const i = row.lifeform === '(sin dato)' ? -1 : f.lifeforms.indexOf(row.lifeform);
-      assert.equal(a.byLife.get(i), row.species, row.lifeform);
+      const g = row.lifeform === '(sin dato)' ? -1 : f.lifeforms.indexOf(GROWTH.get(row.lifeform) ?? '?');
+      assert.ok(row.lifeform === '(sin dato)' || g >= 0, `no group for ${row.lifeform}`);
+      want.set(g, (want.get(g) ?? 0) + row.species);
     }
+    for (const [g, n] of want) assert.equal(a.byLife.get(g), n, f.lifeforms[g] ?? '(none)');
   });
 }
+
+test('every raw WCVP lifeform in the species index has a group in the versioned CSV', () => {
+  const sp = json('../public/data/species-plantae.json');
+  const missing = sp.lifeforms.filter((x: string) => !GROWTH.has(x));
+  assert.deepEqual(missing, []);
+  assert.ok(sp.lifeforms.length > 150, `only ${sp.lifeforms.length} raw strings?`);
+});
 
 test('Plantae: filters narrow and cross-filter views exclude their own dimension', () => {
   const f: Facets = json('../public/data/facets-plantae.json');

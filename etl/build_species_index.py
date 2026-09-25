@@ -17,6 +17,7 @@ indice de plantas.
 
 from __future__ import annotations
 
+import csv
 import json
 from pathlib import Path
 
@@ -25,6 +26,21 @@ import duckdb
 from . import config as C
 
 OUT = C.EXPORTS.parent.parent / "web" / "public" / "data"
+
+# Grupos de forma de crecimiento (v3): el CSV versionado es la fuente de verdad.
+# Las facetas llevan el grupo; el indice de especies conserva el string crudo de WCVP.
+GROWTH_MAP = C.EXPORTS.parent.parent / "etl" / "mappings" / "growth_form_groups_v1.csv"
+GROWTH_GROUPS = ["tree", "shrub", "herb", "geophyte", "climber", "epiphyte", "succulent", "aquatic", "parasite", "other"]
+
+
+def growth_map() -> dict[str, str]:
+    with GROWTH_MAP.open(encoding="utf-8") as f:
+        m = {r["raw_wcvp"]: r["group"] for r in csv.DictReader(f)}
+    bad = sorted(set(m.values()) - set(GROWTH_GROUPS))
+    if bad:
+        raise ValueError(f"grupos desconocidos en {GROWTH_MAP.name}: {bad}")
+    return m
+
 
 # Bits de estado: cabe en un entero y evita tres booleanos por especie.
 NATIVE, INTRODUCED, ENDEMIC = 1, 2, 4
@@ -163,24 +179,77 @@ def build_facets(con: duckdb.DuckDBPyConnection, kingdom: str, index: dict) -> d
                 years[name] = y
 
     rows = index["rows"]
+    # Raw WCVP lifeform index -> group index. Un string sin fila en el CSV rompe el export.
+    life_group: list[int] = []
+    if index["lifeforms"]:
+        gm = growth_map()
+        missing = [x for x in index["lifeforms"] if x not in gm]
+        if missing:
+            raise ValueError(f"{len(missing)} lifeforms sin grupo en {GROWTH_MAP.name}: {missing[:5]}")
+        life_group = [GROWTH_GROUPS.index(gm[x]) for x in index["lifeforms"]]
     return {
         "meta": {
             "kingdom": kingdom,
             "species": len(rows),
             "flags": index["meta"]["flags"],
             "yearSource": "WCVP first_published (basionym if any)" if years else None,
+            "lifeformMapping": GROWTH_MAP.name if life_group else None,
         },
         "depts": depts,
         "families": index["families"],
         "orders": index["orders"],
-        "lifeforms": index["lifeforms"],
+        # v3: grupos (growth_form_groups_v1.csv), no los ~180 strings crudos de WCVP.
+        "lifeforms": GROWTH_GROUPS if life_group else [],
         # Columnas. -1 = sin dato; year 0 = sin dato; mask 0 = sin ocurrencias.
         "fam": [r[1] for r in rows],
         "ord": [r[2] for r in rows],
-        "life": [r[6] for r in rows],
+        "life": [life_group[r[6]] if r[6] >= 0 else -1 for r in rows] if life_group else [-1] * len(rows),
         "flags": [r[5] for r in rows],
         "mask": [masks.get(r[0], 0) for r in rows],
         "year": [years.get(r[0], 0) for r in rows] if years else None,
+    }
+
+
+def build_protologue(con: duckdb.DuckDBPyConnection, index: dict) -> dict:
+    """IPNI id + autores del nombre que fija el "año de descripcion" (v3, ficha de especie).
+
+    Misma regla que `year` en build_facets: el basionimo si existe y es mas antiguo (la
+    descripcion original), si no el nombre aceptado. Alineado fila a fila con el indice.
+    Se carga diferido, solo al abrir una ficha: no pesa en la primera pintura.
+    """
+    best: dict[str, tuple[int, str, str]] = {}
+    for name, y, ipni, authors in con.execute(
+        r"""
+        WITH c AS (
+            SELECT a.taxon_name,
+                   try_cast(regexp_extract(w.first_published, '\((\d{4})\)', 1) AS INTEGER) AS y,
+                   w.ipni_id, w.taxon_authors, 1 AS pref
+            FROM wcvp_accepted a JOIN raw_wcvp_names w ON w.plant_name_id = a.plant_name_id
+            WHERE a.taxon_rank = 'Species'
+            UNION ALL
+            SELECT a.taxon_name,
+                   try_cast(regexp_extract(b.first_published, '\((\d{4})\)', 1) AS INTEGER),
+                   b.ipni_id, b.taxon_authors, 0
+            FROM wcvp_accepted a JOIN raw_wcvp_names w ON w.plant_name_id = a.plant_name_id
+            JOIN raw_wcvp_names b ON b.plant_name_id = w.basionym_plant_name_id
+            WHERE a.taxon_rank = 'Species'
+        )
+        SELECT taxon_name, y, ipni_id, taxon_authors FROM c
+        ORDER BY taxon_name, coalesce(y, 9999), pref, ipni_id
+        """
+    ).fetchall():
+        if name not in best:
+            best[name] = (y or 0, ipni or "", authors or "")
+    rows = index["rows"]
+    return {
+        "meta": {
+            "kingdom": "Plantae",
+            "species": len(rows),
+            "schema": ["ipniId", "authors"],
+            "source": "WCVP raw_wcvp_names.ipni_id / taxon_authors (basionym when it is the original description)",
+            "link": "https://www.ipni.org/n/{ipniId}",
+        },
+        "rows": [[best.get(r[0], (0, "", ""))[1], best.get(r[0], (0, "", ""))[2]] for r in rows],
     }
 
 
@@ -201,6 +270,9 @@ def run() -> None:
             written.append(f"species-{kingdom.lower()}.json ({data['meta']['species']:,} especies, {mb:.2f} MB)")
             mb = _write(OUT / f"facets-{kingdom.lower()}.json", build_facets(con, kingdom, data))
             written.append(f"facets-{kingdom.lower()}.json ({mb:.2f} MB)")
+            if kingdom == "Plantae":
+                mb = _write(OUT / "protologue-plantae.json", build_protologue(con, data))
+                written.append(f"protologue-plantae.json ({mb:.2f} MB)")
         print("[species-index] ->", " · ".join(written))
     finally:
         con.close()
