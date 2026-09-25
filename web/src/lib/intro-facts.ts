@@ -33,17 +33,6 @@ export const RELEASES = [
   { version: 'v3.0.0', date: '2026-09-24' },
 ] as const;
 
-/**
- * NOT RENDERED. Slot for facts that need the owner's research dossier
- * (docs/RESEARCH-PERU.md), which does not exist yet (SPEC "Out of scope").
- * Nothing here may be shown until each entry has a citation from the dossier.
- */
-export const DOSSIER_PENDING = [
-  { id: 'ruiz-pavon-expedition-start', note: 'Start of the Ruiz & Pavón expedition (1777 anchor for the timeline)' },
-  { id: 'megadiverse', note: 'Peru among megadiverse countries — needs a cited source' },
-  { id: 'country-rankings', note: 'Country rankings (orchids, endemics…) — needs a cited source' },
-] as const;
-
 export type FactFormat = 'int' | 'pct' | 'year';
 
 export interface Fact {
@@ -54,17 +43,46 @@ export interface Fact {
   source: SourceKey;
   /** Values for the placeholders of `intro.fact.<id>.detail` (numbers are formatted, strings are dept keys or names). */
   detail?: Record<string, number | string>;
+  /** Per-key source override for `detail` values cited to a source other than `source`
+   *  (e.g. a dossier fact shown next to our own figure — each number links to its own citation). */
+  detailSource?: Partial<Record<string, SourceKey>>;
 }
 
+/**
+ * Facts hard-coded from the owner's dossier (docs/RESEARCH-PERU.md §1), NOT marked ⚠️ there.
+ * These do not come from our exports — the whole point is a citation from the dossier, typed
+ * once in lib/sources.ts. `endemicCompare` (§1 #5–6) also carries our own computed figure,
+ * cited separately via `detailSource`, so it is built in `computeFacts` instead.
+ */
+const DOSSIER_FACTS: Fact[] = [
+  { id: 'megadiverse', value: 17, format: 'int', source: 'megadiverse' },
+  { id: 'altitude', value: 6768, format: 'int', source: 'mincetur' },
+  { id: 'protectedAreas', value: 18.38, format: 'pct', source: 'sernanp', detail: { anp: 78, acr: 38, acp: 145 } },
+  { id: 'epiphytes', value: 2462, format: 'int', source: 'mondragon2024', detail: { orchids: 1606 } },
+  { id: 'amazonTrees', value: 4000, format: 'int', source: 'terSteege2016', detail: { years: 300 } },
+];
+
 export interface Milestone {
-  id: 'earliest' | 'rp-first' | 'rp-peak' | 'peak-decade' | 'since2000' | 'snapshot' | 'releases';
+  id: 'rp-expedition' | 'rp-first' | 'rp-peak' | 'raimondi' | 'weberbauer' | 'peak-decade'
+    | 'brakoZarucchi' | 'since2000' | 'libroRojo2006' | 'ulloa2017' | 'snapshot' | 'releases';
   /** Year shown on the axis. */
   year: number;
-  /** Label for the year (e.g. "1930s", "2000–2025", a date). */
+  /** Label for the year (e.g. "1930s", "2000–2025", a date, or a fixed dossier range). */
   when: string;
   source: SourceKey | 'changes';
   detail: Record<string, number | string>;
 }
+
+/** Timeline rows hard-coded from the dossier §2 (NOT the ⚠️ 1802 Humboldt row). Years/ranges are
+ *  as given there; the 2026 "this atlas" row is covered by our own `snapshot` + `releases`. */
+const DOSSIER_MILESTONES: Milestone[] = [
+  { id: 'rp-expedition', year: 1777, when: '1777', source: 'ruizPavonBiology2023', detail: { specimens: 3000, species: 500 } },
+  { id: 'raimondi', year: 1850, when: '1850–1890', source: 'raimondiBNP', detail: {} },
+  { id: 'weberbauer', year: 1901, when: '1901–1948', source: 'weberbauerDB', detail: {} },
+  { id: 'brakoZarucchi', year: 1993, when: '1993', source: 'brakoZarucchi1993', detail: { n: 17000 } },
+  { id: 'libroRojo2006', year: 2006, when: '2006', source: 'libroRojo', detail: {} },
+  { id: 'ulloa2017', year: 2017, when: '2017', source: 'ulloaUlloa2017', detail: { n: 124993 } },
+];
 
 export interface Contrast {
   /** Department with the most cleaned records. */
@@ -131,10 +149,6 @@ export function computeFacts(inp: IntroInputs): IntroData {
   const endemic = agg.endemic;
   const endemicPct = pct(endemic, n);
 
-  const famCount = new Map<number, number>();
-  for (const i of f.fam) famCount.set(i, (famCount.get(i) ?? 0) + 1);
-  const [topFamIdx, topFamN] = [...famCount].sort((a, b) => b[1] - a[1])[0];
-
   // --- GBIF coverage ---------------------------------------------------------
   const noRecords = f.mask.filter((m) => m === 0).length;
   const noRecordsPct = pct(noRecords, n);
@@ -142,7 +156,6 @@ export function computeFacts(inp: IntroInputs): IntroData {
   const perDept = f.depts.map((dep, d) => ({ dep, species: f.mask.reduce((s, m) => s + ((m >> d) & 1), 0) }));
   const bySpecies = [...perDept].sort((a, b) => b.species - a.species);
   const most = bySpecies[0];
-  const fewest = bySpecies[bySpecies.length - 1];
 
   const rich = inp.richness.filter((r) => r.kingdom === 'Plantae');
   const totalRecords = rich.reduce((s, r) => s + r.records, 0); // includes `unassigned`
@@ -155,8 +168,6 @@ export function computeFacts(inp: IntroInputs): IntroData {
   // --- Years described (WCVP first_published, basionym if any) ---------------
   const years = (f.year ?? []).filter((y) => y > 0);
   const since2000 = years.filter((y) => y >= 2000).length;
-  const y0 = Math.min(...years);
-  const y0Count = years.filter((y) => y === y0).length;
   const yMax = Math.max(...years);
   const decades = new Map<number, number>();
   for (const y of years) decades.set(Math.floor(y / 10) * 10, (decades.get(Math.floor(y / 10) * 10) ?? 0) + 1);
@@ -198,28 +209,29 @@ export function computeFacts(inp: IntroInputs): IntroData {
   const facts: Fact[] = [
     { id: 'species', value: n, format: 'int', source: 'wcvp' },
     { id: 'endemic', value: endemicPct, format: 'pct', source: 'wcvp', detail: { n: endemic } },
-    { id: 'families', value: agg.families, format: 'int', source: 'wcvp', detail: { orders: agg.orders } },
-    { id: 'topFamily', value: topFamN, format: 'int', source: 'wcvp', detail: { family: f.families[topFamIdx], pct: pct(topFamN, n) } },
+    // Libro Rojo (2006, other taxonomy, other date) next to our own WCVP figure — dossier §1 #5–6.
+    {
+      id: 'endemicCompare', value: 27.9, format: 'pct', source: 'libroRojo',
+      detail: { n: 5509, ownPct: endemicPct, ownN: endemic, ownTotal: n },
+      detailSource: { ownPct: 'wcvp', ownN: 'wcvp', ownTotal: 'wcvp' },
+    },
     { id: 'noRecords', value: noRecordsPct, format: 'pct', source: 'gbifPlantae', detail: { n: noRecords } },
-    { id: 'richestDept', value: most.species, format: 'int', source: 'gbifPlantae', detail: { dep: most.dep, fewest: fewest.dep, fewestN: fewest.species } },
     {
       id: 'top3Records', value: top3Share, format: 'pct', source: 'gbifPlantae',
       detail: { a: top3[0].department, b: top3[1].department, c: top3[2].department, total: totalRecords },
     },
-    { id: 'since2000', value: since2000, format: 'int', source: 'wcvp', detail: { from: 2000, pct: pct(since2000, years.length), median: agg.medianYear ?? 0 } },
-    { id: 'ruizPavon', value: strict, format: 'int', source: 'wcvp', detail: { y0: rpY0, peak: rpPeakYear, peakN: rpPeakN } },
-    { id: 'fungi', value: fk.species, format: 'int', source: 'gbifFungi', detail: { records: fk.occurrences } },
+    ...DOSSIER_FACTS,
   ];
 
   const snap = snapshotDate();
   const milestones: Milestone[] = [
-    { id: 'earliest', year: y0, when: String(y0), source: 'wcvp', detail: { n: y0Count } },
     { id: 'rp-first', year: rpY0, when: String(rpY0), source: 'wcvp', detail: { n: rpFirstN } },
     { id: 'rp-peak', year: rpPeakYear, when: String(rpPeakYear), source: 'wcvp', detail: { n: rpPeakN, total: strict } },
     { id: 'peak-decade', year: peakDecade, when: `${peakDecade}s`, source: 'wcvp', detail: { n: peakDecadeN } },
     { id: 'since2000', year: 2000, when: `2000–${yMax}`, source: 'wcvp', detail: { n: since2000 } },
     { id: 'snapshot', year: Number(snap.slice(0, 4)), when: snap, source: 'wcvp', detail: {} },
     { id: 'releases', year: Number(RELEASES[0].date.slice(0, 4)), when: RELEASES[0].date, source: 'changes', detail: { r1: RELEASES[0].version, r2: RELEASES[1].version, r3: RELEASES[2].version, v1: RELEASES[0].date, v3: RELEASES[2].date } },
+    ...DOSSIER_MILESTONES,
   ].sort((a, b) => a.year - b.year || 0) as Milestone[];
 
   return {

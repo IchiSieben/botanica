@@ -30,10 +30,14 @@ const show = (k: string, v: number | string): string =>
 /** Fill `{key}` placeholders; values are HTML (already escaped). */
 const fill = (s: string, vars: Record<string, string>) => esc(s).replace(/\{(\w+)\}/g, (_, k) => vars[k] ?? `{${k}}`);
 type Src = SourceKey | 'changes';
-/** Fill a string; every number becomes a link to `src` (department/family names stay text). */
-const tx = (key: string, vars: Record<string, number | string>, src: Src) =>
-  fill(t(locale, key as Key), Object.fromEntries(Object.entries(vars).map(([k, v]) =>
-    [k, typeof v === 'number' || (src === 'changes' && /\d/.test(v)) ? link(show(k, v), src) : esc(show(k, v))])));
+/** Fill a string; every number becomes a link to `src` (department/family names stay text).
+ *  `overrides` cites individual placeholders to a different source (e.g. a dossier fact shown
+ *  next to our own figure: each number links to its own citation, not the card's main source). */
+const tx = (key: string, vars: Record<string, number | string>, src: Src, overrides: Partial<Record<string, Src>> = {}) =>
+  fill(t(locale, key as Key), Object.fromEntries(Object.entries(vars).map(([k, v]) => {
+    const s = overrides[k] ?? src;
+    return [k, typeof v === 'number' || (s === 'changes' && /\d/.test(String(v))) ? link(show(k, v), s) : esc(show(k, v))];
+  })));
 
 const srcTitle = (k: SourceKey) => {
   const s = SOURCES[k] as { label: string; version?: string; doi?: string };
@@ -109,9 +113,9 @@ const spMax = c ? Math.max(c.a.species, c.b.species) : 1;
             <span class="in-v">{value(f)}</span>
             <span class="in-src">{t(locale, 'intro.source')}</span>
           </a>
-          <p class="in-label" set:html={tx(`intro.fact.${f.id}.label`, f.detail ?? {}, f.source)} />
+          <p class="in-label" set:html={tx(`intro.fact.${f.id}.label`, f.detail ?? {}, f.source, f.detailSource)} />
           {f.detail && t(locale, `intro.fact.${f.id}.detail` as Key) && (
-            <p class="in-detail" set:html={tx(`intro.fact.${f.id}.detail`, f.detail, f.source)} />
+            <p class="in-detail" set:html={tx(`intro.fact.${f.id}.detail`, f.detail, f.source, f.detailSource)} />
           )}
         </li>
       ))}
