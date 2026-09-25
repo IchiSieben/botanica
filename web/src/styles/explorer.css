@@ -1,13 +1,18 @@
-/* Explorer. Mobile-first: one column at 360 px, two columns from 1024 px.
-   Everything that moves moves with transform/opacity (compositor-only). */
+/* Explorer. Mobile-first: one column at 360 px, two columns from 1024 px, and from
+   1200 px one glance: header, chips + KPIs, then map | families | origin in a row of
+   fixed height (see .ex-grid). Everything that moves moves with transform/opacity. */
 
-.ex-hero { padding-top: 32px; padding-bottom: 16px; display: grid; gap: 20px; }
-.ex-title h1 { font-size: clamp(2rem, 1.2rem + 3.6vw, 3.5rem); line-height: 1; letter-spacing: -0.02em; }
-.ex-title .lede { margin-top: 12px; max-width: 62ch; font-size: clamp(1.0625rem, 1rem + 0.25vw, 1.125rem); color: rgb(var(--muted)); }
+/* The section is the target of #explorar: land under the sticky header (Base.astro:
+   measured 103 px below 720 px, where its nav wraps to a second row, and 61 px above). */
+.ex { scroll-margin-top: 103px; }
+@media (min-width: 720px) { .ex { scroll-margin-top: 61px; } }
+.ex-head { padding-top: 16px; padding-bottom: 10px; display: grid; gap: 12px; }
+.ex-title h2 { font-size: clamp(1.5rem, 1.2rem + 1vw, 1.875rem); line-height: 1.1; letter-spacing: -0.02em; }
+.ex-sub { margin: 4px 0 0; font-size: 14px; line-height: 1.4; color: rgb(var(--muted)); }
 .ex-controls { display: flex; flex-wrap: wrap; gap: 12px; align-items: center; }
 @media (min-width: 1024px) {
-  .ex-hero { grid-template-columns: 1fr minmax(360px, 440px); align-items: end; }
-  .ex-controls { justify-content: flex-end; }
+  .ex-head { grid-template-columns: minmax(0, 1fr) minmax(400px, 480px); align-items: center; }
+  .ex-controls { flex-wrap: nowrap; justify-content: flex-end; }
 }
 
 .seg { display: inline-flex; gap: 4px; flex-wrap: wrap; }
@@ -46,7 +51,29 @@
 .q-hint { font-family: var(--font-mono); font-size: 12px; }
 
 /* ---- status line: chips + KPIs ---- */
-.ex-status { display: grid; gap: 12px; margin: 8px 0 20px; }
+.ex-status { display: grid; gap: 12px; margin: 2px 0 14px; }
+.ex-why { font-size: 13px; }
+.ex-why summary {
+  display: inline-flex; align-items: center; min-height: 28px; cursor: pointer;
+  color: rgb(var(--accent-strong)); text-decoration: underline; text-underline-offset: 3px;
+}
+.ex-why-body {
+  margin-top: 6px; padding: 10px 12px; max-width: 60ch; line-height: 1.5;
+  background: rgb(var(--surface)); border: 1px solid rgb(var(--border)); border-radius: 8px;
+}
+.ex-why-body p { margin: 0; }
+.ex-why-body p + p { margin-top: 6px; }
+@media (pointer: coarse) { .ex-why summary { min-height: 44px; } }
+@media (min-width: 1200px) {
+  /* One row: chips (with the "why" note under them) | KPIs. The note opens as a panel
+     over the charts, so opening it never moves the grid. */
+  .ex-status { grid-template-columns: minmax(0, 1fr) minmax(0, 2.6fr); grid-template-areas: 'chips kpis' 'why kpis'; align-items: start; column-gap: 16px; row-gap: 2px; }
+  .ex-status > .chips { grid-area: chips; }
+  .ex-status > .kpis { grid-area: kpis; }
+  .ex-why { grid-area: why; position: relative; }
+  .ex-why-body { position: absolute; z-index: 20; left: 0; top: 100%; width: min(60ch, 420px); box-shadow: 0 12px 30px -10px rgb(0 0 0 / 0.5); }
+  .ex-status > .caveat { grid-column: 1 / -1; }
+}
 .chips { display: flex; flex-wrap: wrap; gap: 6px; min-height: 36px; align-items: center; }
 .chip-none { font-family: var(--font-mono); font-size: 13px; color: rgb(var(--muted)); }
 .chip {
@@ -67,40 +94,111 @@
 .kpi span { font-family: var(--font-mono); font-size: 12px; color: rgb(var(--muted)); }
 .kpi:first-child b { color: rgb(var(--accent-strong)); }
 @media (max-width: 639px) { .kpi:last-child:nth-child(odd) { grid-column: 1 / -1; } }
+@media (min-width: 1200px) {
+  /* The first label can read "species with GBIF records in Madre de Dios": a wider cell
+     and two reserved lines keep the row's height the same with or without a department. */
+  .kpis { grid-template-columns: minmax(0, 1.6fr) repeat(4, minmax(0, 1fr)); }
+  .kpi { padding: 8px 12px; }
+  .kpi b { font-size: 1.375rem; line-height: 1.2; }
+  .kpi span { line-height: 1.35; min-height: calc(2 * 1.35em); }
+}
 
 /* ---- grid of views ---- */
 .ex-grid { display: grid; gap: 16px; grid-template-columns: minmax(0, 1fr); }
+/* Kingdom-specific source lines and legends (see Explorer.astro). */
+.ex .cf-legend { flex-direction: column; align-items: stretch; gap: 4px; }
+.ex[data-k='plantae'] .ex-src-fungi, .ex[data-k='plantae'] .k-fungi,
+.ex[data-k='fungi'] .k-plantae,
+.ex[data-k='fungi'] .cf-foot:has(.ex-src-fungi) > .cf-source { display: none; }
+.ex-lg { margin: 0; }
+.ex-lg-sw { display: inline-flex; align-items: center; gap: 4px; margin-right: 8px; white-space: nowrap; }
 @media (min-width: 1024px) {
-  .ex-grid { grid-template-columns: minmax(0, 5fr) minmax(0, 6fr); grid-template-areas: 'map fam' 'map st' 'map life' 'years years'; align-items: start; }
+  .ex-grid { grid-template-columns: minmax(0, 5fr) minmax(0, 6fr); grid-template-areas: 'map fam' 'map st' 'dep life' 'years years'; align-items: start; }
   .ex-map { grid-area: map; }
   .ex-fam { grid-area: fam; }
   .ex-st { grid-area: st; }
   .ex-life { grid-area: life; }
   .ex-years { grid-area: years; }
+  .dep-panel { grid-area: dep; }
+}
+@media (min-width: 1200px) {
+  /* One glance at 1440x900: 900 - 57 header - section head - chips/KPIs leaves ~670 px,
+     so the first row is a fixed 656 px. Fixed, not 100svh-based: the treemap's box then
+     has one known ratio (views.ts TM_DESK) and its tiles never move after load. */
+  .ex-grid {
+    grid-template-columns: minmax(0, 5fr) minmax(0, 5fr) minmax(0, 3fr);
+    grid-template-rows: 656px auto;
+    grid-template-areas: 'map fam st' 'life years dep';
+    align-items: stretch;
+  }
+  .ex-grid > .cf.card { padding: 12px 14px; }
+  /* Frame chrome, denser in the one-glance row (frame.css stays the shared default). */
+  .ex-grid .cf-source { font-size: 11px; line-height: 1.35; }
+  .ex-grid .cf-doi, .ex-grid .cf-ver { font-size: 10.5px; }
+  .ex-grid .cf-howto { font-size: 12px; line-height: 1.35; }
+  .ex-map .hint { line-height: 1.35; }
+  /* The compare tip lives in the department panel's how-to below; keep the map tall. */
+  .ex-map .hint-more { display: none; }
+  .ex-map .legend .lg { min-width: 28px; min-height: 28px; padding: 1px; }
+  .ex-map .legend .lg i { width: 24px; height: 10px; }
+  .ex-map, .ex-fam, .ex-st { min-height: 0; overflow: hidden; }
+  .ex-map .cf-body, .ex-fam .cf-body { flex: 1 1 auto; min-height: 0; display: flex; flex-direction: column; gap: 6px; }
+  .ex-grid > .ex-life, .ex-grid > .ex-years, .ex-grid > .dep-panel { align-self: start; }
 }
 .is-loading .ex-grid { cursor: progress; }
 /* A shared link before its data lands: the build's national numbers are not its answer. */
 .is-stale #kpis, .is-stale .ex-grid { opacity: 0.45; cursor: progress; }
 
 /* ---- map ---- */
-.map-wrap { position: relative; margin: 8px auto 0; max-width: 420px; }
-#map { display: block; width: 100%; height: auto; overflow: visible; touch-action: manipulation; }
+.metric .btn { font-size: 13px; padding: 6px 9px; }
+/* Zoom: a CSS transform on .map-zoom inside a clipped viewport (map-zoom.ts). The page
+   scrolls over the map at scale 1 (pan-x pan-y lets a two-finger pinch reach the script);
+   once zoomed, one finger pans the map instead. */
+.map-vp {
+  position: relative; overflow: hidden; margin: 4px auto 0; width: 100%; max-width: 420px;
+  touch-action: pan-x pan-y; border-radius: 8px;
+}
+.map-vp.zoomed { touch-action: none; cursor: grab; }
+.map-vp.dragging, .map-vp.dragging #map path { cursor: grabbing; }
+.map-zoom { transform-origin: 0 0; }
+.map-vp.gesture .map-zoom { will-change: transform; }
+#map { display: block; width: 100%; height: auto; overflow: visible; }
 #map path {
-  stroke: rgb(var(--bg)); stroke-width: 0.8; stroke-linejoin: round; cursor: pointer;
+  stroke: rgb(var(--bg)); stroke-width: calc(0.8px / var(--z, 1)); stroke-linejoin: round; cursor: pointer;
+  vector-effect: non-scaling-stroke;
   transition: opacity var(--ic7-t-hover) ease;
 }
-#map path:hover { stroke: rgb(var(--fg)); stroke-width: 1.2; }
-#map path:focus-visible { outline: none; stroke: rgb(var(--accent)); stroke-width: 2.4; }
-#map path.sel { stroke: rgb(var(--fg)); stroke-width: 2.4; }
+@media (min-width: 1200px) {
+  .map-vp { flex: 1 1 auto; min-height: 0; max-width: none; margin: 0; }
+  .map-zoom { height: 100%; }
+  #map { height: 100%; }
+}
+.map-tools { display: flex; gap: 4px; }
+.btn.ic { min-width: 44px; min-height: 44px; padding: 0; justify-content: center; }
+.btn.ic .fs-out, .btn.ic[aria-pressed='true'] .fs-in { display: none; }
+.btn.ic[aria-pressed='true'] .fs-out { display: block; }
+/* Fullscreen: the whole map frame, the map as big as the screen allows. */
+.ex-map:fullscreen { background: rgb(var(--surface)); padding: 16px 24px; overflow: auto; }
+.ex-map:fullscreen .cf-body { flex: 1 1 auto; min-height: 0; display: flex; flex-direction: column; gap: 6px; }
+.ex-map:fullscreen .map-vp { flex: 1 1 auto; min-height: 0; max-width: none; }
+.ex-map:fullscreen .map-zoom, .ex-map:fullscreen #map { height: 100%; }
+#map path:hover { stroke: rgb(var(--fg)); stroke-width: calc(1.2px / var(--z, 1)); }
+#map path:focus-visible { outline: none; stroke: rgb(var(--accent)); stroke-width: calc(2.4px / var(--z, 1)); }
+#map path.sel { stroke: rgb(var(--fg)); stroke-width: calc(2.4px / var(--z, 1)); }
 #map path.dim { opacity: 0.25; }
 .q-1 { fill: var(--none); }
 .q0 { fill: var(--q0); } .q1 { fill: var(--q1); } .q2 { fill: var(--q2); } .q3 { fill: var(--q3); }
 .q4 { fill: var(--q4); } .q5 { fill: var(--q5); } .q6 { fill: var(--q6); }
 .map-species #map path.q5 { fill: rgb(var(--accent)); }
-.readout { min-height: 1.6em; margin-top: 6px; font-size: 13px; color: rgb(var(--fg)); text-align: center; }
+.readout {
+  position: absolute; left: 0; bottom: 0; margin: 0; padding: 2px 6px; max-width: 70%; pointer-events: none;
+  font-size: 12px; color: rgb(var(--fg)); background: rgb(var(--surface) / 0.85); border-radius: 4px;
+}
 .hint::before { content: '↳ '; color: rgb(var(--accent)); }
 
-.legend { display: flex; flex-wrap: wrap; align-items: center; gap: 2px; margin: 10px 0 8px; }
+.legend { display: flex; flex-wrap: wrap; align-items: center; gap: 2px; margin: 0; }
+.lg-unit { flex: 1 0 100%; font-size: 12px; margin-bottom: 2px; }
+.lg-unit b { font-weight: 600; color: rgb(var(--fg)); }
 .legend .lg {
   display: inline-grid; justify-items: center; gap: 2px; min-width: 32px; min-height: 32px; padding: 2px;
   border: 1px solid transparent; border-radius: 6px; background: transparent; cursor: pointer;
@@ -116,10 +214,10 @@
 .lg-none i { width: 14px; height: 12px; border-radius: 3px; background: var(--none); }
 @media (pointer: coarse) { .legend .lg { min-width: 40px; min-height: 44px; } }
 
-.dep-panel { margin-top: 12px; display: grid; gap: 10px; }
+.dep-panel .cf-body { display: grid; gap: 10px; }
 .dep-panel select { width: 100%; }
 .dep-head { display: flex; justify-content: space-between; align-items: center; gap: 8px; }
-.dep-head h3 { font-size: 20px; }
+.dep-head h4 { font-size: 20px; margin: 0; }
 .dep-nums { font-size: 14px; color: rgb(var(--muted)); }
 .dep-nums b { color: rgb(var(--fg)); font-variant-numeric: tabular-nums; }
 .toplist { margin: 4px 0 0; padding-left: 20px; display: grid; gap: 2px; font-size: 14px; }
@@ -141,11 +239,13 @@
 .sw { display: inline-block; width: 10px; height: 10px; border-radius: 2px; }
 .cmp-cols { display: grid; grid-template-columns: 1fr 1fr; gap: 8px; }
 
-/* ---- treemap (becomes a ranked list under 560 px) ---- */
-.tm { margin-top: 10px; }
+/* ---- treemap (becomes a ranked list under 560 px) ----
+   views.ts renders two layouts per tile as custom properties: --x/--y/--w/--h for the
+   16:10 box, --X/--Y/--W/--H for the >= 1200 px box that fills the column. */
 .tm-box { position: relative; aspect-ratio: 16 / 10; }
-.tm-rest { margin-top: 8px; }
+.tm-rest { margin-top: 6px; }
 .tile {
+  left: var(--x); top: var(--y); width: var(--w); height: var(--h);
   position: absolute; display: flex; flex-direction: column; justify-content: space-between; gap: 2px;
   padding: 6px 7px; overflow: hidden; text-align: left; cursor: pointer;
   border: 2px solid rgb(var(--surface)); border-radius: 6px;
@@ -153,7 +253,13 @@
 }
 .tile .nm { font-style: italic; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; font-weight: 500; }
 .tile .v { font-family: var(--font-mono); font-size: 11px; }
-.tile.sm .nm, .tile.sm .v { display: none; }
+@media (max-width: 1199px) { .tile.sm .nm, .tile.sm .v { display: none; } }
+@media (min-width: 1200px) {
+  .tm { flex: 1 1 auto; min-height: 0; display: flex; flex-direction: column; }
+  .tm-box { flex: 1 1 auto; min-height: 0; aspect-ratio: auto; }
+  .tile { left: var(--X); top: var(--Y); width: var(--W); height: var(--H); }
+  .tile.smd .nm, .tile.smd .v { display: none; }
+}
 .tile:hover { border-color: rgb(var(--fg)); }
 .tile.on { border-color: rgb(var(--fg)); box-shadow: inset 0 0 0 2px rgb(var(--bg)); }
 .tile.rest { cursor: default; background: rgb(var(--surface-2)); color: rgb(var(--muted)); }
@@ -204,6 +310,7 @@ button.bar:hover { background: rgb(var(--surface-2)); }
 }
 
 /* ---- years ---- */
+.ex-years .cf-body > .note { margin: 0; }
 .yr-tools { display: flex; flex-wrap: wrap; gap: 6px; align-items: center; }
 .yr-tools select { min-width: 84px; }
 .cols {
@@ -246,7 +353,35 @@ button.bar:hover { background: rgb(var(--surface-2)); }
   .drawer.peek { transform: none; }
   .dr-grip { display: none; }
 }
-#dr-body h2 { font-size: 24px; margin: 4px 40px 10px 0; font-weight: 500; }
+#dr-body h2 { font-size: 22px; margin: 0; font-weight: 500; overflow-wrap: anywhere; }
+.dr-close {
+  z-index: 2; display: inline-grid; place-items: center; width: 44px; height: 44px; padding: 0;
+  border: 1px solid rgb(var(--border)); border-radius: 999px; background: rgb(var(--surface)); color: rgb(var(--fg));
+  font-size: 16px; cursor: pointer;
+}
+/* Head: photo slot, name, taxonomy. Phone: a thumbnail beside the name (the sheet stays
+   short); desktop panel: the photo on top at full width. The slot keeps a fixed 4:3 box
+   so session B can drop an <img> in without moving anything. */
+.dr-head { display: grid; grid-template-columns: 112px minmax(0, 1fr); gap: 12px; align-items: start; margin: 0 48px 12px 0; }
+.dr-id { display: grid; gap: 6px; min-width: 0; }
+.dr-photo {
+  margin: 0; aspect-ratio: 4 / 3; width: 100%; border-radius: 8px; overflow: hidden;
+  display: grid; place-items: center; background: rgb(var(--surface-2)); color: rgb(var(--muted));
+}
+.dr-photo > img { width: 100%; height: 100%; object-fit: cover; display: block; }
+.dr-photo svg { width: 36%; height: auto; opacity: 0.55; }
+@media (min-width: 1024px) {
+  .dr-head { grid-template-columns: minmax(0, 1fr); margin-right: 0; }
+}
+.dr-crumbs { list-style: none; margin: 0; padding: 0; display: flex; flex-wrap: wrap; gap: 2px 0; font-family: var(--font-mono); font-size: 12px; color: rgb(var(--muted)); }
+.dr-crumbs li { overflow-wrap: anywhere; }
+.dr-crumbs li + li::before { content: '\203A'; margin: 0 6px; }
+.dr-crumbs .g { font-style: italic; font-family: var(--font-sans); font-size: 13px; }
+.dr-facts dd { text-align: right; min-width: 0; overflow-wrap: anywhere; }
+.dr-facts .dr-sub { display: block; font-size: 12px; color: rgb(var(--muted)); font-family: var(--font-mono); }
+.dr-desc { margin: 0 0 10px; font-size: 14px; line-height: 1.5; }
+.dr-desc a, .dr-facts a { display: inline-flex; align-items: center; min-height: 28px; }
+@media (pointer: coarse) { .dr-desc a, .dr-facts a { min-height: 44px; } }
 .tags { display: flex; flex-wrap: wrap; gap: 6px; margin-bottom: 12px; }
 .tag {
   font-family: var(--font-mono); font-size: 12px; padding: 2px 8px; border-radius: 999px;

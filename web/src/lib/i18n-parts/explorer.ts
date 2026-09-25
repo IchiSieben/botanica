@@ -1,6 +1,8 @@
 import { part } from './part';
 
 // Explorer strings added in v3 (growth-form groups, chart frames, department label, drawer).
+// New keys never reuse a key of i18n.ts: PARTS_* spread after the base strings, so a
+// collision would silently override the base text instead of failing the build.
 export default part(
   {
     'lf.tree': 'Trees',
@@ -15,6 +17,53 @@ export default part(
     'lf.other': 'Other (e.g. mycoheterotrophs)',
     'lf.raw': 'WCVP terms in this group',
     'lf.rawOne': 'WCVP term',
+
+    // Section header (the page's h1 belongs to the intro once it lands).
+    'ex.title': 'Explore',
+    'ex.sub': 'Peru’s plants and fungi by place, group, origin and date. Every chart filters the others.',
+
+    // KPI label with a department selected, and why the number dropped since v1.
+    'ex.kpiIn': 'species with GBIF records in {dep}',
+    'ex.or': 'or',
+    'ex.why': 'Why fewer than before?',
+    'ex.whyBody': 'Since v2, a species counts in a department only if it is in the WCVP checklist for Peru and has at least one GBIF record there. v1 counted every name found in GBIF, so Loreto went from 7,905 to 5,821 species.',
+    'ex.whyLink': 'Details: AUDIT-v2 §2',
+
+    // Chart frames: how to read, legends with units.
+    'ex.famHowto': 'Each tile is a family: the bigger the tile, the more species it has here, and tiles of the same colour belong to the same order. Click a tile to filter everything by it.',
+    'ex.famLegendPlantae': 'Tile area = number of species · colour = order (APG IV)',
+    'ex.famLegendFungi': 'Tile area = number of species · colour = order (GBIF Backbone)',
+    'ex.stHowto': 'How many species live only in Peru (endemic), grow here naturally and elsewhere too (native), or were brought by people (introduced). Click a bar to filter.',
+    'ex.barsLegend': 'Bar length = number of species',
+    'ex.lifeHowto': 'What the plants look like: trees, shrubs, herbs, climbers… grouped from the WCVP description of each species. Click a bar to filter.',
+    'ex.yearsHowto': 'Each column is a decade: its height is how many of today’s species science first described in those ten years. Drag across columns to filter a period.',
+    'ex.yearsLegend': 'Column height = species described per decade',
+    'ex.depTitle': 'Department detail',
+    'ex.depHowto': 'Pick a department here or on the map to see its species and top families, then add a second one to see which species they share.',
+    'ex.depLegend': 'Numbers are species. Comparison bar:',
+
+    // Map: metric-aware how-to, units, zoom and fullscreen.
+    'map.howto.species': 'The more intense a department’s colour, the more species have at least one GBIF record there (places collected more show more).',
+    'map.howto.records': 'The colour shows how many GBIF records (specimens and observations) each department has. It measures collecting effort, not how rich a place is.',
+    'map.howto.coverage': 'Species found per 1,000 GBIF records. A high value means each new record still turns up new species: the place is probably under-collected.',
+    'map.howto.sp': 'Highlighted departments have at least one GBIF record of this species.',
+    'map.unitK': 'Colour =',
+    'map.unit.species': 'species',
+    'map.unit.records': 'GBIF records',
+    'map.unit.coverage': 'species per 1,000 GBIF records',
+    'map.zoomIn': 'Zoom in',
+    'map.zoomOut': 'Zoom out',
+    'map.zoomReset': 'Reset zoom',
+    'map.fs': 'Fullscreen',
+    'map.fsExit': 'Exit fullscreen',
+    'map.zoomTip': 'Ctrl + wheel or pinch to zoom, drag to pan',
+
+    // Species drawer.
+    'dr.taxonomy': 'Taxonomy',
+    'dr.described': 'Described in {year}',
+    'dr.by': 'by',
+    'dr.protologue': 'Protologue (IPNI)',
+    'dr.wcvp': 'WCVP',
   },
   {
     'lf.tree': 'Árboles',
@@ -29,5 +78,47 @@ export default part(
     'lf.other': 'Otras (p. ej. micoheterótrofas)',
     'lf.raw': 'Términos de WCVP en este grupo',
     'lf.rawOne': 'Término de WCVP',
+
+    'ex.title': 'Explorar',
+    'ex.sub': 'Plantas y hongos del Perú por lugar, grupo, origen y fecha. Cada gráfico filtra a los demás.',
+
+    'ex.kpiIn': 'especies con registros GBIF en {dep}',
+    'ex.or': 'o',
+    'ex.why': '¿Por qué menos que antes?',
+    'ex.whyBody': 'Desde la v2, una especie cuenta en un departamento solo si está en la lista de WCVP para el Perú y tiene al menos un registro GBIF allí. La v1 contaba todos los nombres que aparecían en GBIF; por eso Loreto pasó de 7 905 a 5 821 especies.',
+    'ex.whyLink': 'Detalle: AUDIT-v2 §2',
+
+    'ex.famHowto': 'Cada rectángulo es una familia: cuanto más grande, más especies tiene aquí, y los del mismo color pertenecen al mismo orden. Haz clic en uno para filtrar todo por esa familia.',
+    'ex.famLegendPlantae': 'Área = número de especies · color = orden (APG IV)',
+    'ex.famLegendFungi': 'Área = número de especies · color = orden (GBIF Backbone)',
+    'ex.stHowto': 'Cuántas especies viven solo en el Perú (endémicas), crecen de forma natural aquí y también en otros lugares (nativas) o llegaron con las personas (introducidas). Haz clic en una barra para filtrar.',
+    'ex.barsLegend': 'Largo de la barra = número de especies',
+    'ex.lifeHowto': 'Qué aspecto tienen las plantas: árboles, arbustos, hierbas, trepadoras… agrupadas a partir de la descripción de WCVP de cada especie. Haz clic en una barra para filtrar.',
+    'ex.yearsHowto': 'Cada columna es una década: su altura es cuántas de las especies actuales describió la ciencia por primera vez en esos diez años. Arrastra sobre las columnas para filtrar un periodo.',
+    'ex.yearsLegend': 'Altura de la columna = especies descritas por década',
+    'ex.depTitle': 'Detalle por departamento',
+    'ex.depHowto': 'Elige un departamento aquí o en el mapa para ver sus especies y sus familias principales; luego agrega otro para ver qué especies comparten.',
+    'ex.depLegend': 'Las cifras son especies. Barra de comparación:',
+
+    'map.howto.species': 'Cuanto más intenso el color de un departamento, más especies tienen al menos un registro GBIF allí (donde más se colectó, más aparece).',
+    'map.howto.records': 'El color indica cuántos registros GBIF (especímenes y observaciones) tiene cada departamento. Mide el esfuerzo de colecta, no cuán rico es el lugar.',
+    'map.howto.coverage': 'Especies halladas por cada mil registros GBIF. Un valor alto indica que cada registro nuevo todavía aporta especies nuevas: el lugar probablemente está poco colectado.',
+    'map.howto.sp': 'Los departamentos resaltados tienen al menos un registro GBIF de esta especie.',
+    'map.unitK': 'Color =',
+    'map.unit.species': 'especies',
+    'map.unit.records': 'registros GBIF',
+    'map.unit.coverage': 'especies por cada mil registros GBIF',
+    'map.zoomIn': 'Acercar',
+    'map.zoomOut': 'Alejar',
+    'map.zoomReset': 'Restablecer el zoom',
+    'map.fs': 'Pantalla completa',
+    'map.fsExit': 'Salir de pantalla completa',
+    'map.zoomTip': 'Ctrl + rueda o pellizca para acercar; arrastra para moverte',
+
+    'dr.taxonomy': 'Taxonomía',
+    'dr.described': 'Descrita en {year}',
+    'dr.by': 'por',
+    'dr.protologue': 'Protólogo (IPNI)',
+    'dr.wcvp': 'WCVP',
   },
 );

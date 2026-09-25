@@ -13,6 +13,7 @@ import { DECADE0, DECADES, type Aggregates, type Facets } from './facets';
 import type { State, Status } from './store';
 import { t, fmt, type Key, type Locale } from './i18n';
 import { isGroup, rawOf } from './growth';
+import { deptName } from './depts';
 
 export interface Ctx {
   locale: Locale;
@@ -37,7 +38,7 @@ export function naFungi(locale: Locale): string {
 export function kpis(c: Ctx): string {
   const n = fmt(c.locale), a = c.agg;
   const items: [string, string][] = [
-    [n(a.total), t(c.locale, 'kpi.species')],
+    [n(a.total), c.s.dep.length ? depKpiLabel(c.locale, c.s.dep) : t(c.locale, 'kpi.species')],
     [n(a.families), t(c.locale, 'kpi.families')],
     [n(a.orders), t(c.locale, 'kpi.orders')],
   ];
@@ -48,6 +49,14 @@ export function kpis(c: Ctx): string {
     items.push([n(a.withRecords), t(c.locale, 'kpi.withRecords')]);
   }
   return items.map(([v, l]) => `<div class="kpi"><b>${v}</b><span>${l}</span></div>`).join('');
+}
+
+/** "species with GBIF records in Loreto" / "… in Cusco or Puno". Two departments are a
+ *  union in facets.ts (a species passes when its mask hits either), hence "or". */
+export function depKpiLabel(locale: Locale, dep: string[]): string {
+  const names = dep.map(deptName);
+  const list = names.length > 1 ? `${names.slice(0, -1).join(', ')} ${t(locale, 'ex.or')} ${names[names.length - 1]}` : names[0];
+  return t(locale, 'ex.kpiIn').replace('{dep}', list);
 }
 
 // ---- Families: squarified treemap ---------------------------------------
@@ -116,7 +125,14 @@ function famOrder(f: Facets): Map<number, number> {
 }
 
 const TOP_FAMILIES = 24;
-const TM_W = 100, TM_H = 62.5; // 16:10
+const TM_W = 100, TM_H = 62.5; // 16:10, the box below 1200 px
+/** Box of the treemap at >= 1200 px (width / height), where it fills a fixed-height grid row
+ *  (explorer.css) inside the 1180 px content width, so the ratio is a constant: measured
+ *  on the built page, not guessed. Both layouts are rendered as CSS variables and a media
+ *  query picks one: no measuring in the browser, no tiles moving after load. */
+export const TM_DESK = 0.93;
+const TD_W = 100, TD_H = 100 / TM_DESK;
+const pc = (v: number, of: number) => `${((v / of) * 100).toFixed(2)}%`;
 
 export function families(c: Ctx): string {
   const n = fmt(c.locale);
@@ -145,15 +161,17 @@ export function families(c: Ctx): string {
     : '';
 
   const rects = squarify(all.map((x) => x.value), TM_W, TM_H);
+  const desk = squarify(all.map((x) => x.value), TD_W, TD_H);
   return `<div class="tm-box">${all
     .map((tile, i) => {
-      const r = rects[i];
+      const r = rects[i], d = desk[i];
       const pct = ((tile.value / total) * 100).toFixed(1);
-      const style = `left:${((r.x / TM_W) * 100).toFixed(2)}%;top:${((r.y / TM_H) * 100).toFixed(2)}%;` +
-        `width:${((r.w / TM_W) * 100).toFixed(2)}%;height:${((r.h / TM_H) * 100).toFixed(2)}%;` +
+      const style = `--x:${pc(r.x, TM_W)};--y:${pc(r.y, TM_H)};--w:${pc(r.w, TM_W)};--h:${pc(r.h, TM_H)};` +
+        `--X:${pc(d.x, TD_W)};--Y:${pc(d.y, TD_H)};--W:${pc(d.w, TD_W)};--H:${pc(d.h, TD_H)};` +
         (tile.color ? `--c:${tile.color};--tc:${ink(tile.color)};` : '') +
         `--share:${(tile.value / rows[0][1]).toFixed(3)}`;
-      const small = r.w * r.h < 22 ? ' sm' : '';
+      // Too small for a label, per layout (area in the same 100-wide units).
+      const small = (r.w * r.h < 22 ? ' sm' : '') + (d.w * d.h < 22 * (TD_H / TM_H) ? ' smd' : '');
       if (!tile.key) {
         return `<div class="tile rest${small}" style="${style}"><span class="nm">${esc(tile.label)}</span><span class="v">${n(tile.value)}</span></div>`;
       }
@@ -259,7 +277,7 @@ export function paintMap(c: Ctx, records: Record<string, number>): MapPaint {
 export function legend(c: Ctx, p: MapPaint, active: number | null): string {
   const n = fmt(c.locale);
   let prev = 0;
-  return p.breaks
+  return `<span class="lg-unit">${t(c.locale, 'map.unitK')} <b>${t(c.locale, `map.unit.${c.s.m}` as Key)}</b></span>` + p.breaks
     .map((b, i) => {
       const lab = `${n(Math.round(prev))}–${n(Math.round(b))}`;
       prev = b;
