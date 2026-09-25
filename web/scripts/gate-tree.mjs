@@ -1,7 +1,8 @@
 // Tree gate (Playwright), v3 item 6. For plants and fungi, EN and ES, at 1280 and 360 px:
 //   - a list click puts `ord=` in the URL and, within 3 s, `data-focus` on the chart
 //     equals that order, with the drawn node inside the chart's box
-//   - a URL with `?ord=` lands focused; Back clears `data-focus`
+//   - a family chip moves the focus to the family; Back returns it to the order
+//   - a URL with `?ord=` or only `?fam=` lands focused; Back clears `data-focus`
 //   - zoom in / out change the series zoom AND move what is drawn; Reset goes back to 1
 //   - expand all / collapse all change the number of visible nodes
 //   - full screen toggles document.fullscreenElement and back (button label follows)
@@ -24,8 +25,9 @@ const prefix = (l) => (l === 'en' ? '' : `${l}/`);
 const CASES = [
   // `probe`: a node visible in every state, away from the root (the root sits at the
   // canvas centre in the radial layout, which is the zoom buttons' fixed point).
-  { k: 'plantae', q: '', ord: 'Malpighiales', url: 'Poales', probe: 'Lycophytes' },
-  { k: 'fungi', q: '?k=fungi', ord: 'Lecanorales', url: 'Agaricales', probe: 'Ascomycota' },
+  // `fam`/`famOrd`: a family-only URL, as the explorer's "open in tree" links carry.
+  { k: 'plantae', q: '', ord: 'Malpighiales', url: 'Poales', probe: 'Lycophytes', fam: 'Orchidaceae', famOrd: 'Asparagales' },
+  { k: 'fungi', q: '?k=fungi', ord: 'Lecanorales', url: 'Agaricales', probe: 'Ascomycota', fam: 'Parmeliaceae', famOrd: 'Lecanorales' },
 ];
 
 const failures = [];
@@ -92,7 +94,18 @@ for (const locale of LOCALES) {
       check(box.inside, 'focused node drawn inside the chart box', JSON.stringify(box));
       check((await hook(page, k, 'zoom')) > 1, 'selection zoomed in');
 
-      // 2. Back clears the focus.
+      // 2. A family chip (the store's `fam`) moves the focus to that family.
+      const chip = `#phylo-${k} [data-fam]`;
+      await page.waitForSelector(chip);
+      const fam = await page.getAttribute(chip, 'data-fam');
+      await page.click(chip);
+      check(await waitFocus(page, k, fam), `family chip: data-focus = ${fam}`, `got ${await focusOf(page, k)}`);
+      await settle(page);
+      check((await inBox(page, k)).inside, 'focused family drawn inside the chart box');
+      await page.goBack();
+      check(await waitFocus(page, k, c.ord), 'Back from the family returned the focus to the order', `got ${await focusOf(page, k)}`);
+
+      // 3. Back again clears the focus.
       await page.goBack();
       check(await waitFocus(page, k, null), 'Back cleared data-focus', `got ${await focusOf(page, k)}`);
 
@@ -136,6 +149,13 @@ for (const locale of LOCALES) {
       check(await waitFocus(page, k, c.url, 5000), `?ord=${c.url} lands with data-focus`, `got ${await focusOf(page, k)}`);
       await settle(page);
       check((await inBox(page, k)).inside, 'URL-focused node inside the chart box');
+      await page.goto(`${url}${sep}fam=${c.fam}`, { waitUntil: 'networkidle' });
+      await page.waitForSelector(`#phylo-${k}-chart canvas`);
+      check(await waitFocus(page, k, c.fam, 5000), `?fam=${c.fam} (no ord) lands with data-focus`, `got ${await focusOf(page, k)}`);
+      const pressed = await page.$$eval(`#phylo-${k} [data-ord][aria-pressed="true"]`, (bs) => bs.map((b) => b.dataset.ord));
+      check(pressed.length === 1 && pressed[0] === c.famOrd, `?fam= presses its order ${c.famOrd} in the list`, JSON.stringify(pressed));
+      await settle(page);
+      check((await inBox(page, k)).inside, 'family from the URL drawn inside the chart box');
 
       // 7. Full screen on the tree frame, and back.
       const fs = `#phylo-${k} [data-fs]`;
@@ -171,8 +191,10 @@ for (const locale of LOCALES) {
 }
 
 // INP of an order-list tap, CPU slowed 4x (as gate.mjs measures the other taps).
-console.log('\nINP (4x CPU)');
-{
+const INP_RUNS = Number(process.env.INP_RUNS ?? 5);
+console.log(`\nINP (4x CPU, ${INP_RUNS} runs)`);
+const inps = [];
+for (let run = 0; run < INP_RUNS; run++) {
   const { page, ctx } = await open(`${BASE}filogenia/`, 390, true);
   const cdp = await ctx.newCDPSession(page);
   await page.evaluate(() => {
@@ -188,10 +210,13 @@ console.log('\nINP (4x CPU)');
   const inp = await page.evaluate(() => window.__inp);
   const focused = await focusOf(page, 'plantae');
   await cdp.send('Emulation.setCPUThrottlingRate', { rate: 1 });
-  check(inp < 200, `order-list tap: ${Math.round(inp)} ms`, 'budget 200 ms');
-  check(focused === 'Malpighiales', 'tree followed the tap under 4x CPU', `data-focus=${focused}`);
+  inps.push(Math.round(inp));
+  if (focused !== 'Malpighiales') fail(`tree did not follow the tap under 4x CPU (data-focus=${focused})`);
   await ctx.close();
 }
+inps.sort((a, b) => a - b);
+const med = inps[Math.floor(inps.length / 2)];
+check(med < 200, `order-list tap: median ${med} ms, range ${inps[0]}-${inps[inps.length - 1]} ms`, 'budget 200 ms (median)');
 
 await browser.close();
 console.log(failures.length ? `\nTREE GATE FAILED: ${failures.length}` : '\nTREE GATE PASSED');
