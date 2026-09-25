@@ -4,6 +4,7 @@ import { part } from './part';
 export default part(
   {
     'changes.title': 'Changes',
+    'changes.nav': 'Changelog',
     'changes.lede': 'What changed in Botánica, release by release. Generated from',
     'changes.ledeLink': 'CHANGELOG.md',
     'changes.ledeSuffix': 'and this repo’s git tags.',
@@ -13,6 +14,7 @@ export default part(
   },
   {
     'changes.title': 'Cambios',
+    'changes.nav': 'Cambios',
     'changes.lede': 'Qué cambió en Botánica, versión por versión. Generado a partir de',
     'changes.ledeLink': 'CHANGELOG.es.md',
     'changes.ledeSuffix': 'y de los tags de git del repositorio.',

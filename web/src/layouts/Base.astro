@@ -141,6 +141,7 @@ const abs = (l: Locale) => new URL(localePath(l, slug), Astro.site).href;
         <p class="foot-links">
           <a href="https://github.com/IchiSieben" rel="noopener">{t(locale, 'footer.code')}</a> ·
           <a href="/">{t(locale, 'nav.home')}</a> ·
+          <a href={localePath(locale, 'cambios/')}>{t(locale, 'changes.nav')}</a> ·
           <span class="mono">{new Intl.DateTimeFormat(BCP47[locale], { dateStyle: 'medium' }).format(new Date('2026-06-22'))} · GBIF.org</span>
         </p>
       </div>
