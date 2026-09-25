@@ -1,5 +1,40 @@
 # HANDOFF — Botánica v2 (explorable atlas)
 
+## Why the plant radial looked sparse (v3.1)
+
+Root cause: `defaultOpen` (scripts/tree.ts, `indexOf`) opens a node only if **at least one of
+its children is itself a group rank** (`clade`/`phylum`/`class`, `tree-model.ts` `GROUP_RANKS`).
+A node whose children are all `order` stays closed at first paint, drawn as one grey dot.
+
+- **Plants** (`etl/mappings/clades_apg4_ppg1_v1.csv`, 73 orders): the clade hierarchy is
+  shallow and lopsided. Root → 4 top clades (Lycophytes, Ferns, Gymnosperms, Angiosperms); only
+  Angiosperms has clade children (ANA grade, Magnoliids, Monocots, Eudicots) so it is the only
+  one of the 4 that opens; of those 4, only Eudicots has clade children of its own (Superrosids,
+  Superasterids) so it is the only one that opens again. Every other clade — Lycophytes (3
+  orders), Ferns (11), Gymnosperms (4), ANA grade (1), Magnoliids (4), Monocots (9),
+  Superrosids (18), Superasterids (17) — holds only `order` children and stays closed.
+  **First-paint node count: 15** (4 top clades + Angiosperms' 4 children + Eudicots' 7
+  children), of which only **6 are coloured order dots** (Chloranthales, plus Ranunculales,
+  Proteales, Buxales, Gunnerales, Dilleniales under Eudicots); the other 67 of 73 orders sit
+  inside 8 closed grey dots.
+- **Fungi** (`etl/mappings/fungi_order_ranks_v1.csv`, 136 orders, 8 phyla, 40 classes): every
+  phylum's children are classes (a group rank), so **all 8 phyla open by default**, revealing
+  **all 40 classes** as first-paint dots (classes themselves stay closed, since their children
+  are orders). **First-paint node count: 48** (8 phyla + 40 classes), triple the plant tree's 15,
+  none of them coloured (order dots only appear on click).
+
+So the difference is not the data (plants have fewer orders, 73 vs 136, but that is not what a
+viewer sees), the initial zoom/fit, or radial label culling (labels are truncated at a fixed
+108 px width in both, no nodes are hidden by layout) — it is that `defaultOpen`'s one-hop rule
+happens to cascade two levels deep for fungi (phylum → class, uniform) and mostly one level or
+less for plants (most clades contain orders directly, only the Angiosperms → Eudicots spine
+cascades). Confirmed by reading the CSVs directly (`cut -d, -f2 clades_apg4_ppg1_v1.csv | sort
+-u | uniq -c`, `cut -d, -f2,3 fungi_order_ranks_v1.csv | sort -u | wc -l`), not by eyeballing
+the render. This does not change with the sunburst (angle is proportional to species count
+regardless of open/closed state, so the plant sunburst reads full even where the old radial
+looked empty) — recorded here because SPEC asks for the explanation before radial is removed.
+
+
 ## v3.0.0 LIVE (2026-09-25 03:18 UTC) — contract: SPEC.md
 - https://ichisieben.dev/botanica/ · /es/ · /botanica/cambios/ · /botanica/es/cambios/
 - Botanica `5de89ac` = tag **v3.0.0** (also v1.0.0 → 1b97936, v2.0.0 → 04e07e8; annotated, pushed).
