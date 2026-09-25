@@ -13,8 +13,19 @@
 //   node --experimental-strip-types scripts/gate-tree.mjs [port=4410]
 //
 // Reads the chart through window.__phylo (scripts/tree.ts): the drawn symbol's
-// global transform, the series zoom, and the visible node count. Exit 1 on failure.
+// global transform, the series zoom, and the visible node count. window.__phylo
+// only exists when the site is built with PUBLIC_TEST_HOOKS=1 (scripts/build-test.mjs
+// -> dist-test/), so this gate must run against that build (`npm run serve:test`
+// on port 4401, see package.json's `gate:v3`), never against the production
+// `dist/` on 4400. v3.1: also checks the hook is ABSENT from the production dist
+// (grep, not a browser) — see HANDOFF "window.__phylo".
+//
+// v3.1 additions: default view is linear; sunburst zoom + breadcrumb; the 3D
+// chunk is not requested until picked; one-glance layout at 1440x900.
+// Exit 1 on failure.
 import { chromium } from 'playwright-core';
+import { readdirSync, statSync, readFileSync, existsSync } from 'node:fs';
+import { join } from 'node:path';
 
 const port = process.argv[2] ?? '4410';
 const BASE = `http://localhost:${port}/botanica/`;
@@ -34,6 +45,26 @@ const failures = [];
 const fail = (msg) => { failures.push(msg); console.log(`  ✗ ${msg}`); };
 const ok = (msg) => console.log(`  ✓ ${msg}`);
 const check = (cond, msg, detail = '') => (cond ? ok(msg) : fail(`${msg}${detail ? ` (${detail})` : ''}`));
+
+// __phylo must never ship in the production dist (v3.1 item 6): a plain grep of
+// the built files, not a page load. `dist/` is optional here (the gate may run
+// standalone against dist-test only); when present, it must be clean.
+console.log('\n__phylo absent from the production dist');
+function walk(dir) {
+  const out = [];
+  for (const name of readdirSync(dir)) {
+    const p = join(dir, name);
+    if (statSync(p).isDirectory()) out.push(...walk(p));
+    else if (/\.(html|js|mjs)$/.test(name)) out.push(p);
+  }
+  return out;
+}
+if (existsSync('dist')) {
+  const hits = walk('dist').filter((f) => readFileSync(f, 'utf8').includes('__phylo'));
+  check(hits.length === 0, '__phylo does not appear anywhere in dist/', JSON.stringify(hits));
+} else {
+  console.log('  (no dist/ next to this run — skipped; grep it separately after `npm run build`)');
+}
 
 const browser = await chromium.launch({ executablePath: process.env.CHROME_PATH || undefined });
 
@@ -231,6 +262,102 @@ for (let run = 0; run < INP_RUNS; run++) {
 inps.sort((a, b) => a - b);
 const med = inps[Math.floor(inps.length / 2)];
 check(med < 200, `order-list tap: median ${med} ms, range ${inps[0]}-${inps[inps.length - 1]} ms`, 'budget 200 ms (median)');
+
+// v3.1 item 2: default view is linear.
+console.log('\ndefault view');
+{
+  const { page, ctx, errors } = await open(`${BASE}filogenia/`, 1280);
+  await page.waitForSelector('#phylo-plantae-chart canvas');
+  check((await page.getAttribute('#phylo-plantae', 'data-view')) === 'linear', 'the tree opens on the linear view');
+  check(await page.getAttribute('#phylo-plantae [data-view="linear"]', 'aria-pressed') === 'true', 'Linear is the pressed view button');
+  check(await hook(page, 'plantae', 'view') === 'linear', '__phylo agrees: view() === "linear"');
+  errors.forEach((e) => fail(`default view: ${e}`));
+  await ctx.close();
+}
+
+// v3.1 item 2: sunburst zoom (click an order) + breadcrumb (down and back up).
+console.log('\nsunburst zoom + breadcrumb');
+{
+  const { page, ctx, errors } = await open(`${BASE}filogenia/`, 1280);
+  await page.waitForSelector('#phylo-plantae-chart canvas');
+  await page.click('#phylo-plantae [data-view="sunburst"]');
+  await page.waitForFunction(() => document.querySelector('#phylo-plantae').dataset.view === 'sunburst');
+  await page.waitForSelector('#phylo-plantae-chart canvas');
+  const z0 = await hook(page, 'plantae', 'zoom');
+  check(z0 === 0, 'sunburst opens fully zoomed out (depth 0)', `got ${z0}`);
+  await page.click('#phylo-plantae [data-ord="Malpighiales"]');
+  const zoomedIn = await waitHook(page, 'plantae', 'zoom', 'v > 0');
+  check(zoomedIn, 'picking an order zoomed the sunburst in (depth > 0)');
+  const crumbLen = await hook(page, 'plantae', 'crumbLength');
+  check(crumbLen >= 2, 'breadcrumb has more than one step after zooming in', `length ${crumbLen}`);
+  const focus = await focusOf(page, 'plantae');
+  check(focus === 'Malpighiales', 'sunburst data-focus follows the same selection as linear', `got ${focus}`);
+  // Breadcrumb's first (kingdom) crumb is keyboard-reachable and zooms all the way out.
+  await page.focus('#phylo-plantae [data-crumb] button');
+  await page.keyboard.press('Enter');
+  const zoomedOut = await waitHook(page, 'plantae', 'zoom', 'v === 0');
+  check(zoomedOut, 'the breadcrumb’s root step (keyboard) zoomed back out to depth 0');
+  errors.forEach((e) => fail(`sunburst: ${e}`));
+  await ctx.close();
+}
+
+// v3.1 item 2: the 3D chunk is never requested until the 3D view is chosen,
+// and only on a capable, motion-consenting device (forced here via the same
+// ic7.tier override the app itself reads, so the check is deterministic).
+console.log('\n3D is lazy and gated by tier + reduced motion');
+{
+  const ctx2 = await browser.newContext({ viewport: { width: 1280, height: 900 } });
+  await ctx2.addInitScript(() => {
+    localStorage.setItem('ic7-tutorial:seen:botanica-filogenia', '1');
+    localStorage.setItem('ic7.tier', '2');
+  });
+  const page = await ctx2.newPage();
+  const requests = [];
+  page.on('request', (r) => requests.push(r.url()));
+  await page.goto(`${BASE}filogenia/`, { waitUntil: 'networkidle' });
+  await page.waitForSelector('#phylo-plantae-chart canvas');
+  check(!requests.some((u) => u.includes('tree-3d')), 'no tree-3d chunk requested before the 3D view is picked');
+  const enabled = await page.$eval('#phylo-plantae [data-view="3d"]', (b) => !b.disabled);
+  check(enabled, '3D is enabled at tier 2 with no reduced-motion preference');
+  await page.click('#phylo-plantae [data-view="3d"]');
+  const gotChunk = await page.waitForFunction(() => window.performance.getEntriesByType('resource').some((e) => e.name.includes('tree-3d')), null, { timeout: 10000 }).then(() => true, () => false);
+  check(gotChunk, 'choosing 3D requested the tree-3d chunk');
+  await ctx2.close();
+
+  // Reduced motion (or a low tier) disables the button with a stated reason.
+  const ctx3 = await browser.newContext({ viewport: { width: 1280, height: 900 }, reducedMotion: 'reduce' });
+  await ctx3.addInitScript(() => {
+    localStorage.setItem('ic7-tutorial:seen:botanica-filogenia', '1');
+    localStorage.setItem('ic7.tier', '2');
+  });
+  const page3 = await ctx3.newPage();
+  await page3.goto(`${BASE}filogenia/`, { waitUntil: 'networkidle' });
+  await page3.waitForSelector('#phylo-plantae-chart canvas');
+  const disabled = await page3.$eval('#phylo-plantae [data-view="3d"]', (b) => b.disabled);
+  const title = await page3.getAttribute('#phylo-plantae [data-view="3d"]', 'title');
+  check(disabled, '3D is disabled under prefers-reduced-motion');
+  check(!!title && title.length > 0, '3D’s disabled reason is stated (title/aria-label)', title ?? '');
+  await ctx3.close();
+}
+
+// v3.1 item 5: one-glance layout at 1440x900 (chart, orders list, department
+// bars all read above the fold once the section is at the top of the viewport).
+console.log('\none-glance layout at 1440x900');
+{
+  const ctx4 = await browser.newContext({ viewport: { width: 1440, height: 900 } });
+  await ctx4.addInitScript(() => localStorage.setItem('ic7-tutorial:seen:botanica-filogenia', '1'));
+  const page = await ctx4.newPage();
+  await page.goto(`${BASE}filogenia/`, { waitUntil: 'networkidle' });
+  await page.waitForSelector('#phylo-plantae-chart canvas');
+  await page.evaluate(() => document.querySelector('#phylo-plantae').scrollIntoView());
+  await page.waitForTimeout(300);
+  const rects = await page.evaluate(() => {
+    const sel = ['#phylo-plantae-frame', '#phylo-plantae .ord-list', '#phylo-plantae-side'];
+    return sel.map((s) => { const r = document.querySelector(s).getBoundingClientRect(); return [s, r.bottom]; });
+  });
+  for (const [sel, bottom] of rects) check(bottom <= 900, `${sel} bottom ≤ 900px`, `${Math.round(bottom)}px`);
+  await ctx4.close();
+}
 
 await browser.close();
 console.log(failures.length ? `\nTREE GATE FAILED: ${failures.length}` : '\nTREE GATE PASSED');

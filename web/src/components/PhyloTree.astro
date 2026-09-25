@@ -92,19 +92,20 @@ const max0 = Math.max(1, depts0[0][1]);
       sources={k === 'plantae' ? ['apg4', 'ppg1', 'christenhusz2011', 'wcvp'] : ['gbifBackbone', 'gbifFungi']}
     >
       <div slot="tools" class="phylo-tools" role="group" aria-label={t(locale, 'tree.tools')}>
-        <button type="button" class="btn on" data-layout="radial" aria-pressed="true">{t(locale, 'tree.radial')}</button>
-        <button type="button" class="btn" data-layout="orthogonal" aria-pressed="false">{t(locale, 'tree.linear')}</button>
+        <button type="button" class="btn on" data-view="linear" aria-pressed="true">{t(locale, 'tree.viewLinear')}</button>
+        <button type="button" class="btn" data-view="sunburst" aria-pressed="false">{t(locale, 'tree.viewSunburst')}</button>
+        <button type="button" class="btn" data-view="3d" aria-pressed="false">{t(locale, 'tree.view3d')}</button>
         <button type="button" class="btn" data-reset aria-label={t(locale, 'tree.resetLabel')}>{t(locale, 'tree.reset')}</button>
-        <button type="button" class="btn ic" data-zoom="in" aria-label={t(locale, 'tree.zoomIn')} title={t(locale, 'tree.zoomIn')}>
+        <button type="button" class="btn ic" data-zoom="in" data-lin-only aria-label={t(locale, 'tree.zoomIn')} title={t(locale, 'tree.zoomIn')}>
           <svg viewBox="0 0 16 16" aria-hidden="true"><circle cx="7" cy="7" r="4.5" /><path d="M10.4 10.4 14 14M5 7h4M7 5v4" /></svg>
         </button>
-        <button type="button" class="btn ic" data-zoom="out" aria-label={t(locale, 'tree.zoomOut')} title={t(locale, 'tree.zoomOut')}>
+        <button type="button" class="btn ic" data-zoom="out" data-lin-only aria-label={t(locale, 'tree.zoomOut')} title={t(locale, 'tree.zoomOut')}>
           <svg viewBox="0 0 16 16" aria-hidden="true"><circle cx="7" cy="7" r="4.5" /><path d="M10.4 10.4 14 14M5 7h4" /></svg>
         </button>
-        <button type="button" class="btn ic" data-expand="all" aria-label={t(locale, 'tree.expandAll')} title={t(locale, 'tree.expandAll')}>
+        <button type="button" class="btn ic" data-expand="all" data-lin-only aria-label={t(locale, 'tree.expandAll')} title={t(locale, 'tree.expandAll')}>
           <svg viewBox="0 0 16 16" aria-hidden="true"><rect x="2.5" y="2.5" width="11" height="11" rx="2" /><path d="M5 8h6M8 5v6" /></svg>
         </button>
-        <button type="button" class="btn ic" data-expand="none" aria-label={t(locale, 'tree.collapseAll')} title={t(locale, 'tree.collapseAll')}>
+        <button type="button" class="btn ic" data-expand="none" data-lin-only aria-label={t(locale, 'tree.collapseAll')} title={t(locale, 'tree.collapseAll')}>
           <svg viewBox="0 0 16 16" aria-hidden="true"><rect x="2.5" y="2.5" width="11" height="11" rx="2" /><path d="M5 8h6" /></svg>
         </button>
         <button type="button" class="btn ic" data-fs
@@ -117,7 +118,9 @@ const max0 = Math.max(1, depts0[0][1]);
 
       <div class="phylo-pane">
         <div id={`${uid}-chart`} class="chart-phylo" role="img" aria-label={`${t(locale, 'tree.title')} · ${kingdom}`}></div>
+        <nav class="phylo-crumb" data-crumb aria-label={t(locale, 'tree.crumb')}></nav>
       </div>
+      <script type="application/json" data-howto set:html={JSON.stringify({ linear: t(locale, 'tree.howto'), sunburst: t(locale, 'tree.howtoSunburst') })} />
 
       <Fragment slot="legend">
         <span class="lg">
@@ -201,6 +204,29 @@ const max0 = Math.max(1, depts0[0][1]);
   .phylo-pane { position: relative; border: 1px solid rgb(var(--border)); border-radius: 12px; overflow: hidden; background: rgb(var(--surface)); }
   .chart-phylo { width: 100%; height: min(70vh, 620px); }
   @media (max-width: 767px) { .chart-phylo { height: 420px; } }
+  /* One-glance (v3.1 item 5): at 1440x900, with the explorer section at the top
+     of the viewport, the tree, the orders list and the department bars must
+     all sit above the fold with their tops aligned. A single height drives the
+     chart and the two scrollable lists beside it, independent of how many
+     orders or departments there are. Measured against the built page (the
+     section starts ~294 px down, past the page header and the tree's own
+     lede): 340 px leaves the frame's head/how-to/legend/source room to close
+     under 900. 360 px and the < 1024 stacked layout are untouched. */
+  @media (min-width: 1280px) and (min-height: 760px) {
+    .chart-phylo { height: 340px; }
+  }
+  .phylo[data-view='linear'] [data-lin-only] { display: inline-flex; }
+  .phylo:not([data-view='linear']) [data-lin-only] { display: none; }
+  .phylo-crumb { display: none; flex-wrap: wrap; gap: 2px; align-items: center; padding: 8px 10px; border-top: 1px solid rgb(var(--border)); font-size: 12px; }
+  .phylo[data-view='sunburst'] .phylo-crumb { display: flex; }
+  .phylo-crumb button {
+    min-height: 32px; padding: 4px 8px; border: 0; border-radius: 6px; background: transparent; cursor: pointer;
+    color: rgb(var(--muted)); font: inherit;
+  }
+  .phylo-crumb button[aria-current] { color: rgb(var(--fg)); font-weight: 600; }
+  .phylo-crumb button:hover, .phylo-crumb button:focus-visible { background: rgb(var(--surface-2)); }
+  .phylo-crumb .crumb-sep { color: rgb(var(--muted)); }
+  @media (pointer: coarse) { .phylo-crumb button { min-height: 44px; } }
 
   .lg { display: inline-flex; align-items: center; gap: 6px; flex-wrap: wrap; }
   .lg-size { display: inline-flex; align-items: center; gap: 3px; font-family: var(--font-mono); font-size: 11px; }
@@ -214,6 +240,7 @@ const max0 = Math.max(1, depts0[0][1]);
   .phylo-list { min-width: 0; }
   .ord-list { margin: 6px 0 0; max-height: min(70vh, 620px); overflow-y: auto; border: 1px solid rgb(var(--border)); border-radius: 12px; }
   @media (max-width: 1023px) { .ord-list { max-height: 264px; } }
+  @media (min-width: 1280px) and (min-height: 760px) { .ord-list { max-height: 340px; } }
   .ord-list ol { list-style: none; margin: 0; padding: 0; }
   .ord-h {
     margin: 0; padding: 8px 12px 4px; font-family: var(--font-mono); font-size: 11px; letter-spacing: 0.02em;
@@ -269,6 +296,7 @@ const max0 = Math.max(1, depts0[0][1]);
   .dept-bars li { display: grid; grid-template-columns: 96px minmax(0, 1fr) auto; gap: 8px; align-items: center; font-size: 13px; }
   .dept-bars i { display: block; height: 8px; border-radius: 4px; background: var(--c, rgb(var(--accent))); transform-origin: left; transition: transform var(--ic7-t-enter) var(--ic7-ease-out); }
   .dept-bars b { font-family: var(--font-mono); font-weight: 400; font-size: 12px; color: rgb(var(--muted)); }
+  @media (min-width: 1280px) and (min-height: 760px) { .dept-bars { max-height: 190px; overflow-y: auto; } }
   .fam-chips { display: flex; flex-wrap: wrap; gap: 4px; }
   .fam-chips button {
     min-height: 32px; padding: 2px 10px; border-radius: 999px; border: 1px solid rgb(var(--border)); background: transparent;

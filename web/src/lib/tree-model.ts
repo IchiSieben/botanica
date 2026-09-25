@@ -39,3 +39,21 @@ export const sizeSamples = (max: number): number[] => {
   const top = Math.pow(10, Math.floor(Math.log10(Math.max(10, max))));
   return [top / 100, top / 10, top].filter((v) => v >= 1);
 };
+
+/** Relative luminance of a `#rrggbb` colour (same formula as lib/views.ts' treemap). */
+function lum(hex: string): number {
+  const m = hex.replace('#', '');
+  const [r, g, b] = [0, 2, 4].map((o) => {
+    const v = parseInt(m.slice(o, o + 2), 16) / 255;
+    return v <= 0.03928 ? v / 12.92 : ((v + 0.055) / 1.055) ** 2.4;
+  });
+  return 0.2126 * r + 0.7152 * g + 0.0722 * b;
+}
+
+/** Black or white, whichever contrasts more with the fill: used for sunburst sector
+ *  labels (dark sectors get white text, light sectors get black), same rule as the
+ *  explorer's treemap tiles. */
+export const ink = (hex: string): string => {
+  const l = lum(hex);
+  return 1.05 / (l + 0.05) >= (l + 0.05) / 0.05 ? '#ffffff' : '#000000';
+};
