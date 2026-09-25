@@ -42,6 +42,8 @@ Todos los cambios relevantes de Botánica se documentan aquí. Formato:
 ### Corregido
 - Al hacer clic en un grupo de la lista taxonómica, el árbol ahora resalta, expande y centra esa
   rama correctamente (antes podía apuntar al nodo equivocado).
+- Los enlaces con un departamento (`?dep=`) ya no desplazan el explorador mientras cargan las
+  fuentes tipográficas.
 
 ## [2.0.0] - 2026-09-24
 

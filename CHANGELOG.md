@@ -38,6 +38,7 @@ All notable changes to Botánica are documented here. Format:
 ### Fixed
 - Clicking a group in the taxonomy list now correctly highlights, expands and centers that
   branch in the tree (it previously could point at the wrong node).
+- Links with a department (`?dep=`) no longer shift the explorer while web fonts load.
 
 ## [2.0.0] - 2026-09-24
 

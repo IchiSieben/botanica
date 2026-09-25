@@ -15,9 +15,7 @@ const explorerProps = { h1: false };
 
 <Base locale={locale} page="explore">
   <Intro locale={locale} />
-  <div id="explorar" tabindex="-1">
-    <Explorer locale={locale} {...explorerProps} />
-  </div>
+  <Explorer locale={locale} {...explorerProps} />
   <!-- The tour waits for the explorer: it opens when #explorar reaches the viewport. -->
   <Tutorial id="botanica-explorar" locale={locale} steps={TOURS.explore[locale]} gate="#explorar" />
 </Base>

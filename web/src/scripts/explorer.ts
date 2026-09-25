@@ -153,6 +153,8 @@ export function boot() {
     if (store.get() !== s) return;
     paint(s);
     root.classList.remove('is-stale');
+    // The state this DOM shows; tests wait on it instead of on the URL, which runs one frame ahead.
+    root.dataset.painted = location.search;
   }
 
   function paint(s: State) {
@@ -232,7 +234,8 @@ export function boot() {
   function depPanel(ctx: V.Ctx) {
     const { s, f, agg } = ctx;
     el.depSelect.value = s.dep[0] ?? '';
-    el.hint.hidden = s.dep.length > 0;
+    // visibility, not hidden: dropping the line would move the map up 24 px (CLS on ?dep= links).
+    el.hint.style.visibility = s.dep.length > 0 ? 'hidden' : '';
     if (!s.dep.length) {
       el.depDetail.innerHTML = '';
       return;

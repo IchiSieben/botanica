@@ -31,7 +31,7 @@ const list: Source[] = sources.map((k) => SOURCES[k]);
   <p class="cf-howto"><span class="cf-k">{t(locale, 'frame.howto')}</span> <span data-cf-howto>{howto}</span></p>
   <div class="cf-body"><slot /></div>
   <figcaption class="cf-foot">
-    {Astro.slots.has('legend') && <div class="cf-legend" aria-label={t(locale, 'frame.legend')}><slot name="legend" /></div>}
+    {Astro.slots.has('legend') && <div class="cf-legend" role="group" aria-label={t(locale, 'frame.legend')}><slot name="legend" /></div>}
     <p class="cf-source">
       <span class="cf-k">{t(locale, list.length > 1 ? 'frame.sources' : 'frame.source')}:</span>
       {list.map((s, i) => (

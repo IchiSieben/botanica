@@ -5,6 +5,7 @@
  */
 import '../styles/global.css';
 import sgUrl from '@fontsource-variable/space-grotesk/files/space-grotesk-latin-wght-normal.woff2?url';
+import jbUrl from '@fontsource-variable/jetbrains-mono/files/jetbrains-mono-latin-wght-normal.woff2?url';
 import { t, localePath, BCP47, type Locale } from '../lib/i18n';
 import { KINGDOMS } from '../lib/kingdoms';
 
@@ -37,6 +38,8 @@ const abs = (l: Locale) => new URL(localePath(l, slug), Astro.site).href;
     <meta name="color-scheme" content="dark light" />
     <link rel="icon" type="image/svg+xml" href={`${import.meta.env.BASE_URL}favicon.svg`} />
     <link rel="preload" href={sgUrl} as="font" type="font/woff2" crossorigin />
+    <!-- Mono sets KPIs and DOI lines above the fold on deep links: a late swap re-wraps them (CLS). -->
+    <link rel="preload" href={jbUrl} as="font" type="font/woff2" crossorigin />
     <link rel="canonical" href={abs(locale)} />
     <link rel="alternate" hreflang="en" href={abs('en')} />
     <link rel="alternate" hreflang="es" href={abs('es')} />

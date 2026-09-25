@@ -31,3 +31,6 @@ Thumbs.db
 
 # Gate artefacts
 web/lh-report/
+
+# Claude Code agent worktrees
+.claude/worktrees/

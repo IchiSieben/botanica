@@ -14,8 +14,8 @@ Contract for release **v3.0.0**. Brief: owner prompt of 2026-09-24 ("v3-A"). Bas
 1. **Intro** — first screen of `/` and `/es/`, then "Explore" (anchor `#explorar`). 8–10 facts, each a
    number computed from our data with a link to its source (dataset DOI / WCVP / IPNI); a timeline of
    milestones derived from WCVP `first_published` + our release dates; "how the atlas works" (WCVP +
-   GBIF, records ≠ richness). Scroll-driven motion = CSS `animation-timeline: view()` on `transform`/
-   `opacity` only, inside `@supports` and `prefers-reduced-motion: no-preference`; otherwise static.
+   GBIF, records ≠ richness). Scroll-driven motion = CSS `animation-timeline: view()` on `transform`
+   only (an opacity fade put entering text below AA), inside `@supports` and `prefers-reduced-motion: no-preference`; otherwise static.
    A URL that carries explorer state (`?dep=`, `?sp=`, …) or `#explorar` lands on the explorer.
 2. **One-glance explorer** — at 1440×900 the bottoms of `#kpis`, `#map`, `#families` and `#status`
    (origin) are ≤ 900 px once the explorer section is at the top of the viewport. Growth form and
@@ -49,7 +49,7 @@ Contract for release **v3.0.0**. Brief: owner prompt of 2026-09-24 ("v3-A"). Bas
 
 ## Invariants
 - No ECharts on `/` (AUDIT-v2). No new runtime dependency.
-- Gates stay green: `npm test`, `npm run gate` (extended for v3), axe dark 0 violations, 0 console
+- Gates stay green: `npm test`, `npm run gate` + `npm run gate:v3` (intro, explorer, tree, changes), axe dark 0 violations, 0 console
   errors / CSP violations live, 0 px overflow at 360, Lighthouse mobile ≥ 90 on every page.
 - Every figure on the page comes from our data or the dossier, with its citation; every DOI cited is
   checked against `https://doi.org/api/handles/<doi>` (`responseCode: 1`).

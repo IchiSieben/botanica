@@ -108,7 +108,7 @@ async function exploreChecks(page, url) {
 
   // 1. Map -> every other view.
   await page.click('#map path[data-dep="LORETO"]');
-  await page.waitForFunction(() => location.search.includes('dep=LORETO'));
+  await page.waitForFunction(() => location.search.includes('dep=LORETO') && (document.querySelector('[data-explorer]')?.dataset.painted ?? location.search) === location.search);
   const kpi1 = await text(page, '#kpis');
   const fam1 = await text(page, '#families');
   const years1 = await page.$eval('#years', (el) => el.innerHTML);
@@ -119,13 +119,13 @@ async function exploreChecks(page, url) {
   // 2. Family -> map.
   const map1 = await page.$$eval('#map path', (ps) => ps.map((p) => p.getAttribute('class')).join());
   await page.click('#families [data-fam]');
-  await page.waitForFunction(() => location.search.includes('fam='));
+  await page.waitForFunction(() => location.search.includes('fam=') && (document.querySelector('[data-explorer]')?.dataset.painted ?? location.search) === location.search);
   const map2 = await page.$$eval('#map path', (ps) => ps.map((p) => p.getAttribute('class')).join());
   map2 !== map1 ? ok('family click changed the map') : fail(`${url}: family click did not change the map`);
 
   // 3. Back undoes the family.
   await page.goBack();
-  await page.waitForFunction(() => !location.search.includes('fam='));
+  await page.waitForFunction(() => !location.search.includes('fam=') && (document.querySelector('[data-explorer]')?.dataset.painted ?? location.search) === location.search);
   ok('Back undid the family filter');
 
   // 4. Search -> drawer -> map in species mode.
@@ -151,12 +151,12 @@ async function exploreChecks(page, url) {
   await page.keyboard.press('Escape');
   await page.goBack();
   await page.goBack();
-  await page.waitForFunction(() => !location.search.includes('k=fungi'));
+  await page.waitForFunction(() => !location.search.includes('k=fungi') && (document.querySelector('[data-explorer]')?.dataset.painted ?? location.search) === location.search);
 
   // 5. Years brush -> map.
   const map3 = await page.$$eval('#map path', (ps) => ps.map((p) => p.getAttribute('class')).join());
   await page.click('#years [data-decade="2000"]');
-  await page.waitForFunction(() => location.search.includes('y0=2000'));
+  await page.waitForFunction(() => location.search.includes('y0=2000') && (document.querySelector('[data-explorer]')?.dataset.painted ?? location.search) === location.search);
   const map4 = await page.$$eval('#map path', (ps) => ps.map((p) => p.getAttribute('class')).join());
   map4 !== map3 ? ok('decade click changed the map') : fail(`${url}: decade click did not change the map`);
 
@@ -173,7 +173,7 @@ async function speciesChecks(page, url) {
   await page.fill('#sp-q', 'Cinchona');
   await page.waitForFunction(() => document.querySelectorAll('#sp-list [data-i]').length < 50);
   await page.click('#sp-list [data-i]');
-  await page.waitForFunction(() => location.search.includes('sp='));
+  await page.waitForFunction(() => location.search.includes('sp=') && (document.querySelector('[data-explorer]')?.dataset.painted ?? location.search) === location.search);
   const href = await page.getAttribute('#sp-detail a.btn', 'href');
   href && href.includes('sp=Cinchona') ? ok('species pick -> URL and "show on map" link') : fail(`${url}: show-on-map link wrong: ${href}`);
 }
@@ -184,7 +184,7 @@ async function treeChecks(page, url) {
   const before = await text(page, side);
   // Click the first order via the accessible list the tree page renders.
   await page.click('#phylo-plantae [data-ord]');
-  await page.waitForFunction(() => location.search.includes('ord='));
+  await page.waitForFunction(() => location.search.includes('ord=') && (document.querySelector('[data-explorer]')?.dataset.painted ?? location.search) === location.search);
   const after = await text(page, side);
   after !== before ? ok('tree selection changed the department view') : fail(`${url}: tree selection did not change the department view`);
 }

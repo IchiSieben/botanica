@@ -49,6 +49,10 @@ export const SOURCES = {
     label: 'PPG I 2016, Journal of Systematics and Evolution 54: 563–603',
     doi: '10.1111/jse.12229',
   },
+  christenhusz2011: {
+    label: 'Christenhusz et al. 2011, Phytotaxa 19: 55–70 (gymnosperms)',
+    doi: '10.11646/phytotaxa.19.1.3',
+  },
   geoBoundaries: {
     label: 'geoBoundaries gbOpen PER ADM1',
     url: 'https://www.geoboundaries.org/',
