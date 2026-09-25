@@ -84,8 +84,9 @@ const AUDIT = 'https://github.com/IchiSieben/botanica/blob/main/docs/AUDIT-v2.md
 
   <div class="wrap">
     <div class="ex-status" aria-live="polite">
-      <div class="chips" id="chips"><span class="chip-none">{t(locale, 'filters.none')}</span></div>
+      <div class="chips q-sentence" id="chips" set:html={V.question(ctx)} />
       <div class="kpis" id="kpis" set:html={V.kpis(ctx)} />
+      <div id="zero-state" set:html={V.zeroState(ctx)} />
       <details class="ex-why" id="dep-why" hidden>
         <summary>{t(locale, 'ex.why')}</summary>
         <div class="ex-why-body">
@@ -98,7 +99,7 @@ const AUDIT = 'https://github.com/IchiSieben/botanica/blob/main/docs/AUDIT-v2.md
 
     <div class="ex-grid">
       <ChartFrame locale={locale} id="cf-map" class="card ex-map" level={3} title={t(locale, 'map.title')}
-        howto={t(locale, 'map.howto.species')} sources={PLANT}>
+        howto={`${t(locale, 'map.howto.species')} ${t(locale, 'ex.xfNote')}`} sources={PLANT}>
         <Fragment slot="tools">
           <div class="map-tools" role="group" aria-label={t(locale, 'map.zoomTip')}>
             <button type="button" class="btn ic" data-zoom="in" aria-label={t(locale, 'map.zoomIn')} title={t(locale, 'map.zoomIn')}>
@@ -166,7 +167,7 @@ const AUDIT = 'https://github.com/IchiSieben/botanica/blob/main/docs/AUDIT-v2.md
       </ChartFrame>
 
       <ChartFrame locale={locale} id="cf-fam" class="card ex-fam" level={3} title={t(locale, 'fam.title')}
-        howto={t(locale, 'ex.famHowto')} sources={[...PLANT, 'apg4']}>
+        howto={`${t(locale, 'ex.famHowto')} ${t(locale, 'ex.xfNote')}`} sources={[...PLANT, 'apg4']}>
         <div class="tm" id="families" set:html={V.families(ctx)} />
         <Fragment slot="legend">
           <p class="ex-lg"><span class="k-plantae">{t(locale, 'ex.famLegendPlantae')}</span><span class="k-fungi">{t(locale, 'ex.famLegendFungi')}</span></p>
@@ -175,7 +176,7 @@ const AUDIT = 'https://github.com/IchiSieben/botanica/blob/main/docs/AUDIT-v2.md
       </ChartFrame>
 
       <ChartFrame locale={locale} id="cf-st" class="card ex-st" level={3} title={t(locale, 'st.title')}
-        howto={t(locale, 'ex.stHowto')} sources={PLANT}>
+        howto={`${t(locale, 'ex.stHowto')} ${t(locale, 'ex.xfNote')}`} sources={PLANT}>
         <div class="bars" id="status" set:html={V.status(ctx)} />
         <Fragment slot="legend">
           <p class="ex-lg">{t(locale, 'ex.barsLegend')}</p>
@@ -184,7 +185,7 @@ const AUDIT = 'https://github.com/IchiSieben/botanica/blob/main/docs/AUDIT-v2.md
       </ChartFrame>
 
       <ChartFrame locale={locale} id="cf-life" class="card ex-life" level={3} title={t(locale, 'life.title')}
-        howto={t(locale, 'ex.lifeHowto')} sources={PLANT}>
+        howto={`${t(locale, 'ex.lifeHowto')} ${t(locale, 'ex.xfNote')}`} sources={PLANT}>
         <div class="bars" id="lifeforms" set:html={V.lifeforms(ctx)} />
         <Fragment slot="legend">
           <p class="ex-lg">{t(locale, 'ex.barsLegend')}</p>
@@ -193,7 +194,7 @@ const AUDIT = 'https://github.com/IchiSieben/botanica/blob/main/docs/AUDIT-v2.md
       </ChartFrame>
 
       <ChartFrame locale={locale} id="cf-years" class="card ex-years" level={3} title={t(locale, 'year.title')}
-        howto={t(locale, 'ex.yearsHowto')} sources={['wcvp']}>
+        howto={`${t(locale, 'ex.yearsHowto')} ${t(locale, 'ex.xfNote')}`} sources={['wcvp']}>
         <Fragment slot="tools">
           <div class="yr-tools">
             <label class="sr-only" for="y0">{t(locale, 'year.range')}</label>

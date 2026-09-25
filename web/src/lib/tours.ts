@@ -18,6 +18,7 @@ export const TOURS: Record<'explore' | 'species' | 'tree', Record<Locale, Step[]
       { target: '#years', title: 'Time', body: 'Drag across decades, or press <b>Play</b> to watch Peru’s known flora grow since Linnaeus (1753). One species in eight was described in 2000 or later.', placement: 'top' },
       { target: '#search', title: 'Find one species', body: 'Type a name, genus or family. The drawer shows its taxonomy, origin and where it was recorded, and the map follows.', placement: 'bottom' },
       { target: '#chips', title: 'Every question is a link', body: 'Active filters live here and in the address bar: share the URL and the other person sees exactly this view. <b>Back</b> undoes the last step.', placement: 'bottom' },
+      { target: '#chips', title: 'A chart never filters itself', body: 'Every chart <b>ignores its own filter</b> (crossfilter): pick a family and the families chart still shows every family, not just that one, so you can switch. The map, origins, growth forms and years all follow your pick instead.', placement: 'bottom' },
     ],
     es: [
       { title: 'Un atlas al que se le pregunta', body: 'Las <b>21 585 especies de plantas</b> y <b>1 802 de hongos</b> del Perú, sobre datos abiertos (WCVP, GBIF, APG IV). Cada vista le responde a las demás.' },
@@ -27,6 +28,7 @@ export const TOURS: Record<'explore' | 'species' | 'tree', Record<Locale, Step[]
       { target: '#years', title: 'El tiempo', body: 'Arrastra sobre las décadas, o pulsa <b>Reproducir</b> para ver crecer la flora conocida del Perú desde Linneo (1753). Una de cada ocho especies se describió en el año 2000 o después.', placement: 'top' },
       { target: '#search', title: 'Busca una especie', body: 'Escribe un nombre, un género o una familia. El panel muestra su taxonomía, su origen y dónde se registró, y el mapa lo sigue.', placement: 'bottom' },
       { target: '#chips', title: 'Cada pregunta es un enlace', body: 'Los filtros activos viven aquí y en la barra de direcciones: comparte la URL y la otra persona verá exactamente esta vista. <b>Atrás</b> deshace el último paso.', placement: 'bottom' },
+      { target: '#chips', title: 'Un gráfico nunca se filtra a sí mismo', body: 'Cada gráfico <b>ignora su propio filtro</b> (crossfilter): elige una familia y el gráfico de familias sigue mostrando todas, no solo esa, para que puedas cambiar. El mapa, los orígenes, las formas de vida y los años sí siguen tu elección.', placement: 'bottom' },
     ],
   },
   species: {

@@ -11,7 +11,7 @@
  */
 import { isGroup, toGroup } from '../lib/growth';
 import { createStore, isFiltered, serialize, type State, type Status } from '../lib/store';
-import { aggregate, compare, type Facets } from '../lib/facets';
+import { aggregate, compare, familyCounts, type Facets } from '../lib/facets';
 import * as V from '../lib/views';
 import { t, fmt, type Locale } from '../lib/i18n';
 import { deptName } from '../lib/depts';
@@ -120,7 +120,7 @@ export function boot() {
 
   // ---- render ----------------------------------------------------------------
   const el = {
-    kpis: $('#kpis'), chips: $('#chips'), families: $('#families'), status: $('#status'),
+    kpis: $('#kpis'), chips: $('#chips'), zero: $('#zero-state'), families: $('#families'), status: $('#status'),
     lifeforms: $('#lifeforms'), years: $('#years'), legend: $('#legend'), map: $<SVGSVGElement>('#map'),
     readout: $('#readout'), depSelect: $<HTMLSelectElement>('#dep-select'), depDetail: $('#dep-detail'),
     drawer: $('#drawer'), drBody: $('#dr-body'), y0: $<HTMLSelectElement>('#y0'), y1: $<HTMLSelectElement>('#y1'),
@@ -133,6 +133,22 @@ export function boot() {
 
   /** Records and coverage can't be filtered by taxon or year (per-occurrence counts). */
   const metricLocked = (s: State) => !!(s.ord || s.fam || s.st || s.lf || s.y0 != null || s.y1 != null);
+
+  // A brief, compositor-only highlight (opacity/transform of a ::after pseudo-element,
+  // see explorer.css .cf-flash) on the panel whose content just changed, so a crossfilter
+  // update is noticeable without re-reading every number. Off under prefers-reduced-motion
+  // (the CSS drops the animation there); skipped on the very first paint (nothing "changed"
+  // relative to an empty page).
+  let painted = false;
+  function morphFlash(target: Element, html: string) {
+    const changed = target.innerHTML !== html;
+    morph(target, html);
+    if (!changed || !painted) return;
+    const card = (target.closest('.cf') as HTMLElement | null) ?? (target as HTMLElement);
+    card.classList.remove('cf-flash');
+    void card.offsetWidth; // restart the animation
+    card.classList.add('cf-flash');
+  }
 
   async function render(s: State) {
     root.classList.toggle('is-loading', !facets[s.k]);
@@ -165,12 +181,13 @@ export function boot() {
     const ctx: V.Ctx = { locale, f, agg, s: eff, orderColor: cfg.orderColor };
     root.dataset.k = s.k;
 
-    morph(el.kpis, V.kpis(ctx));
-    morph(el.families, V.families(ctx));
-    morph(el.status, V.status(ctx));
-    morph(el.lifeforms, V.lifeforms(ctx));
-    morph(el.years, V.years(ctx));
-    morph(el.chips, chips(s));
+    morphFlash(el.kpis, V.kpis(ctx));
+    morphFlash(el.families, V.families(ctx));
+    morphFlash(el.status, V.status(ctx));
+    morphFlash(el.lifeforms, V.lifeforms(ctx));
+    morphFlash(el.years, V.years(ctx));
+    morph(el.chips, V.question(ctx));
+    morph(el.zero, V.zeroState(ctx));
 
     // Controls that mirror the state.
     root.querySelectorAll<HTMLButtonElement>('[data-k]').forEach((b) => press(b, b.dataset.k === s.k));
@@ -190,6 +207,7 @@ export function boot() {
     paintMap(ctx);
     depPanel(ctx);
     drawer(s, f);
+    painted = true;
   }
 
   const press = (b: HTMLElement, on: boolean) => {
@@ -201,7 +219,11 @@ export function boot() {
     const { s, f } = ctx;
     const sp = s.sp && names[s.k] ? names[s.k]!.byName.get(s.sp) : undefined;
     root.classList.toggle('map-species', sp != null);
-    el.mapHowto.textContent = t(locale, sp != null ? 'map.howto.sp' : `map.howto.${s.m}`);
+    // In department-colour mode the map crossfilters its own dimension out (facets.ts
+    // byDept), like every other chart; the species-highlight mode isn't a filter, so it
+    // doesn't get the note.
+    el.mapHowto.textContent = t(locale, sp != null ? 'map.howto.sp' : `map.howto.${s.m}`) +
+      (sp != null ? '' : ` ${t(locale, 'ex.xfNote')}`);
     if (sp != null) {
       // Species mode: where this one species was recorded.
       const mask = f.mask[sp];
@@ -228,7 +250,7 @@ export function boot() {
     }
     // Selected departments on top so their outline isn't hidden by neighbours.
     for (const d of s.dep) { const node = paths.find((x) => x.dataset.dep === d); if (node) el.map.appendChild(node); }
-    morph(el.legend, V.legend(ctx, p, band));
+    morphFlash(el.legend, V.legend(ctx, p, band));
   }
 
   function depPanel(ctx: V.Ctx) {
@@ -243,10 +265,13 @@ export function boot() {
     const rec = cfg.records[s.k];
     if (s.dep.length === 1) {
       const d = s.dep[0];
-      const top = [...agg.byFamily].filter(([i]) => i >= 0).sort((a, b) => b[1] - a[1]).slice(0, 5);
+      // Strict family breakdown of the SAME set the KPI counts (facets.ts familyCounts),
+      // not the crossfiltered agg.byFamily (which can list a family absent from `total`,
+      // v3.1 item 1: "0 species" beside "Poaceae 20").
+      const top = [...familyCounts(f, s)].sort((a, b) => b[1] - a[1]).slice(0, 5);
       const opts = f.depts.filter((x) => x !== d)
         .map((x) => `<option value="${V.esc(x)}">${V.esc(deptName(x))}</option>`).join('');
-      morph(el.depDetail, `
+      morphFlash(el.depDetail, `
         <div class="dep-head"><h4>${V.esc(deptName(d))}</h4>
           <button type="button" class="btn" data-clear="dep">${t(locale, 'dep.clear')}</button></div>
         <p class="dep-nums"><b>${n(agg.total)}</b> ${t(locale, 'dep.species')}${metricLocked(s) ? '' : ` · <b>${n(rec[d] ?? 0)}</b> ${t(locale, 'dep.records')}`}</p>
@@ -262,7 +287,7 @@ export function boot() {
     const w = (v: number) => ((v / tot) * 100).toFixed(2);
     const fams = (xs: { family: string; species: number }[]) =>
       xs.map((x) => `<li><button type="button" class="linkish" data-fam="${V.esc(x.family)}">${V.esc(x.family)}</button> <span class="mono">${n(x.species)}</span></li>`).join('');
-    morph(el.depDetail, `
+    morphFlash(el.depDetail, `
       <div class="dep-head"><h4>${t(locale, 'cmp.title')}</h4>
         <button type="button" class="btn" data-clear="dep">${t(locale, 'dep.clear')}</button></div>
       <div class="cmp-bar" aria-hidden="true"><i class="a" style="width:${w(c.onlyA)}%"></i><i class="ab" style="width:${w(c.both)}%"></i><i class="b" style="width:${w(c.onlyB)}%"></i></div>
@@ -273,22 +298,6 @@ export function boot() {
       </dl>
       <p class="label">${t(locale, 'cmp.exclusive')}</p>
       <div class="cmp-cols"><ol class="toplist">${fams(c.topA)}</ol><ol class="toplist">${fams(c.topB)}</ol></div>`);
-  }
-
-  function chips(s: State): string {
-    const c: [string, string][] = [];
-    const yr = (v: number | null, dflt: string) => (v == null ? dflt : String(v));
-    if (s.dep.length) c.push(['dep', s.dep.map(deptName).join(' + ')]);
-    if (s.ord) c.push(['ord', s.ord]);
-    if (s.fam) c.push(['fam', s.fam]);
-    if (s.st) c.push(['st', t(locale, `st.${s.st}`)]);
-    if (s.lf) c.push(['lf', V.lfLabel(locale, s.lf)]);
-    if (s.y0 != null || s.y1 != null) c.push(['y', `${t(locale, 'year.range')} ${yr(s.y0, '…')}–${yr(s.y1, '…')}`]);
-    if (s.sp) c.push(['sp', s.sp]);
-    if (!c.length) return `<span class="chip-none">${t(locale, 'filters.none')}</span>`;
-    return c.map(([k, label]) =>
-      `<button type="button" class="chip" data-clear="${k}" aria-label="${t(locale, 'filters.remove')}: ${V.esc(label)}"><span>${V.esc(label)}</span><b aria-hidden="true">×</b></button>`).join('') +
-      (c.length > 1 ? `<button type="button" class="chip clear-all" data-clear="all">${t(locale, 'filters.clear')}</button>` : '');
   }
 
   // Protologue (author + IPNI id): plants only, fetched once, on the first drawer open.

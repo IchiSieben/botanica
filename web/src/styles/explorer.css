@@ -87,6 +87,47 @@
 .chip.clear-all { border-color: rgb(var(--border)); background: transparent; color: rgb(var(--muted)); padding-right: 12px; }
 @media (pointer: coarse) { .chip { min-height: 44px; } }
 
+/* ---- question sentence (v3.1 item 1): the chips read as one sentence, "·" between
+   parts, ending in the species count. Each part stays the same removable chip. ---- */
+.q-sentence { row-gap: 8px; }
+.q-dot { color: rgb(var(--muted)); align-self: center; font-size: 14px; }
+.q-count {
+  font-family: var(--font-mono); font-size: 14px; font-weight: 600; color: rgb(var(--fg));
+  font-variant-numeric: tabular-nums; margin-left: 2px;
+}
+
+/* ---- zero-result help: what removing one filter would return ---- */
+.zero-state {
+  grid-column: 1 / -1; display: grid; gap: 6px; margin: -2px 0 4px; padding: 10px 12px;
+  background: rgb(var(--surface)); border: 1px solid rgb(var(--border)); border-radius: 10px;
+}
+.zero-lede { margin: 0; font-size: 13px; color: rgb(var(--muted)); }
+.zero-list { display: flex; flex-wrap: wrap; gap: 6px; }
+.zero-opt {
+  display: inline-flex; align-items: center; gap: 8px; min-height: 36px; padding: 4px 10px;
+  border-radius: 999px; border: 1px solid rgb(var(--border)); background: rgb(var(--surface-2));
+  color: rgb(var(--fg)); cursor: pointer; font-size: 13px;
+}
+.zero-opt:hover { border-color: rgb(var(--accent)); }
+.zero-opt b { font-family: var(--font-mono); color: rgb(var(--accent-strong)); }
+@media (pointer: coarse) { .zero-opt { min-height: 44px; } }
+
+/* ---- change highlight (v3.1 item 1): compositor-only (opacity/transform of a
+   pseudo-element), so it never triggers layout. Off under reduced motion. ---- */
+.ex .cf, .ex #kpis { position: relative; }
+.ex .cf.cf-flash::after, .ex #kpis.cf-flash::after {
+  content: ''; position: absolute; inset: -4px; z-index: 1; pointer-events: none;
+  border-radius: 12px; background: rgb(var(--accent) / 0.16); transform-origin: center;
+  animation: cf-flash-pulse 900ms ease-out;
+}
+@keyframes cf-flash-pulse {
+  from { opacity: 0.6; transform: scale(1); }
+  to { opacity: 0; transform: scale(1.015); }
+}
+@media (prefers-reduced-motion: reduce) {
+  .ex .cf.cf-flash::after, .ex #kpis.cf-flash::after { animation: none; display: none; }
+}
+
 .kpis { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 1px; background: rgb(var(--border)); border: 1px solid rgb(var(--border)); border-radius: 12px; overflow: hidden; }
 @media (min-width: 640px) { .kpis { grid-template-columns: repeat(5, minmax(0, 1fr)); } }
 .kpi { background: rgb(var(--surface)); padding: 12px 14px; display: grid; gap: 2px; min-width: 0; }
@@ -217,6 +258,7 @@
 .legend .lg.q6 i { background: var(--q6); }
 .lg-none { display: inline-flex; align-items: center; gap: 6px; margin-left: 10px; font-size: 12px; color: rgb(var(--muted)); font-family: var(--font-mono); }
 .lg-none i { width: 14px; height: 12px; border-radius: 3px; background: var(--none); }
+.lg-rescale { flex: 1 0 100%; margin: 2px 0 0; font-size: 11px; color: rgb(var(--muted)); }
 @media (pointer: coarse) { .legend .lg { min-width: 40px; min-height: 44px; } }
 
 .dep-panel .cf-body { display: grid; gap: 10px; }

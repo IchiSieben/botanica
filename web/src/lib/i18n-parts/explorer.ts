@@ -64,6 +64,18 @@ export default part(
     'dr.by': 'by',
     'dr.protologue': 'Protologue (IPNI)',
     'dr.wcvp': 'WCVP',
+
+    // v3.1 item 1: the question sentence, crossfilter notes, zero-result help.
+    'ex.q.st.endemica': 'Endemic species',
+    'ex.q.st.nativa': 'Native species',
+    'ex.q.st.introducida': 'Introduced species',
+    'ex.q.st.nodata': 'Species with no origin data',
+    'ex.q.dep': 'with GBIF records in {dep}',
+    'ex.xfNote': 'This chart ignores its own filter, so every option stays visible to switch.',
+    'zero.title': 'What removing one filter would return',
+    'zero.lede': 'No species match every filter at once. Removing just one:',
+    'zero.without': 'without',
+    'map.rescaled': 'Scale 0–{max} of {full} species (rescaled to the filtered maximum)',
   },
   {
     'lf.tree': 'Árboles',
@@ -120,5 +132,16 @@ export default part(
     'dr.by': 'por',
     'dr.protologue': 'Protólogo (IPNI)',
     'dr.wcvp': 'WCVP',
+
+    'ex.q.st.endemica': 'Especies endémicas',
+    'ex.q.st.nativa': 'Especies nativas',
+    'ex.q.st.introducida': 'Especies introducidas',
+    'ex.q.st.nodata': 'Especies sin dato de origen',
+    'ex.q.dep': 'con registros GBIF en {dep}',
+    'ex.xfNote': 'Este gráfico ignora su propio filtro: todas las opciones siguen visibles para poder cambiar.',
+    'zero.title': 'Qué devolvería quitar un solo filtro',
+    'zero.lede': 'Ninguna especie cumple todos los filtros a la vez. Quitando solo uno:',
+    'zero.without': 'sin',
+    'map.rescaled': 'Escala 0–{max} de {full} especies (reescalada al máximo filtrado)',
   },
 );

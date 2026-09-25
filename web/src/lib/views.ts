@@ -9,8 +9,8 @@
  *
  * Bars grow with `transform: scaleX()` (compositor-only, CONCEPT-v2 law 1).
  */
-import { DECADE0, DECADES, type Aggregates, type Facets } from './facets';
-import type { State, Status } from './store';
+import { DECADE0, DECADES, aggregate, type Aggregates, type Facets } from './facets';
+import { EMPTY, type State, type Status } from './store';
 import { t, fmt, type Key, type Locale } from './i18n';
 import { isGroup, rawOf } from './growth';
 import { deptName } from './depts';
@@ -51,12 +51,88 @@ export function kpis(c: Ctx): string {
   return items.map(([v, l]) => `<div class="kpi"><b>${v}</b><span>${l}</span></div>`).join('');
 }
 
-/** "species with GBIF records in Loreto" / "… in Cusco or Puno". Two departments are a
- *  union in facets.ts (a species passes when its mask hits either), hence "or". */
-export function depKpiLabel(locale: Locale, dep: string[]): string {
+/** "Loreto" / "Cusco or Puno" (escaped). Two departments are a union in facets.ts
+ *  (a species passes when its mask hits either), hence "or". */
+export function deptListLabel(locale: Locale, dep: string[]): string {
   const names = dep.map((d) => esc(deptName(d)));
-  const list = names.length > 1 ? `${names.slice(0, -1).join(', ')} ${t(locale, 'ex.or')} ${names[names.length - 1]}` : names[0];
-  return t(locale, 'ex.kpiIn').replace('{dep}', list);
+  return names.length > 1 ? `${names.slice(0, -1).join(', ')} ${t(locale, 'ex.or')} ${names[names.length - 1]}` : names[0];
+}
+
+/** "species with GBIF records in Loreto" / "… in Cusco or Puno". */
+export function depKpiLabel(locale: Locale, dep: string[]): string {
+  return t(locale, 'ex.kpiIn').replace('{dep}', deptListLabel(locale, dep));
+}
+
+// ---- Filter clarity: question sentence + zero-result help (v3.1 item 1) -----------
+interface FilterPart { key: 'st' | 'lf' | 'ord' | 'fam' | 'dep' | 'y'; chip: string; plain: string; clear: Partial<State> }
+
+/** Every filter that narrows the species set (isFiltered's own dimensions, `sp`
+ *  excluded: picking a species opens the drawer, it never filters the counts),
+ *  each with a plain-language phrase for the question sentence (`chip`, may carry
+ *  markup) and a bare one for aria-labels and the zero-result list (`plain`). */
+function activeFilters(locale: Locale, s: State): FilterPart[] {
+  const out: FilterPart[] = [];
+  if (s.st) {
+    const label = t(locale, `ex.q.st.${s.st}` as Key);
+    out.push({ key: 'st', chip: label, plain: label, clear: { st: null } });
+  }
+  if (s.lf) {
+    const label = esc(lfLabel(locale, s.lf));
+    out.push({ key: 'lf', chip: label, plain: label, clear: { lf: null } });
+  }
+  if (s.ord) {
+    const label = esc(s.ord);
+    out.push({ key: 'ord', chip: `<i class="sci">${label}</i>`, plain: label, clear: { ord: null } });
+  }
+  if (s.fam) {
+    const label = esc(s.fam);
+    out.push({ key: 'fam', chip: `<i class="sci">${label}</i>`, plain: label, clear: { fam: null } });
+  }
+  if (s.dep.length) {
+    const list = deptListLabel(locale, s.dep);
+    out.push({ key: 'dep', chip: t(locale, 'ex.q.dep').replace('{dep}', list), plain: list, clear: { dep: [] } });
+  }
+  if (s.y0 != null || s.y1 != null) {
+    const yr = (v: number | null, dflt: string) => (v == null ? dflt : String(v));
+    const range = `${yr(s.y0, '…')}–${yr(s.y1, '…')}`;
+    out.push({ key: 'y', chip: `${t(locale, 'year.range')} ${range}`, plain: range, clear: { y0: null, y1: null } });
+  }
+  return out;
+}
+
+/** The question sentence above the grid: every active filter in plain language,
+ *  each removable (✕, aria-label), a "clear all" past one filter, ending in "→ N". */
+export function question(c: Ctx): string {
+  const n = fmt(c.locale);
+  const filters = activeFilters(c.locale, c.s);
+  const count = `<span class="q-count">→ ${n(c.agg.total)}</span>`;
+  if (!filters.length) return `<span class="chip-none">${t(c.locale, 'filters.none')}</span>${count}`;
+  const chips = filters
+    .map((f, i) => `${i ? '<span class="q-dot" aria-hidden="true">·</span>' : ''}` +
+      `<button type="button" class="chip" data-clear="${f.key}" aria-label="${t(c.locale, 'filters.remove')}: ${f.plain}"><span>${f.chip}</span><b aria-hidden="true">×</b></button>`)
+    .join('');
+  const clearAll = filters.length > 1 ? `<button type="button" class="chip clear-all" data-clear="all">${t(c.locale, 'filters.clear')}</button>` : '';
+  return chips + clearAll + count;
+}
+
+/** At 0 results: for each active filter, how many species removing only it would
+ *  return (facets.ts aggregate() is cheap enough to call once per filter). */
+export function zeroState(c: Ctx): string {
+  if (c.agg.total !== 0) return '';
+  const filters = activeFilters(c.locale, c.s);
+  if (!filters.length) return '';
+  const n = fmt(c.locale);
+  const rows = filters
+    .map((f) => {
+      const without = aggregate(c.f, { ...c.s, ...f.clear }).total;
+      return `<button type="button" class="zero-opt" data-clear="${f.key}">
+        <span>${t(c.locale, 'zero.without')} ${f.plain}</span><b class="mono">${n(without)}</b></button>`;
+    })
+    .join('');
+  return `<div class="zero-state" role="group" aria-label="${t(c.locale, 'zero.title')}">
+    <p class="zero-lede">${t(c.locale, 'zero.lede')}</p>
+    <div class="zero-list">${rows}</div>
+  </div>`;
 }
 
 // ---- Families: squarified treemap ---------------------------------------
@@ -274,14 +350,31 @@ export function paintMap(c: Ctx, records: Record<string, number>): MapPaint {
   return { cls, values, breaks };
 }
 
+// Unfiltered species max per department, per facet file: the reference the legend
+// compares against to say whether it rescaled (v3.1 item 1). A department filter alone
+// never shrinks it (byDept crossfilters its own dimension out), only taxon/status/year do.
+const fullMaxCache = new WeakMap<Facets, number>();
+function fullDeptMax(f: Facets): number {
+  let v = fullMaxCache.get(f);
+  if (v == null) { v = Math.max(0, ...aggregate(f, EMPTY).byDept); fullMaxCache.set(f, v); }
+  return v;
+}
+
 export function legend(c: Ctx, p: MapPaint, active: number | null): string {
   const n = fmt(c.locale);
   let prev = 0;
-  return `<span class="lg-unit">${t(c.locale, 'map.unitK')} <b>${t(c.locale, `map.unit.${c.s.m}` as Key)}</b></span>` + p.breaks
+  const bands = p.breaks
     .map((b, i) => {
       const lab = `${n(Math.round(prev))}–${n(Math.round(b))}`;
       prev = b;
       return `<button type="button" class="lg q${i}${active === i ? ' on' : ''}" data-band="${i}" aria-pressed="${active === i}" title="${lab}"><i></i><span>${i === 0 || i === 6 ? n(Math.round(i === 0 ? 0 : b)) : ''}</span></button>`;
     })
-    .join('') + `<span class="lg-none"><i></i>${t(c.locale, 'map.noData')}</span>`;
+    .join('');
+  const curMax = Math.max(0, ...Object.values(p.values));
+  const full = fullDeptMax(c.f);
+  const rescale = c.s.m === 'species' && curMax < full
+    ? `<p class="lg-rescale">${t(c.locale, 'map.rescaled').replace('{max}', n(curMax)).replace('{full}', n(full))}</p>`
+    : '';
+  return `<span class="lg-unit">${t(c.locale, 'map.unitK')} <b>${t(c.locale, `map.unit.${c.s.m}` as Key)}</b></span>` + bands +
+    `<span class="lg-none"><i></i>${t(c.locale, 'map.noData')}</span>` + rescale;
 }

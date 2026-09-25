@@ -174,6 +174,17 @@ export function rowsMatching(f: Facets, s: State): number[] {
   return out;
 }
 
+/** Family counts restricted to rows passing EVERY filter (unlike Aggregates.byFamily,
+ *  which excludes the family dimension on purpose so its own chart can crossfilter).
+ *  The department panel needs this strict version: its "top families" must never name
+ *  a family the panel's own species count didn't include (v3.1 item 1, "0 species"
+ *  beside "Poaceae 20"). Counts here always sum to `aggregate(f, s).total`. */
+export function familyCounts(f: Facets, s: State): Map<number, number> {
+  const m = new Map<number, number>();
+  for (const i of rowsMatching(f, s)) if (f.fam[i] >= 0) m.set(f.fam[i], (m.get(f.fam[i]) ?? 0) + 1);
+  return m;
+}
+
 /** Two-department comparison over the rows passing every non-department filter. */
 export function compare(f: Facets, s: State, a: string, b: string) {
   const ia = f.depts.indexOf(a), ib = f.depts.indexOf(b);
