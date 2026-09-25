@@ -54,7 +54,7 @@ export function kpis(c: Ctx): string {
 /** "species with GBIF records in Loreto" / "… in Cusco or Puno". Two departments are a
  *  union in facets.ts (a species passes when its mask hits either), hence "or". */
 export function depKpiLabel(locale: Locale, dep: string[]): string {
-  const names = dep.map(deptName);
+  const names = dep.map((d) => esc(deptName(d)));
   const list = names.length > 1 ? `${names.slice(0, -1).join(', ')} ${t(locale, 'ex.or')} ${names[names.length - 1]}` : names[0];
   return t(locale, 'ex.kpiIn').replace('{dep}', list);
 }

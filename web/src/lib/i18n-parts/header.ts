@@ -5,8 +5,9 @@ export default part(
   {
     'hdr.lang': 'Language',
     'hdr.langGroup': 'Language: English or Spanish',
-    'hdr.langCurrent': 'English (current)',
-    'hdr.langTo': 'Read in Spanish',
+    'hdr.langCurrent': 'current',
+    // Read in the TARGET locale (t(other, …)): the link carries lang={other}.
+    'hdr.langSelf': 'Read in English',
     'hdr.theme': 'Theme',
     'hdr.dark': 'dark',
     'hdr.light': 'light',
@@ -16,8 +17,8 @@ export default part(
   {
     'hdr.lang': 'Idioma',
     'hdr.langGroup': 'Idioma: español o inglés',
-    'hdr.langCurrent': 'Español (actual)',
-    'hdr.langTo': 'Leer en inglés',
+    'hdr.langCurrent': 'actual',
+    'hdr.langSelf': 'Leer en español',
     'hdr.theme': 'Tema',
     'hdr.dark': 'oscuro',
     'hdr.light': 'claro',

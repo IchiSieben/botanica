@@ -93,3 +93,15 @@ test('store: URL round-trip and sanitising', () => {
   assert.equal(serialize(s), '?k=fungi&dep=LORETO%2CCUSCO&y0=1900&m=records');
   assert.equal(serialize(EMPTY), '');
 });
+
+test('sources.ts versions and DOIs match data/raw/manifest.json', async () => {
+  const { SOURCES } = await import('../src/lib/sources.ts');
+  const m = json('../../data/raw/manifest.json');
+  const count = (n: number) => n.toLocaleString('en-US');
+  for (const [key, entry] of [['gbifPlantae', m.gbif], ['gbifFungi', m.gbif_fungi]] as const) {
+    assert.equal(SOURCES[key].doi, entry.doi, key);
+    assert.ok(SOURCES[key].version.includes(`${count(entry.n)} records`), `${key}: ${SOURCES[key].version} vs n=${entry.n}`);
+  }
+  assert.equal(SOURCES.wcvp.doi, m.wcvp.doi);
+  assert.ok(SOURCES.wcvp.version.includes(m.wcvp.retrieved_at.slice(0, 10)), 'wcvp snapshot date');
+});

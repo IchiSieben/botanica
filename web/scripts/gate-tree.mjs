@@ -176,6 +176,20 @@ for (const locale of LOCALES) {
   }
 }
 
+// Kingdom switch after an interaction: the other kingdom's tree must still mount (review v3 #2).
+console.log('\nkingdom switch after a click');
+{
+  const { page, ctx, errors } = await open(`${BASE}filogenia/`, 1280);
+  await page.waitForSelector('#phylo-plantae [data-ord]', { timeout: 20000 });
+  await page.click('#phylo-plantae [data-ord]');
+  await page.waitForFunction(() => location.search.includes('ord='));
+  await page.click('[data-kset="fungi"]');
+  const ready = await page.waitForFunction(() => { const c = document.querySelector('#phylo-fungi-chart'); return c && c.dataset.ready && c.querySelector('canvas'); }, null, { timeout: 15000 }).then(() => true, () => false);
+  check(ready, 'fungi tree mounts after an order click in plantae');
+  errors.forEach((e) => fail(`kingdom switch: ${e}`));
+  await ctx.close();
+}
+
 // Touch targets of the tree controls (touch emulation, so (pointer: coarse) applies).
 console.log('\ntouch targets');
 for (const locale of LOCALES) {

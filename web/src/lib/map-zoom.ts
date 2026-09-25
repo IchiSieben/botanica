@@ -146,7 +146,13 @@ export function mapZoom(vp: HTMLElement, layer: HTMLElement, onChange?: (k: numb
   });
   const end = (e: PointerEvent) => {
     if (!pts.delete(e.pointerId)) return;
-    if (pts.size < 2) pinch = null;
+    if (pinch && pts.size < 2) {
+      pinch = null;
+      swallow = true; // the click that ends a pinch is not a selection
+      // The finger still down keeps panning from where it is now (already captured).
+      const [[id, p] = []] = [...pts];
+      if (id !== undefined && p) { start = { id, x: p.x, y: p.y, tx: x, ty: y }; dragging = true; vp.classList.add('dragging'); }
+    }
     if (dragging && (!start || start.id === e.pointerId)) {
       dragging = false;
       swallow = true;

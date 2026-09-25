@@ -11,6 +11,8 @@
  * does not have to step through every intermediate value.
  */
 
+import { DEPT_NAME } from './depts.ts';
+
 export type Status = 'endemica' | 'nativa' | 'introducida' | 'nodata';
 export type Metric = 'species' | 'records' | 'coverage';
 
@@ -53,7 +55,8 @@ export function parse(search: string): State {
   const m = p.get('m') as Metric | null;
   return {
     k,
-    dep: (p.get('dep') ?? '').split(',').map((s) => s.trim().toUpperCase()).filter(Boolean).slice(0, 2),
+    // Only known departments: the key is shown in the UI, so a crafted ?dep= must not reach the DOM.
+    dep: (p.get('dep') ?? '').split(',').map((s) => s.trim().toUpperCase()).filter((d) => d in DEPT_NAME).slice(0, 2),
     ord: p.get('ord') || null,
     fam: p.get('fam') || null,
     st: st && STATUSES.includes(st) ? st : null,

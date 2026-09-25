@@ -235,7 +235,7 @@ def build_protologue(con: duckdb.DuckDBPyConnection, index: dict) -> dict:
             WHERE a.taxon_rank = 'Species'
         )
         SELECT taxon_name, y, ipni_id, taxon_authors FROM c
-        ORDER BY taxon_name, coalesce(y, 9999), pref, ipni_id
+        ORDER BY taxon_name, coalesce(y, 9999), pref, ipni_id NULLS LAST, taxon_authors
         """
     ).fetchall():
         if name not in best:

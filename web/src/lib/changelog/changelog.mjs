@@ -9,6 +9,11 @@ import { readFileSync } from 'node:fs';
 import { execFileSync } from 'node:child_process';
 
 const SECTION_TYPES = ['Added', 'Changed', 'Deprecated', 'Removed', 'Fixed', 'Security'];
+// Localised Keep a Changelog headings -> canonical type. The heading text itself is kept for display.
+const SECTION_ALIASES = {
+  Agregado: 'Added', Añadido: 'Added', Cambiado: 'Changed', Obsoleto: 'Deprecated',
+  Eliminado: 'Removed', Corregido: 'Fixed', Seguridad: 'Security',
+};
 
 /** Escape a plain string for safe HTML text content. */
 function escapeHTML(s) {
@@ -102,18 +107,25 @@ export function parseChangelog(markdown) {
     }
 
     // ### Added / Changed / Fixed / Removed / Deprecated / Security
-    const sectionMatch = /^###\s+(\w+)/.exec(line);
-    if (sectionMatch && current && SECTION_TYPES.includes(sectionMatch[1])) {
+    const sectionMatch = /^###\s+(\S+)\s*$/u.exec(line);
+    const sectionType = sectionMatch && (SECTION_ALIASES[sectionMatch[1]] ?? sectionMatch[1]);
+    if (sectionMatch && current && SECTION_TYPES.includes(sectionType)) {
       flushNotes();
-      currentSection = { type: sectionMatch[1], items: [] };
+      currentSection = { type: sectionType, title: sectionMatch[1], items: [] };
       current.sections.push(currentSection);
       continue;
     }
 
-    // - item
+    // - item (raw Markdown until the end of the parse, so wrapped lines can join it)
     const itemMatch = /^[-*]\s+(.*)$/.exec(line);
     if (itemMatch && current && currentSection) {
-      currentSection.items.push(inlineMarkdownToHTML(itemMatch[1].trim()));
+      currentSection.items.push(itemMatch[1].trim());
+      continue;
+    }
+
+    // Indented continuation of a wrapped item.
+    if (current && currentSection && currentSection.items.length && /^\s{2,}\S/.test(line)) {
+      currentSection.items[currentSection.items.length - 1] += ` ${line.trim()}`;
       continue;
     }
 
@@ -125,8 +137,11 @@ export function parseChangelog(markdown) {
   }
   flushNotes();
 
-  // Trim leading/trailing blank lines left in notes.
-  for (const e of entries) e.notes = e.notes.replace(/^\n+|\n+$/g, '');
+  // Trim leading/trailing blank lines left in notes; items become safe HTML.
+  for (const e of entries) {
+    e.notes = e.notes.replace(/^\n+|\n+$/g, '');
+    for (const sec of e.sections) sec.items = sec.items.map(inlineMarkdownToHTML);
+  }
 
   return entries;
 }
@@ -218,14 +233,14 @@ export function renderChangelogHTML(entries, { labels = {}, repoUrl } = {}) {
     const sections = entry.sections
       .map((section) => {
         const items = section.items.map((item) => `<li>${item}</li>`).join('');
-        return `<h3>${escapeHTML(section.type)}</h3><ul>${items}</ul>`;
+        return `<h3>${escapeHTML(section.title ?? section.type)}</h3><ul>${items}</ul>`;
       })
       .join('');
 
     const notes = entry.notes ? `<p class="changelog-notes">${escapeHTML(entry.notes)}</p>` : '';
 
     return (
-      `<article id="${id}" class="changelog-entry">` +
+      `<article id="${escapeHTML(id)}" class="changelog-entry">` +
       `<h2>${escapeHTML(heading)}</h2>` +
       `<p class="changelog-meta">${time}${link}</p>` +
       notes +

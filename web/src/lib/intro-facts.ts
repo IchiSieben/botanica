@@ -207,18 +207,18 @@ export function computeFacts(inp: IntroInputs): IntroData {
       detail: { a: top3[0].department, b: top3[1].department, c: top3[2].department, total: totalRecords },
     },
     { id: 'since2000', value: since2000, format: 'int', source: 'wcvp', detail: { from: 2000, pct: pct(since2000, years.length), median: agg.medianYear ?? 0 } },
-    { id: 'ruizPavon', value: strict, format: 'int', source: 'ipni', detail: { y0: rpY0, peak: rpPeakYear, peakN: rpPeakN } },
+    { id: 'ruizPavon', value: strict, format: 'int', source: 'wcvp', detail: { y0: rpY0, peak: rpPeakYear, peakN: rpPeakN } },
     { id: 'fungi', value: fk.species, format: 'int', source: 'gbifFungi', detail: { records: fk.occurrences } },
   ];
 
   const snap = snapshotDate();
   const milestones: Milestone[] = [
     { id: 'earliest', year: y0, when: String(y0), source: 'wcvp', detail: { n: y0Count } },
-    { id: 'rp-first', year: rpY0, when: String(rpY0), source: 'ipni', detail: { n: rpFirstN } },
-    { id: 'rp-peak', year: rpPeakYear, when: String(rpPeakYear), source: 'ipni', detail: { n: rpPeakN, total: strict } },
+    { id: 'rp-first', year: rpY0, when: String(rpY0), source: 'wcvp', detail: { n: rpFirstN } },
+    { id: 'rp-peak', year: rpPeakYear, when: String(rpPeakYear), source: 'wcvp', detail: { n: rpPeakN, total: strict } },
     { id: 'peak-decade', year: peakDecade, when: `${peakDecade}s`, source: 'wcvp', detail: { n: peakDecadeN } },
     { id: 'since2000', year: 2000, when: `2000–${yMax}`, source: 'wcvp', detail: { n: since2000 } },
-    { id: 'snapshot', year: Number(snap.slice(0, 4)), when: snap, source: 'gbifPlantae', detail: {} },
+    { id: 'snapshot', year: Number(snap.slice(0, 4)), when: snap, source: 'wcvp', detail: {} },
     { id: 'releases', year: Number(RELEASES[0].date.slice(0, 4)), when: RELEASES[0].date, source: 'changes', detail: { r1: RELEASES[0].version, r2: RELEASES[1].version, r3: RELEASES[2].version, v1: RELEASES[0].date, v3: RELEASES[2].date } },
   ].sort((a, b) => a.year - b.year || 0) as Milestone[];
 

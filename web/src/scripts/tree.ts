@@ -297,8 +297,10 @@ export function bootTree() {
   }
 
   async function syncFocus(k: K, s: State, { now = false } = {}) {
-    const tr = treeOf(k);
-    if (!tr.chart) return; // mountChart syncs when it is done
+    // get, not treeOf: creating the hidden kingdom's entry here would make render() skip
+    // io.observe for it, and that tree would never mount (blank after a kingdom switch).
+    const tr = trees.get(k);
+    if (!tr?.chart) return; // mountChart syncs when it is done
     const token = ++tr.seq;
     if (!now) await afterNextPaint();
     if (token !== tr.seq || !tr.chart) return;

@@ -245,6 +245,20 @@ for (const [locale, L] of Object.entries(LOCALES)) {
 console.log('\nconsole');
 allErrors.length ? allErrors.forEach((e) => fail(e)) : ok('0 console errors, 0 page errors, 0 HTTP ≥ 400');
 
+// A crafted ?dep= must never reach the DOM as markup (review v3 #1).
+console.log('\nhostile ?dep=');
+{
+  const ctx = await browser.newContext({ viewport: { width: 1280, height: 900 } });
+  await ctx.addInitScript(() => { localStorage.setItem('ic7-tutorial:seen:botanica-explorar', '1'); window.__pwned = 0; });
+  const page = await ctx.newPage();
+  const payload = encodeURIComponent('<img src=x onerror=&#119;indow.__pwned=1>,LORETO');
+  await page.goto(`${BASE}?dep=${payload}`, { waitUntil: 'networkidle' });
+  await page.waitForTimeout(500);
+  const [pwned, imgs, dep] = await page.evaluate(() => [window.__pwned, document.querySelectorAll('#kpis img').length, new URLSearchParams(location.search).get('dep')]);
+  pwned === 0 && imgs === 0 ? ok(`payload inert (dep kept: ${dep})`) : fail(`?dep= injection: pwned=${pwned}, imgs=${imgs}`);
+  await ctx.close();
+}
+
 await browser.close();
 console.log(failures.length ? `\nEXPLORER GATE FAILED: ${failures.length}` : '\nEXPLORER GATE PASSED');
 process.exit(failures.length ? 1 : 0);

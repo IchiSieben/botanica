@@ -48,6 +48,9 @@ for (const p of PAGES) {
 
   const v3 = await page.locator('#v3\\.0\\.0').count();
   v3 === 1 ? ok('article#v3.0.0 present') : fail(`${url}: article#v3.0.0 not found`);
+  // Structure, not just presence: 3 sections and no raw-markdown notes block (ES headings, wrapped items).
+  const [secs, items, notes] = await page.$eval('article[id="v3.0.0"]', (a) => [a.querySelectorAll('h3').length, a.querySelectorAll('li').length, a.querySelectorAll('.changelog-notes').length]);
+  secs === 3 && items >= 10 && notes === 0 ? ok(`v3.0.0: ${secs} sections, ${items} items, no notes`) : fail(`${url}: v3.0.0 has ${secs} sections, ${items} items, ${notes} notes`);
 
   const canonical = await page.getAttribute('link[rel=canonical]', 'href');
   const expectedCanonical = `${SITE}${p.path}`;
