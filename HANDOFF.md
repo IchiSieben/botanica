@@ -1,5 +1,19 @@
 # HANDOFF — Botánica v2 (explorable atlas)
 
+## v3-A IN PROGRESS (2026-09-24) — contract: SPEC.md
+- Dossier `docs/RESEARCH-PERU.md`: NOT FOUND (disk, Drive by name and full text, Gmail, Notion).
+  Intro uses only computed own-data figures; 1777 anchor and ROADMAP.md wait for it.
+- Done on main: SPEC `91b14a5`; contracts `7e1b031` (lib/sources.ts with verified DOIs,
+  ChartFrame, `npm run check:dois`, i18n-parts/*); header toggles `6d2754f`; growth-form groups
+  + IPNI protologue export `2b8ef52`; changelog + /cambios/ merged `0790a14`, footer link `4102879`.
+- Agents in worktrees (branches `worktree-agent-*`): tree (item 6), explorer (2,3,4,7,9),
+  intro (1). Each writes `web/scripts/gate-<feature>.mjs`; wire them into the gate at merge.
+- Tags proposed: v1.0.0 → 1b97936 (CITATION date-released 2026-09-22), v2.0.0 → 04e07e8 (went
+  live), v3.0.0 → release commit. CITATION.cff → 3.0.0.
+- Explained for item 4: since v2 a species counts in a department only if it is in the WCVP
+  checklist for Peru AND has a GBIF record there; v1 counted every GBIF name (Loreto 7,905 →
+  5,821, AUDIT-v2 §2).
+
 ## LIVE (2026-09-24)
 - https://ichisieben.dev/botanica/ (EN) · https://ichisieben.dev/botanica/es/ (ES)
 - Botanica `04e07e8` (site + canonical + AA treemap ink), mirrored by Landing `43fb9bc`
