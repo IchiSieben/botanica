@@ -16,11 +16,14 @@ import * as V from '../lib/views';
 import { t, fmt, type Locale } from '../lib/i18n';
 import { deptName } from '../lib/depts';
 import { afterPaint } from '../lib/after-paint';
+import { mapZoom } from '../lib/map-zoom';
 
 interface Config { orderColor: Record<string, string>; records: Record<'plantae' | 'fungi', Record<string, number>>; base: string }
 type SpRow = [string, number, number, number, [number, number][], number, number];
 interface Names { families: string[]; orders: string[]; depts: string[]; lifeforms: string[]; rows: SpRow[]; meta: { flags: Facets['meta']['flags'] }; byName: Map<string, number> }
 type K = 'plantae' | 'fungi';
+/** data/protologue-plantae.json: rows aligned with species-plantae.json. */
+interface Proto { rows: [ipniId: string, authors: string][] }
 
 const $ = <T extends Element = HTMLElement>(sel: string, root: ParentNode = document) => root.querySelector(sel) as T;
 
@@ -122,6 +125,8 @@ export function boot() {
     readout: $('#readout'), depSelect: $<HTMLSelectElement>('#dep-select'), depDetail: $('#dep-detail'),
     drawer: $('#drawer'), drBody: $('#dr-body'), y0: $<HTMLSelectElement>('#y0'), y1: $<HTMLSelectElement>('#y1'),
     play: $<HTMLButtonElement>('#play'), locked: $('#map-locked'), hint: $('#map-hint'),
+    why: $<HTMLDetailsElement>('#dep-why'), mapHowto: $('#cf-map [data-cf-howto]'),
+    vp: $('#map-vp'), fs: $<HTMLButtonElement>('#map-fs'), mapFrame: $('#cf-map'),
   };
   const paths = [...el.map.querySelectorAll<SVGPathElement>('path[data-dep]')];
   let lastPaint: V.MapPaint | null = null;
@@ -172,6 +177,8 @@ export function boot() {
       b.disabled = locked && b.dataset.m !== 'species';
     });
     el.locked.hidden = !locked || s.m === 'species';
+    // The WCVP ∩ GBIF rule (and the Loreto numbers) are about plants.
+    el.why.hidden = !(s.dep.length && s.k === 'plantae');
     $('.fungi-only', root).hidden = s.k !== 'fungi';
     el.y0.value = s.y0 != null ? String(s.y0) : '';
     el.y1.value = s.y1 != null ? String(s.y1) : '';
@@ -192,6 +199,7 @@ export function boot() {
     const { s, f } = ctx;
     const sp = s.sp && names[s.k] ? names[s.k]!.byName.get(s.sp) : undefined;
     root.classList.toggle('map-species', sp != null);
+    el.mapHowto.textContent = t(locale, sp != null ? 'map.howto.sp' : `map.howto.${s.m}`);
     if (sp != null) {
       // Species mode: where this one species was recorded.
       const mask = f.mask[sp];
@@ -236,7 +244,7 @@ export function boot() {
       const opts = f.depts.filter((x) => x !== d)
         .map((x) => `<option value="${V.esc(x)}">${V.esc(deptName(x))}</option>`).join('');
       morph(el.depDetail, `
-        <div class="dep-head"><h3>${V.esc(deptName(d))}</h3>
+        <div class="dep-head"><h4>${V.esc(deptName(d))}</h4>
           <button type="button" class="btn" data-clear="dep">${t(locale, 'dep.clear')}</button></div>
         <p class="dep-nums"><b>${n(agg.total)}</b> ${t(locale, 'dep.species')}${metricLocked(s) ? '' : ` · <b>${n(rec[d] ?? 0)}</b> ${t(locale, 'dep.records')}`}</p>
         ${top.length ? `<p class="label">${t(locale, 'dep.topFamilies')}</p><ol class="toplist">${top.map(([i, v]) =>
@@ -252,7 +260,7 @@ export function boot() {
     const fams = (xs: { family: string; species: number }[]) =>
       xs.map((x) => `<li><button type="button" class="linkish" data-fam="${V.esc(x.family)}">${V.esc(x.family)}</button> <span class="mono">${n(x.species)}</span></li>`).join('');
     morph(el.depDetail, `
-      <div class="dep-head"><h3>${t(locale, 'cmp.title')}</h3>
+      <div class="dep-head"><h4>${t(locale, 'cmp.title')}</h4>
         <button type="button" class="btn" data-clear="dep">${t(locale, 'dep.clear')}</button></div>
       <div class="cmp-bar" aria-hidden="true"><i class="a" style="width:${w(c.onlyA)}%"></i><i class="ab" style="width:${w(c.both)}%"></i><i class="b" style="width:${w(c.onlyB)}%"></i></div>
       <dl class="cmp-nums">
@@ -271,7 +279,7 @@ export function boot() {
     if (s.ord) c.push(['ord', s.ord]);
     if (s.fam) c.push(['fam', s.fam]);
     if (s.st) c.push(['st', t(locale, `st.${s.st}`)]);
-    if (s.lf) c.push(['lf', s.lf]);
+    if (s.lf) c.push(['lf', V.lfLabel(locale, s.lf)]);
     if (s.y0 != null || s.y1 != null) c.push(['y', `${t(locale, 'year.range')} ${yr(s.y0, '…')}–${yr(s.y1, '…')}`]);
     if (s.sp) c.push(['sp', s.sp]);
     if (!c.length) return `<span class="chip-none">${t(locale, 'filters.none')}</span>`;
@@ -279,6 +287,32 @@ export function boot() {
       `<button type="button" class="chip" data-clear="${k}" aria-label="${t(locale, 'filters.remove')}: ${V.esc(label)}"><span>${V.esc(label)}</span><b aria-hidden="true">×</b></button>`).join('') +
       (c.length > 1 ? `<button type="button" class="chip clear-all" data-clear="all">${t(locale, 'filters.clear')}</button>` : '');
   }
+
+  // Protologue (author + IPNI id): plants only, fetched once, on the first drawer open.
+  let proto: Proto | null = null;
+  let protoReq: Promise<void> | null = null;
+  const loadProto = () => {
+    protoReq ??= fetch(`${cfg.base}data/protologue-plantae.json`, { priority: 'low' })
+      .then((r) => { if (!r.ok) throw new Error(`${r.status} protologue`); return r.json() as Promise<Proto>; })
+      .then((d) => {
+        proto = d;
+        // Patch the open drawer in place (a full re-render would wait for the next state).
+        const s = store.get(), i = s.k === 'plantae' && s.sp ? names.plantae?.byName.get(s.sp) : undefined;
+        const slot = el.drBody.querySelector<HTMLElement>('[data-proto]');
+        if (i != null && slot) slot.innerHTML = protoHtml(i);
+      })
+      .catch((e) => { protoReq = null; console.warn(e); });
+    return protoReq;
+  };
+  function protoHtml(i: number): string {
+    const row = proto?.rows[i];
+    if (!row) return '';
+    const [ipni, authors] = row;
+    return (authors ? ` ${t(locale, 'dr.by')} <span class="dr-auth">${V.esc(authors)}</span>` : '') +
+      (ipni ? ` · <a class="dr-ipni" href="https://www.ipni.org/n/${encodeURIComponent(ipni)}" rel="noopener" target="_blank">${t(locale, 'dr.protologue')}</a>` : '');
+  }
+
+  const LEAF = '<svg viewBox="0 0 24 24" aria-hidden="true"><path d="M12 21V11m0 0C12 6 8 3 4 3c0 4 3 8 8 8Zm0 0c0-4 3-7 8-7 0 4-3 7-8 7Z" fill="none" stroke="currentColor" stroke-width="1.4" stroke-linejoin="round"/></svg>';
 
   function drawer(s: State, f: Facets) {
     const nm = names[s.k];
@@ -293,22 +327,34 @@ export function boot() {
     const r = nm!.rows[i];
     const fam = r[1] >= 0 ? nm!.families[r[1]] : null;
     const ord = r[2] >= 0 ? nm!.orders[r[2]] : null;
-    const life = r[6] >= 0 ? nm!.lifeforms[r[6]] : null;
+    // Growth form: the group from the facets, the raw WCVP string from the species index.
+    const group = f.life[i] >= 0 ? f.lifeforms[f.life[i]] : null;
+    const raw = r[6] >= 0 ? nm!.lifeforms[r[6]] : null;
     const F = nm!.meta.flags;
     const year = f.year?.[i];
+    const plant = s.k === 'plantae';
+    if (plant && !proto) void loadProto();
     const tags = [
       r[5] & F.endemic ? `<span class="tag endem">${t(locale, 'sp.endemic')}</span>` : '',
       r[5] & F.native ? `<span class="tag">${t(locale, 'sp.native')}</span>` : '',
       r[5] & F.introduced ? `<span class="tag intro">${t(locale, 'sp.introduced')}</span>` : '',
     ].join('');
     const max = r[4][0]?.[1] ?? 1;
+    const genus = r[0].split(' ')[0];
     el.drBody.innerHTML = `
-      <p class="label">${V.esc(ord ?? '—')} › ${V.esc(fam ?? '—')}</p>
-      <h2 id="dr-title" class="sci">${V.esc(r[0])}</h2>
+      <div class="dr-head">
+        <figure class="dr-photo" data-photo-slot aria-hidden="true">${LEAF}</figure>
+        <div class="dr-id">
+          <h2 id="dr-title" class="sci">${V.esc(r[0])}</h2>
+          <ol class="dr-crumbs" aria-label="${t(locale, 'dr.taxonomy')}">
+            <li>${plant ? 'Plantae' : 'Fungi'}</li><li>${V.esc(ord ?? '—')}</li><li>${V.esc(fam ?? '—')}</li><li class="g">${V.esc(genus)}</li>
+          </ol>
+        </div>
+      </div>
       ${tags ? `<div class="tags">${tags}</div>` : ''}
+      ${year ? `<p class="dr-desc">${t(locale, 'dr.described').replace('{year}', `<b class="mono">${year}</b>`)}<span data-proto>${plant ? protoHtml(i) : ''}</span></p>` : ''}
       <dl class="dr-facts">
-        ${year ? `<div><dt>${t(locale, 'sp.year')}</dt><dd class="mono">${year}</dd></div>` : ''}
-        ${life ? `<div><dt>${t(locale, 'sp.lifeform')}</dt><dd>${V.esc(life)}</dd></div>` : ''}
+        ${group ? `<div><dt>${t(locale, 'sp.lifeform')}</dt><dd><span class="dr-lf" title="${V.esc(`${t(locale, 'lf.rawOne')}: ${raw ?? '—'}`)}">${V.esc(V.lfLabel(locale, group))}</span>${raw ? `<span class="dr-sub">${t(locale, 'dr.wcvp')}: ${V.esc(raw)}</span>` : ''}</dd></div>` : ''}
         <div><dt>${t(locale, 'sp.records')}</dt><dd class="mono">${r[3] ? n(r[3]) : t(locale, 'sp.noRecords')}</dd></div>
       </dl>
       ${r[4].length
@@ -409,6 +455,28 @@ export function boot() {
       ? `${deptName(d)} · ${n(v ?? 0)} ${t(locale, `map.m.${s.m === 'species' || metricLocked(s) ? 'species' : s.m}`)}${metricLocked(s) ? '' : ` · ${n(rec)} ${t(locale, 'dep.records')}`}`
       : deptName(d);
   };
+  // Zoom, pan, fullscreen (lib/map-zoom.ts). Buttons live in the frame's tools.
+  const zoom = mapZoom(el.vp, $('#map-zoom'));
+  root.querySelectorAll<HTMLButtonElement>('[data-zoom]').forEach((b) => b.addEventListener('click', () => {
+    const a = b.dataset.zoom;
+    if (a === 'in') zoom.zoomIn();
+    else if (a === 'out') zoom.zoomOut();
+    else zoom.reset();
+  }));
+  if (!document.fullscreenEnabled) el.fs.hidden = true;
+  el.fs.addEventListener('click', () => {
+    if (document.fullscreenElement) void document.exitFullscreen();
+    else void el.mapFrame.requestFullscreen().catch((e) => console.warn(e));
+  });
+  document.addEventListener('fullscreenchange', () => {
+    const on = document.fullscreenElement === el.mapFrame;
+    press(el.fs, on);
+    const label = el.fs.dataset[on ? 'on' : 'off']!;
+    el.fs.setAttribute('aria-label', label);
+    el.fs.title = label;
+    requestAnimationFrame(() => zoom.refit());
+  });
+
   el.map.addEventListener('pointerover', (e) => readout((e.target as Element).closest('[data-dep]')));
   el.map.addEventListener('pointerleave', () => readout(null));
   el.map.addEventListener('focusin', (e) => readout((e.target as Element).closest('[data-dep]')));
