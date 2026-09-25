@@ -4,6 +4,38 @@ All notable changes to Botánica are documented here. Format:
 [Keep a Changelog 1.1.0](https://keepachangelog.com/en/1.1.0/). Versioning:
 [Semantic Versioning](https://semver.org/).
 
+## [3.1.0] - 2026-09-25
+
+### Added
+- The intro now mixes the atlas's own figures with cited facts from the research dossier
+  (megadiversity, altitude range, protected areas, epiphytes, undescribed Amazonian trees), and
+  shows the Red Book's 27.9 % endemism beside the atlas's 34.9 % with the reason they differ.
+  Every number links to its source.
+- A timeline from 1777 (Ruiz, Pavón and Dombey) to 2026, with cited historical milestones and
+  milestones computed from the checklist.
+- `ROADMAP.md`, the expansion plan, one country per version.
+- A sentence above the explorer that reads every active filter in plain language and gives the
+  result count; each part can be removed on its own.
+- When a combination returns nothing, the explorer lists what removing each filter would return.
+- Every chart says that it ignores its own filter, and panels that changed flash briefly.
+- The map legend says when its scale is rescaled to the filtered maximum.
+- A tour step that explains how filters work together.
+- A zoomable sunburst in the taxonomy tree (click to zoom, breadcrumb to go back), and an optional
+  3D view on capable devices, loaded only when chosen.
+- The species page lists every species with virtual scrolling, in a list or a grid, with sort
+  options and filters for endemic species, department and family.
+- The species panel now has a small department map, the species' place on the year-described
+  timeline, other species of the same genus, and links to IPNI, GBIF and POWO.
+
+### Changed
+- The taxonomy tree opens in the linear view, and its introduction names the clades.
+- The tree, the orders list and the species-per-department bars fit in one screen at 1440×900.
+- The department panel's top families come from the same filtered species as its count.
+- The species page introduction follows the Plants/Fungi toggle.
+
+### Removed
+- The radial tree view (replaced by the sunburst; old links open the sunburst).
+
 ## [3.0.0] - 2026-09-24
 
 ### Added
