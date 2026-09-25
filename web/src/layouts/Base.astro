@@ -10,7 +10,7 @@ import { KINGDOMS } from '../lib/kingdoms';
 
 interface Props {
   locale: Locale;
-  page: 'explore' | 'species' | 'tree';
+  page: 'explore' | 'species' | 'tree' | 'changes';
   title?: string;
   description?: string;
 }
@@ -22,7 +22,7 @@ const nav = [
   { id: 'species', href: localePath(locale, 'especies/'), label: t(locale, 'nav.species') },
   { id: 'tree', href: localePath(locale, 'filogenia/'), label: t(locale, 'nav.tree') },
 ];
-const slug = { explore: '', species: 'especies/', tree: 'filogenia/' }[page];
+const slug = { explore: '', species: 'especies/', tree: 'filogenia/', changes: 'cambios/' }[page];
 const other: Locale = locale === 'en' ? 'es' : 'en';
 const abs = (l: Locale) => new URL(localePath(l, slug), Astro.site).href;
 ---

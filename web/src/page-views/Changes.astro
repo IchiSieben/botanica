@@ -1,0 +1,63 @@
+---
+/**
+ * /cambios/ — the changelog page. Reads CHANGELOG.md (EN) or CHANGELOG.es.md
+ * (ES) from the repo root and git tags, both at build time, via the vendored
+ * shared/changelog module (see src/lib/changelog/UPSTREAM.md).
+ *
+ * Path resolution: `process.cwd()` is `web/` during `npm run build` (Astro
+ * runs from the project's own directory), so the changelog file and the git
+ * repo root are both one level up. `import.meta.url` was considered instead,
+ * but Vite rewrites it during the build and can resolve to the output dir,
+ * not the source tree — `process.cwd()` is the one that matches `npm run build`.
+ */
+import path from 'node:path';
+import Base from '../layouts/Base.astro';
+import { loadChangelog, renderChangelogHTML } from '../lib/changelog/changelog.mjs';
+import '../lib/changelog/changelog.css';
+import { t, type Locale } from '../lib/i18n';
+
+const { locale } = Astro.props as { locale: Locale };
+
+const REPO_ROOT = path.resolve(process.cwd(), '..');
+const REPO_URL = 'https://github.com/IchiSieben/botanica';
+const file = path.resolve(REPO_ROOT, locale === 'es' ? 'CHANGELOG.es.md' : 'CHANGELOG.md');
+const sourceHref = `${REPO_URL}/blob/main/${locale === 'es' ? 'CHANGELOG.es.md' : 'CHANGELOG.md'}`;
+
+const entries = loadChangelog({ file, cwd: REPO_ROOT });
+const html = renderChangelogHTML(entries, {
+  repoUrl: REPO_URL,
+  labels: {
+    unreleased: t(locale, 'changes.unreleased'),
+    viewTag: t(locale, 'changes.viewTag'),
+    viewCommit: t(locale, 'changes.viewCommit'),
+  },
+});
+---
+
+<Base title={`${t(locale, 'changes.title')} — Botánica`} locale={locale} page="changes">
+  <section class="wrap changes">
+    <header>
+      <h1>{t(locale, 'changes.title')}</h1>
+      <p class="lede">
+        {t(locale, 'changes.lede')}{' '}
+        <a href={sourceHref} rel="noopener">{t(locale, 'changes.ledeLink')}</a>{' '}
+        {t(locale, 'changes.ledeSuffix')}
+      </p>
+    </header>
+    <div class="log" set:html={html} />
+  </section>
+</Base>
+
+<style>
+  .changes { display: flex; flex-direction: column; gap: 20px; padding-top: 32px; padding-bottom: 48px; }
+  .changes h1 { font-size: clamp(2rem, 1.2rem + 3vw, 3rem); letter-spacing: -0.02em; }
+  .changes .lede { margin-top: 10px; max-width: 64ch; color: rgb(var(--muted)); }
+  .changes .lede a { color: rgb(var(--accent)); }
+  .log {
+    --changelog-fg: rgb(var(--fg));
+    --changelog-dim: rgb(var(--muted));
+    --changelog-border: rgb(var(--border));
+    --changelog-accent: rgb(var(--accent));
+    max-width: 72ch;
+  }
+</style>
