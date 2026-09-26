@@ -36,6 +36,12 @@ export default part(
     'species.filters.clear': 'Clear filters',
     'species.grid.records': 'records',
     'species.grid.noYear': 'year unknown',
+    // v3.2 B2: row and card copy, detail sheet.
+    'species.row.record': 'record',
+    'species.row.records': 'records',
+    'species.card.depts': 'Recorded in {n} of {of} departments',
+    'species.detail.close': 'Close the species details',
+    'dr.mapCap': 'Departments with records',
   },
   {
     'dr.mapLabel': 'Departamentos con un registro de esta especie',
@@ -67,5 +73,10 @@ export default part(
     'species.filters.clear': 'Limpiar filtros',
     'species.grid.records': 'registros',
     'species.grid.noYear': 'año desconocido',
+    'species.row.record': 'registro',
+    'species.row.records': 'registros',
+    'species.card.depts': 'Registrada en {n} de {of} departamentos',
+    'species.detail.close': 'Cerrar el detalle de la especie',
+    'dr.mapCap': 'Departamentos con registros',
   },
 );

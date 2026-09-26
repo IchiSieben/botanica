@@ -159,19 +159,20 @@ export function renderDrawer(
     ${sp.year
       ? `<p class="dr-desc">${t(locale, 'dr.described').replace('{year}', `<b class="mono">${sp.year}</b>`)}<span data-proto>${plant ? protoHtml(locale, sp.proto) : ''}</span></p>`
       : ''}
+    <div class="dr-top">
     <dl class="dr-facts">
       ${sp.lifeformGroup
-        ? `<div><dt>${t(locale, 'sp.lifeform')}</dt><dd><span class="dr-lf" title="${esc(`${t(locale, 'lf.rawOne')}: ${sp.lifeformRaw ?? '—'}`)}">${esc(lfLabel(locale, sp.lifeformGroup))}</span>${sp.lifeformRaw ? `<span class="dr-sub">${t(locale, 'dr.wcvp')}: ${esc(sp.lifeformRaw)}</span>` : ''}</dd></div>`
+        ? `<div><dt>${t(locale, 'sp.lifeform')}</dt><dd><span class="dr-lf" title="${esc(`${t(locale, 'lf.rawOne')}: ${sp.lifeformRaw ?? '—'}`)}">${esc(lfLabel(locale, sp.lifeformGroup))}</span>${sp.lifeformRaw ? `<span class="dr-sub"> (${t(locale, 'dr.wcvp')}: ${esc(sp.lifeformRaw)})</span>` : ''}</dd></div>`
         : ''}
       <div><dt>${t(locale, 'sp.records')}</dt><dd class="mono">${sp.records ? sp.records.toLocaleString('en-US') : t(locale, 'sp.noRecords')}</dd></div>
     </dl>
+    <figure class="dr-map-cell">${miniMap(locale, map, sp.deptMask)}<figcaption class="dr-map-cap">${t(locale, 'dr.mapCap')}</figcaption></figure>
+    </div>
     ${sp.topDepts.length
       ? `<p class="label">${t(locale, 'sp.topDepts')}</p><ul class="dr-bars">${sp.topDepts
           .map(([name, c]) => `<li><span>${esc(name)}</span><i style="transform:scaleX(${(c / max).toFixed(3)})"></i><b class="mono">${c.toLocaleString('en-US')}</b></li>`)
           .join('')}</ul>`
       : `<p class="note">${t(locale, 'sp.noDepts')}</p>`}
-    <p class="label">${t(locale, 'dr.mapLabel')}</p>
-    ${miniMap(locale, map, sp.deptMask)}
     ${plant ? timeline(locale, years, sp.year) : ''}
     ${sameGenusHtml(locale, sp.sameGenus, links.speciesHref)}
     ${extLinks(locale, sp)}

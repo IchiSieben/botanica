@@ -156,3 +156,11 @@ i.sci, .sci { font-style: italic; }
 @media (prefers-reduced-motion: no-preference) {
   ::view-transition-old(root), ::view-transition-new(root) { animation-duration: 180ms; }
 }
+
+/* v3.2 B2: the drawer's first screen — facts beside the mini map (species page and explorer). */
+.dr-top { display: grid; grid-template-columns: minmax(0, 1fr) 132px; gap: 14px; align-items: start; margin: 0 0 12px; }
+.dr-top .dr-facts { margin: 0; }
+.dr-top .dr-map-cell { margin: 0; }
+.dr-top .dr-map-cap { font-size: 11px; line-height: 1.3; color: rgb(var(--muted)); margin-top: 4px; }
+.dr-top .dr-mini-map { max-width: 132px; margin: 4px 0 0; }
+@media (max-width: 359px) { .dr-top { grid-template-columns: minmax(0, 1fr); } }
