@@ -75,7 +75,9 @@ const depts0 = f0.depts.map((d, i) => [d, agg0.byDept[i]] as const).sort((a, b) 
 const max0 = Math.max(1, depts0[0][1]);
 ---
 
-<section class="phylo" id={uid} data-phylo-root data-k={k} hidden={k !== 'plantae'}>
+<!-- data-view in the HTML (v3.2 B5): the linear-only tools are laid out from the first
+     paint, so the tool row no longer wraps (+48 px, CLS 0.077) when the script sets it. -->
+<section class="phylo" id={uid} data-phylo-root data-k={k} data-view="linear" hidden={k !== 'plantae'}>
   <header class="phylo-head">
     <h2>{kingdom}</h2>
     <p class="phylo-sub mono">{n(totals.orders)} {t(locale, 'kpi.orders')} · {n(totals.families)} {t(locale, 'kpi.families')} · {n(totals.species)} {t(locale, 'kpi.species')}</p>
@@ -220,6 +222,23 @@ const max0 = Math.max(1, depts0[0][1]);
   .phylo:not([data-view='linear']) [data-lin-only] { display: none; }
   .phylo-crumb { display: none; flex-wrap: wrap; gap: 2px; align-items: center; padding: 8px 10px; border-top: 1px solid rgb(var(--border)); font-size: 12px; }
   .phylo[data-view='sunburst'] .phylo-crumb { display: flex; }
+  /* v3.2 B5: the crumb also carries "Clear selection" while an order or family is selected. */
+  .phylo[data-selected] .phylo-crumb { display: flex; }
+  .phylo-crumb .crumb-step { padding: 4px 8px; color: rgb(var(--muted)); }
+  .phylo-crumb .crumb-step[aria-current] { color: rgb(var(--fg)); font-weight: 600; }
+  .phylo-crumb .crumb-clear { margin-left: auto; color: rgb(var(--fg)); border: 1px solid rgb(var(--border)); }
+  /* 3D overlay (tree-3d.ts builds it at runtime, hence :global). */
+  .chart-phylo :global(.t3-overlay) { position: absolute; inset: 0; pointer-events: none; overflow: hidden; }
+  .chart-phylo :global(.t3-label), .chart-phylo :global(.t3-tip) {
+    position: absolute; left: 0; top: 0; white-space: nowrap; font-size: 11px; line-height: 1.2;
+    color: rgb(var(--fg)); text-shadow: 0 0 3px rgb(var(--bg)), 0 0 3px rgb(var(--bg));
+  }
+  .chart-phylo :global(.t3-label.dim) { opacity: 0.3; }
+  .chart-phylo :global(.t3-label.sel) { font-weight: 700; }
+  .chart-phylo :global(.t3-tip) {
+    padding: 4px 8px; border-radius: 6px; background: rgb(var(--surface)); border: 1px solid rgb(var(--border));
+    text-shadow: none; font-size: 12px; box-shadow: 0 2px 8px rgb(0 0 0 / 0.15); z-index: 1;
+  }
   .phylo-crumb button {
     min-height: 32px; padding: 4px 8px; border: 0; border-radius: 6px; background: transparent; cursor: pointer;
     color: rgb(var(--muted)); font: inherit;

@@ -60,7 +60,14 @@ export function sunburstData(root: TreeNode, T: Tokens, focus?: string | null): 
  *  value, which would break the APG IV / PPG I linear sequence. */
 const noSort = () => 0;
 
-export function seriesOption(T: Tokens, reduced: boolean): Record<string, unknown> {
+/** Label box for a sunburst of `depth` rings in a `w`×`h` canvas: radial labels run along
+ *  one ring, so their width is the ring's thickness (v3.2 B5; `radius` below is 14%–94%). */
+export function labelWidth(w: number, h: number, depth: number): number {
+  const ring = ((0.94 - 0.14) * Math.min(w, h)) / 2 / Math.max(1, depth);
+  return Math.max(20, Math.floor(ring - 6));
+}
+
+export function seriesOption(T: Tokens, reduced: boolean, width?: number): Record<string, unknown> {
   return {
     id: 'sunburst',
     type: 'sunburst',
@@ -71,8 +78,10 @@ export function seriesOption(T: Tokens, reduced: boolean): Record<string, unknow
     itemStyle: { borderColor: T.surface, borderWidth: 1 },
     label: {
       color: T.fg, fontFamily: T.font, fontSize: 10, minAngle: 7,
-      overflow: 'truncate', silent: false,
+      overflow: 'truncate', width, silent: false,
     },
+    // An arc gets a label only when it has room: overlapping labels are dropped, not stacked.
+    labelLayout: { hideOverlap: true },
     emphasis: { focus: 'ancestor' },
     highlightPolicy: 'descendant',
     stateAnimation: { duration: 0 },

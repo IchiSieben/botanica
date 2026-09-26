@@ -50,6 +50,7 @@ export default part(
     'tree.clade.Eudicots': 'Eudicots',
     'tree.clade.Superrosids': 'Superrosids',
     'tree.clade.Superasterids': 'Superasterids',
+    'tree.clear': 'Clear selection',
   },
   {
     'tree.frame.plantae': 'Clados, órdenes y familias',
@@ -97,5 +98,6 @@ export default part(
     'tree.clade.Eudicots': 'Eudicotiledóneas',
     'tree.clade.Superrosids': 'Superrósidas',
     'tree.clade.Superasterids': 'Superastéridas',
+    'tree.clear': 'Quitar selección',
   },
 );

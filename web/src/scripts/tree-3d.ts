@@ -34,10 +34,17 @@ export interface Tree3DTokens {
   accent: string;
   surface: string;
   onSelect: (node: TreeNode) => void;
+  /** Tooltip text for a node ("Orchidaceae · 1,234 species"), localized by the caller. */
+  describe: (node: TreeNode) => string;
 }
 
 export interface Tree3DHandle {
+  /** Light a node and its branch (ancestors + descendants), dim the rest; null clears. */
   select(id: string | null): void;
+  /** Nothing lit, camera back on the whole tree. */
+  home(): void;
+  /** Client-space position of a node's centre (the B5 gate clicks through it). */
+  project(id: string): { x: number; y: number } | null;
   resize(): void;
   dispose(): void;
 }
@@ -46,6 +53,8 @@ interface Placed { node: TreeNode; pos: THREE.Vector3; depth: number }
 
 const RING_STEP = 34;
 const JITTER = 6;
+/** Nodes whose name is always drawn: the largest by species (v3.2 B5). */
+const LABELS = 10;
 
 /** Stable 0..1 hash of a string (no crypto needed: just deterministic jitter). */
 function hash01(s: string): number {
@@ -104,6 +113,8 @@ export function mountTree3D(el: HTMLElement, root: TreeNode, T: Tree3DTokens): T
 
   const geoms: THREE.BufferGeometry[] = [];
   const lineMats: THREE.Material[] = [];
+  /** The branch line from each node up to its parent, keyed by the child's id. */
+  const lineOf = new Map<string, THREE.LineBasicMaterial>();
   const meshes = new Map<string, THREE.Mesh>();
   const colorOf = (n: TreeNode) => {
     const isGroup = n.meta.rank === 'kingdom' || GROUP_RANKS.has(n.meta.rank);
@@ -113,7 +124,7 @@ export function mountTree3D(el: HTMLElement, root: TreeNode, T: Tree3DTokens): T
     const size = p.depth === 0 ? 6 : 1.4 + 3.2 * Math.sqrt(Math.max(0, p.node.value) / maxV);
     const geo = new THREE.SphereGeometry(size, 12, 12);
     geoms.push(geo);
-    const mat = new THREE.MeshStandardMaterial({ color: colorOf(p.node), roughness: 0.6, metalness: 0.1 });
+    const mat = new THREE.MeshStandardMaterial({ color: colorOf(p.node), roughness: 0.6, metalness: 0.1, transparent: true });
     const mesh = new THREE.Mesh(geo, mat);
     mesh.position.copy(p.pos);
     mesh.userData.id = p.node.id;
@@ -127,6 +138,7 @@ export function mountTree3D(el: HTMLElement, root: TreeNode, T: Tree3DTokens): T
       geoms.push(lgeo);
       const lmat = new THREE.LineBasicMaterial({ color: T.muted, transparent: true, opacity: 0.25 });
       lineMats.push(lmat);
+      lineOf.set(p.node.id, lmat);
       const line = new THREE.Line(lgeo, lmat);
       group.add(line);
     }
@@ -135,7 +147,8 @@ export function mountTree3D(el: HTMLElement, root: TreeNode, T: Tree3DTokens): T
   const bbox = new THREE.Box3().setFromObject(group);
   const size = bbox.getSize(new THREE.Vector3());
   const dist = Math.max(60, size.length() * 0.8);
-  camera.position.set(dist * 0.6, dist * 0.5, dist * 0.6);
+  const HOME = new THREE.Vector3(dist * 0.6, dist * 0.5, dist * 0.6);
+  camera.position.copy(HOME);
   camera.lookAt(0, 0, 0);
 
   const controls = new OrbitControls(camera, renderer.domElement);
@@ -144,31 +157,122 @@ export function mountTree3D(el: HTMLElement, root: TreeNode, T: Tree3DTokens): T
   controls.minDistance = 20;
   controls.maxDistance = dist * 4;
 
+  // ---- DOM overlay (v3.2 B5): names that are always on for the largest nodes, plus a
+  // hover/tap tooltip. Text in the DOM, not in WebGL: crisp, themeable, no font atlas.
+  if (getComputedStyle(el).position === 'static') el.style.position = 'relative';
+  const overlay = document.createElement('div');
+  overlay.className = 't3-overlay';
+  overlay.setAttribute('aria-hidden', 'true'); // the side panels carry the same facts accessibly
+  el.appendChild(overlay);
+  const tip = document.createElement('div');
+  tip.className = 't3-tip';
+  tip.hidden = true;
+  overlay.appendChild(tip);
+  const labels = new Map<string, HTMLSpanElement>();
+  for (const p of placed.filter((q) => q.depth > 0).sort((a, b) => b.node.value - a.node.value).slice(0, LABELS)) {
+    const span = document.createElement('span');
+    span.className = 't3-label';
+    span.textContent = p.node.name;
+    overlay.appendChild(span);
+    labels.set(p.node.id, span);
+  }
+  let selLabel: HTMLSpanElement | null = null;
+  let tipFor: Placed | null = null;
+  const v = new THREE.Vector3();
+  const place = (span: HTMLElement, pos: THREE.Vector3, dy: number) => {
+    v.copy(pos).project(camera);
+    const off = v.z > 1 || Math.abs(v.x) > 1.02 || Math.abs(v.y) > 1.02;
+    span.style.visibility = off ? 'hidden' : '';
+    if (!off) span.style.transform = `translate(${((v.x + 1) / 2) * w()}px, ${((1 - v.y) / 2) * h() + dy}px) translate(-50%, -100%)`;
+  };
+  const placeOverlay = () => {
+    for (const [id, span] of labels) place(span, byId.get(id)!.pos, -8);
+    if (selLabel && selectedId) place(selLabel, byId.get(selectedId)!.pos, -8);
+    if (tipFor) place(tip, tipFor.pos, -18);
+  };
+
   let selectedId: string | null = null;
+  /** The node, its ancestors and every descendant. Ids are paths ("Plantae/…/Orchidaceae"). */
+  const branchOf = (id: string): Set<string> => {
+    const set = new Set<string>();
+    for (let a = id; a; a = a.includes('/') ? a.slice(0, a.lastIndexOf('/')) : '') set.add(a);
+    for (const other of byId.keys()) if (other.startsWith(`${id}/`)) set.add(other);
+    return set;
+  };
   const applyHighlight = () => {
+    const lit = selectedId ? branchOf(selectedId) : null;
     for (const [id, mesh] of meshes) {
       const on = id === selectedId;
-      (mesh.material as THREE.MeshStandardMaterial).emissive = new THREE.Color(on ? T.accent : 0x000000);
-      (mesh.material as THREE.MeshStandardMaterial).emissiveIntensity = on ? 0.9 : 0;
+      const m = mesh.material as THREE.MeshStandardMaterial;
+      m.emissive.set(on ? T.accent : 0x000000);
+      m.emissiveIntensity = on ? 0.9 : 0;
+      m.opacity = !lit || lit.has(id) ? 1 : 0.12;
+      m.depthWrite = m.opacity === 1; // dimmed spheres must not hide lit ones behind them
       mesh.scale.setScalar(on ? 1.6 : 1);
+    }
+    for (const [id, m] of lineOf) m.opacity = !lit ? 0.25 : lit.has(id) ? 0.85 : 0.04;
+    for (const [id, span] of labels) {
+      span.classList.toggle('dim', !!lit && !lit.has(id));
+      span.classList.toggle('sel', id === selectedId);
+    }
+    selLabel?.remove();
+    selLabel = null;
+    const p = selectedId ? byId.get(selectedId) : null;
+    if (p && !labels.has(p.node.id)) {
+      selLabel = document.createElement('span');
+      selLabel.className = 't3-label sel';
+      selLabel.textContent = p.node.name;
+      overlay.appendChild(selLabel);
     }
   };
 
   const raycaster = new THREE.Raycaster();
   const pointer = new THREE.Vector2();
+  /** Dimmed nodes stay pickable: clicking one moves the light to its branch. */
+  const hitAt = (x: number, y: number): Placed | null => {
+    const r = renderer.domElement.getBoundingClientRect();
+    pointer.x = ((x - r.left) / r.width) * 2 - 1;
+    pointer.y = -((y - r.top) / r.height) * 2 + 1;
+    raycaster.setFromCamera(pointer, camera);
+    const hit = raycaster.intersectObjects([...meshes.values()], false)[0];
+    return hit ? byId.get(hit.object.userData.id as string) ?? null : null;
+  };
+  const showTip = (p: Placed | null) => {
+    tipFor = p;
+    renderer.domElement.style.cursor = p ? 'pointer' : '';
+    tip.hidden = !p;
+    if (!p) return;
+    tip.textContent = T.describe(p.node);
+    place(tip, p.pos, -18);
+  };
+  let hoverRaf = 0;
+  let lastMove: PointerEvent | null = null;
+  renderer.domElement.addEventListener('pointermove', (e) => {
+    // Mouse only, and not while orbiting: a touch drag must not pop tooltips.
+    if (e.pointerType !== 'mouse' || e.buttons) return;
+    lastMove = e;
+    hoverRaf ||= requestAnimationFrame(() => {
+      hoverRaf = 0;
+      if (lastMove) showTip(hitAt(lastMove.clientX, lastMove.clientY));
+    });
+  });
+  renderer.domElement.addEventListener('pointerleave', () => showTip(null));
   let downAt = 0;
   renderer.domElement.addEventListener('pointerdown', () => { downAt = Date.now(); });
   renderer.domElement.addEventListener('pointerup', (e) => {
     // A drag-to-orbit must not also fire a click.
     if (Date.now() - downAt > 220) return;
-    const r = renderer.domElement.getBoundingClientRect();
-    pointer.x = ((e.clientX - r.left) / r.width) * 2 - 1;
-    pointer.y = -((e.clientY - r.top) / r.height) * 2 + 1;
-    raycaster.setFromCamera(pointer, camera);
-    const hit = raycaster.intersectObjects([...meshes.values()], false)[0];
-    if (!hit) return;
-    const p = byId.get(hit.object.userData.id as string);
-    if (p && p.node.meta.rank !== 'kingdom' && !GROUP_RANKS.has(p.node.meta.rank)) T.onSelect(p.node);
+    const p = hitAt(e.clientX, e.clientY);
+    showTip(p); // a tap names the node too: touch has no hover
+    if (!p) return;
+    const rank = p.node.meta.rank;
+    // Orders and families select through the page store, exactly like the linear tree:
+    // the side panels follow and the store calls select() back, which lights the branch.
+    if (rank !== 'kingdom' && !GROUP_RANKS.has(rank)) { T.onSelect(p.node); return; }
+    // Kingdom clears; a group rank (class, clade…) only lights its branch.
+    selectedId = rank === 'kingdom' ? null : p.node.id;
+    applyHighlight();
+    request();
   });
 
   // Render on demand: a frame only while the camera moves (drag, zoom, damping) or after a
@@ -178,6 +282,7 @@ export function mountTree3D(el: HTMLElement, root: TreeNode, T: Tree3DTokens): T
     raf = 0;
     const moving = controls.update(); // true while damping is still settling
     renderer.render(scene, camera);
+    placeOverlay();
     if (moving) request();
   };
   const request = () => { if (!raf) raf = requestAnimationFrame(frame); };
@@ -186,16 +291,31 @@ export function mountTree3D(el: HTMLElement, root: TreeNode, T: Tree3DTokens): T
 
   return {
     select(id) {
-      selectedId = id;
+      selectedId = id && byId.has(id) ? id : null;
       applyHighlight();
       request();
-      const p = id && byId.get(id);
+      const p = selectedId && byId.get(selectedId);
       if (p) {
         const target = p.pos.clone();
         const dir = camera.position.clone().sub(controls.target).normalize();
         camera.position.copy(target.clone().add(dir.multiplyScalar(Math.max(40, dist * 0.35))));
         controls.target.copy(target);
       }
+    },
+    home() {
+      selectedId = null;
+      applyHighlight();
+      showTip(null);
+      camera.position.copy(HOME);
+      controls.target.set(0, 0, 0);
+      request();
+    },
+    project(id) {
+      const p = byId.get(id);
+      if (!p) return null;
+      v.copy(p.pos).project(camera);
+      const r = renderer.domElement.getBoundingClientRect();
+      return { x: r.left + ((v.x + 1) / 2) * r.width, y: r.top + ((1 - v.y) / 2) * r.height };
     },
     resize() {
       camera.aspect = w() / h();
@@ -205,6 +325,7 @@ export function mountTree3D(el: HTMLElement, root: TreeNode, T: Tree3DTokens): T
     },
     dispose() {
       cancelAnimationFrame(raf);
+      cancelAnimationFrame(hoverRaf);
       controls.removeEventListener('change', request);
       controls.dispose();
       for (const g of geoms) g.dispose();
@@ -214,6 +335,7 @@ export function mountTree3D(el: HTMLElement, root: TreeNode, T: Tree3DTokens): T
       renderer.forceContextLoss();
       renderer.dispose();
       renderer.domElement.remove();
+      overlay.remove();
     },
   };
 }

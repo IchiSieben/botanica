@@ -194,11 +194,14 @@ for (const locale of LOCALES) {
       await page.click(fs);
       const entered = await page.waitForFunction((id) => document.fullscreenElement?.id === id, `phylo-${k}-frame`, { timeout: 3000 }).then(() => true, () => false);
       check(entered, 'full screen entered on the tree frame');
+      // The label follows `fullscreenchange`, which can land after fullscreenElement flips.
+      await page.waitForFunction(([sel, l]) => document.querySelector(sel)?.getAttribute('aria-label') !== l, [fs, label0], { timeout: 2000 }).catch(() => {});
       const label1 = await page.getAttribute(fs, 'aria-label');
       check(label1 !== label0, 'full-screen button label toggled', `${label0} -> ${label1}`);
       await page.click(fs);
       const left = await page.waitForFunction(() => !document.fullscreenElement, null, { timeout: 3000 }).then(() => true, () => false);
       check(left, 'full screen exited');
+      await page.waitForFunction(([sel, l]) => document.querySelector(sel)?.getAttribute('aria-label') === l, [fs, label0], { timeout: 2000 }).catch(() => {});
       check((await page.getAttribute(fs, 'aria-label')) === label0, 'full-screen label restored');
 
       errors.length ? errors.forEach((e) => fail(`${tag}: ${e}`)) : ok('no console errors');

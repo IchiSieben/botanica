@@ -28,7 +28,7 @@ import { deptName } from '../lib/depts';
 import { afterPaint } from '../lib/after-paint';
 import { dataUrl } from '../lib/data-url';
 import { GROUP_RANKS, nodeSize, type TreeNode } from '../lib/tree-model';
-import { pathIndex, sunburstData, seriesOption as sunburstSeriesOption, type Tokens as SunTokens } from './tree-sunburst';
+import { pathIndex, sunburstData, labelWidth, seriesOption as sunburstSeriesOption, type Tokens as SunTokens } from './tree-sunburst';
 
 type K = 'plantae' | 'fungi';
 type View = 'linear' | 'sunburst' | '3d';
@@ -60,7 +60,7 @@ interface Tree {
   view: View;
   expanded: Set<string> | null;
   chart: ECharts | null;
-  three: { dispose(): void; select(id: string | null): void; resize(): void } | null;
+  three: import('./tree-3d').Tree3DHandle | null;
   ro?: ResizeObserver;
   size?: string;
   mounting?: Promise<void>;
@@ -330,19 +330,45 @@ export function bootTree() {
     const tr = treeOf(k);
     if (!tr.chart) return;
     tr.sunRoot = rootId;
+    setSeries(tr.chart, 'sunburst', { label: { width: sunLabelWidth(k, rootId) } });
     tr.chart.dispatchAction({ type: 'sunburstRootToNode', targetNode: rootId } as never);
     renderCrumb(k);
   }
 
+  /** Sunburst: the zoom path. Linear / 3D: the path to the selection. Either way a
+   *  "Clear selection" button while an order or family is selected (v3.2 B5). */
   function renderCrumb(k: K) {
-    const tr = treeOf(k);
+    // get, not treeOf: creating the entry here would stop render() from observing (mounting) it.
+    const tr = trees.get(k);
     const ix = indexOf(k);
-    const box = roots.get(k)!.querySelector<HTMLElement>('[data-crumb]');
+    const root = roots.get(k)!;
+    const box = root.querySelector<HTMLElement>('[data-crumb]');
     if (!box) return;
-    const chain = ix.paths.get(tr.sunRoot ?? ix.root.id) ?? [ix.root];
-    box.innerHTML = chain
-      .map((node, i) => `<button type="button" data-crumb-to="${esc(node.id)}"${i === chain.length - 1 ? ' aria-current="location"' : ''}>${esc(node.name)}</button>`)
-      .join('<span class="crumb-sep" aria-hidden="true">›</span>');
+    const target = targetOf(k, store.get());
+    const sun = (tr?.view ?? boot) === 'sunburst';
+    root.toggleAttribute('data-selected', !!target);
+    const chain = ix.paths.get((sun ? tr?.sunRoot : target) ?? ix.root.id) ?? [ix.root];
+    const steps = chain.map((node, i) => {
+      const cur = i === chain.length - 1 ? ' aria-current="location"' : '';
+      // Outside the sunburst a group step has nowhere to zoom to: plain text.
+      const group = node.meta.rank === 'kingdom' || GROUP_RANKS.has(node.meta.rank) || node.meta.unplaced;
+      return !sun && group
+        ? `<span class="crumb-step"${cur}>${esc(node.name)}</span>`
+        : `<button type="button" data-crumb-to="${esc(node.id)}"${cur}>${esc(node.name)}</button>`;
+    });
+    box.innerHTML = steps.join('<span class="crumb-sep" aria-hidden="true">›</span>')
+      + (target ? `<button type="button" class="crumb-clear" data-clear>✕ ${esc(t(locale, 'tree.clear'))}</button>` : '');
+  }
+
+  /** `?view=` written back (replaceState) so a shared link opens the same view. The store
+   *  serializes only its own keys, so this re-applies after every store write too. */
+  function writeView(k: K) {
+    const v = trees.get(k)?.view ?? boot;
+    const p = new URLSearchParams(location.search);
+    if (v === 'linear') p.delete('view'); else p.set('view', v);
+    const q = p.toString();
+    const url = `${location.pathname}${q ? `?${q}` : ''}${location.hash}`;
+    if (url !== `${location.pathname}${location.search}${location.hash}`) history.replaceState(history.state, '', url);
   }
 
   function sunburstClick(k: K, id: string) {
@@ -433,6 +459,17 @@ export function bootTree() {
     await syncFocus(k, store.get(), { now: true });
   }
 
+  /** Rings drawn when the sunburst is zoomed to `rootId`: the depth of that subtree. */
+  const sunDepth = (k: K, rootId: string) => {
+    const ix = indexOf(k);
+    const base = ix.paths.get(rootId)?.length ?? 1;
+    let max = base;
+    for (const [id, path] of ix.paths) if (id === rootId || id.startsWith(`${rootId}/`)) max = Math.max(max, path.length);
+    return max - base + 1;
+  };
+  const sunLabelWidth = (k: K, rootId = trees.get(k)?.sunRoot ?? indexOf(k).root.id) =>
+    labelWidth(chartEl(k).clientWidth, chartEl(k).clientHeight, sunDepth(k, rootId));
+
   async function mountSunburst(k: K, echarts: typeof import('../lib/echarts-tree')['echarts']) {
     const tr = treeOf(k);
     const ix = indexOf(k);
@@ -449,7 +486,7 @@ export function bootTree() {
         formatter: (p: { name: string; data: TreeNode }) =>
           `<b>${esc(p.name)}</b> · ${t(locale, `tree.rank.${p.data.meta.rank}` as Key)}<br/>${n(p.data.value)} ${t(locale, 'kpi.species')}`,
       },
-      series: [{ ...sunburstSeriesOption(T, reduced()), data: sunburstData(ix.root, T, null) }],
+      series: [{ ...sunburstSeriesOption(T, reduced(), sunLabelWidth(k)), data: sunburstData(ix.root, T, null) }],
     } as never);
     chart.on('click', (p) => {
       const id = (p.data as unknown as TreeNode)?.id;
@@ -480,6 +517,10 @@ export function bootTree() {
         if (rank === 'order') store.set({ ord: s.ord === node.meta.key && !s.fam ? null : node.meta.key, fam: null });
         else if (rank === 'family') store.set({ fam: s.fam === node.meta.key ? null : node.meta.key, ord: node.meta.parent ?? null });
       },
+      describe: (node) => {
+        const rank = node.meta.rank === 'kingdom' ? '' : ` · ${t(locale, `tree.rank.${node.meta.rank}` as Key)}`;
+        return `${node.name}${rank} · ${n(node.value)} ${t(locale, 'dep.species')}`;
+      },
     });
     tr.three = handle;
     attachResize(k, el); // full screen / rotation resize the canvas too
@@ -496,6 +537,8 @@ export function bootTree() {
       tr.size = size;
       if (tr.view === '3d') { tr.three?.resize(); return; }
       tr.chart?.resize();
+      // Ring thickness follows the canvas: re-size the labels, keeping the zoom.
+      if (tr.view === 'sunburst' && tr.sunRoot) navigateSunburst(k, tr.sunRoot);
       if (tr.view !== 'linear') return;
       // Entering full screen (or rotating a phone) keeps the selection centred,
       // or the whole visible tree fitted.
@@ -632,6 +675,8 @@ export function bootTree() {
         treeOf(k).view = b.dataset.view as View;
         root.dataset.view = b.dataset.view!;
         setHowto(b.dataset.view as View);
+        writeView(k);
+        renderCrumb(k);
         void remount(k);
       });
     });
@@ -643,14 +688,22 @@ export function bootTree() {
       b.classList.toggle('on', on);
       b.setAttribute('aria-pressed', String(on));
     });
-    // Reset = fit the whole visible tree again (linear), or zoom out to the
-    // kingdom (sunburst); expansion and selection stay either way.
+    // Reset = a fresh start (v3.2 B5): no selection, and the view back to the kingdom —
+    // default expansion fitted (linear), zoomed out (sunburst), camera home (3D).
     root.querySelector('[data-reset]')?.addEventListener('click', async () => {
       await mount(k);
+      store.set({ ord: null, fam: null });
       const tr = treeOf(k);
       if (tr.view === 'sunburst') navigateSunburst(k, indexOf(k).root.id);
-      else if (tr.view === '3d') tr.three?.select(null);
-      else fit(k);
+      else if (tr.view === '3d') tr.three?.home();
+      else if (tr.chart) {
+        tr.expanded = new Set(indexOf(k).defaultOpen);
+        tr.focusId = null;
+        tr.pending = 0;
+        delete chartEl(k).dataset.focus;
+        relayout(k);
+        fit(k);
+      }
     });
     root.querySelectorAll<HTMLButtonElement>('[data-zoom]').forEach((b) =>
       b.addEventListener('click', async () => {
@@ -692,6 +745,7 @@ export function bootTree() {
       });
     }
     root.querySelector('[data-crumb]')?.addEventListener('click', (e) => {
+      if ((e.target as Element).closest('[data-clear]')) { store.set({ ord: null, fam: null }); return; }
       const b = (e.target as Element).closest<HTMLButtonElement>('[data-crumb-to]');
       if (!b) return;
       const id = b.dataset.crumbTo!;
@@ -774,7 +828,11 @@ export function bootTree() {
   store.subscribe((s) => {
     void render(s);
     for (const k of roots.keys()) void syncFocus(k, s);
+    renderCrumb(s.k);
+    writeView(s.k);
   });
+  // Parsing the tree index costs main-thread time: at boot only when a link names a selection.
+  if (store.get().ord || store.get().fam) renderCrumb(store.get().k);
   void render(store.get());
 
   // Test hook (scripts/gate-tree.mjs): read-only views of what the canvas draws.
@@ -816,6 +874,11 @@ export function bootTree() {
       },
       crumbLength: () => roots.get(k)!.querySelectorAll('[data-crumb-to]').length,
       sunRoot: () => treeOf(k).sunRoot,
+      /** 3D: client-space centre of a node, by canonical name. */
+      point3d: (key: string) => {
+        const id = [...indexOf(k).byId.values()].find((x) => x.meta.key === key)?.id;
+        return id ? treeOf(k).three?.project(id) ?? null : null;
+      },
     };
   };
   (window as unknown as { __phylo: Record<K, ReturnType<typeof hook>> }).__phylo = { plantae: hook('plantae'), fungi: hook('fungi') };

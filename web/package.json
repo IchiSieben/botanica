@@ -14,7 +14,7 @@
     "serve": "node scripts/serve.mjs dist 4400",
     "serve:test": "node scripts/serve.mjs dist-test 4401",
     "gate": "node --experimental-strip-types scripts/gate.mjs 4400",
-    "gate:v3": "node scripts/gate-intro.mjs 4400 && node scripts/gate-explorer.mjs 4400 && node scripts/gate-tree.mjs 4401 && node scripts/gate-changes.mjs 4400 && node scripts/gate-pinch.mjs 4400 && node --experimental-strip-types scripts/gate-clarity.mjs 4400 && node scripts/gate-species.mjs 4400",
+    "gate:v3": "node scripts/gate-intro.mjs 4400 && node scripts/gate-explorer.mjs 4400 && node scripts/gate-tree.mjs 4401 && node scripts/gate-tree3d.mjs 4401 && node scripts/gate-changes.mjs 4400 && node scripts/gate-pinch.mjs 4400 && node --experimental-strip-types scripts/gate-clarity.mjs 4400 && node scripts/gate-species.mjs 4400",
     "gate:species": "node scripts/gate-species.mjs 4400",
     "lighthouse": "node scripts/lighthouse.mjs 4400 lh-report",
     "check:dois": "node scripts/check-dois.mjs"
