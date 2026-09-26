@@ -1,4 +1,23 @@
-# HANDOFF — Botánica (explorable atlas) · current: v3.1.0
+# HANDOFF — Botánica (explorable atlas) · current: v3.1.0 live, v3.2 in progress
+
+
+## v3.2 — in progress (2026-09-26, unattended run of docs/PROMPT-v3.2.md)
+
+Pushed, one commit per item: B1 c31fc65 · B2 e3b44f0 · B3 463707b · B5 2568119.
+**B4 in progress** (selection colour). B6 and the close (tag, MIRROR-READY, reviewer,
+Landing mirror) still to do.
+
+- Session servers (kill only these, by task id): 4400 `bxhj7wyh0` (dist), 4401 `b7ee0mya6`
+  (dist-test), 4410 `boabqrir4` (Botanica-base dist), 4411 `b90aka2dr` (Botanica-base dist-test).
+- `../Botanica-base` is a worktree created this session, now checked out at 463707b (B3) for
+  the B5 INP A/B. Remove it at the close (`git worktree remove`, list it first).
+- B4 finding so far: the panel tint is `.cf-flash::after` (explorer.css) — `rgb(var(--accent) /
+  0.16)` over the whole panel, 900 ms pulse, added by explorer.ts `morphFlash()` on every
+  panel whose HTML changed. The pink flash: see "B4 — pink flash" below once instrumented.
+- Filogenia CLS 0.077 (intermittent, also in v3.1): the tree tool row wrapped when JS set
+  `data-view`; fixed in B5 by rendering `data-view="linear"` in the HTML.
+- INP gate checks fail at random under this machine's load (VS Code at 100 % CPU, not
+  ours). B5 was judged by an interleaved A/B against B3 on the same machine instead.
 
 ## Why the plant radial looked sparse (v3.1)
 
