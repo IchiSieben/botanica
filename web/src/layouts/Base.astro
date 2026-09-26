@@ -96,7 +96,7 @@ const abs = (l: Locale) => new URL(localePath(l, slug), Astro.site).href;
         </a>
         <nav aria-label="Botánica">
           {nav.map((n) => (
-            <a href={n.href} aria-current={n.id === page ? 'page' : undefined}>{n.label}</a>
+            <a href={n.href} aria-current={n.id === page ? 'page' : undefined} data-astro-prefetch={n.id === page ? undefined : 'hover'}>{n.label}</a>
           ))}
         </nav>
         <div class="tools">

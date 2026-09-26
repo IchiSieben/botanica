@@ -1,0 +1,44 @@
+
+## especies/ throttle=true run=1: firstRowMs=13600 fungiColdMs=915 fungiWarmMs=569 challengeReload=navigate
+       0→   696 ms 403     3027 B ttfb=222 br h2 cc="private, max-age=0, no-store, no-cache, must-revalidate, post-check=0, pre-check=0" cdn=- CHALLENGE especies/
+     747→  1500 ms 200      889 B ttfb=302 gzip h2 cc="private, max-age=86400, stale-while-revalidate=604800" cdn=- https://fonts.googleapis.com/css2?family=DM+Sans:wght@400;600&display=swap
+     747→  1124 ms 200      757 B ttfb=338 zstd h2 cc="private, max-age=0, no-store, no-cache, must-revalidate, post-check=0, pre-check=0" cdn=- https://ichisieben.dev/hcdn-cgi/jschallenge
+    1833→  4470 ms 200    36964 B ttfb=275 identity h3 cc="public, max-age=31536000" cdn=- https://fonts.gstatic.com/s/dmsans/v17/rP2Yp2ywxg089UriI5-g4vlH9VoD8Cmcqbu0-K4.w
+    5394→  5816 ms 200      711 B ttfb=421 identity h3 cc="private, max-age=0, no-store, no-cache, must-revalidate, post-check=0, pre-check=0" cdn=- https://ichisieben.dev/hcdn-cgi/jschallenge-validate
+    5822→  6181 ms 200    14088 B ttfb=258 br h3 cc="" cdn=DYNAMIC especies/
+    6181→  6517 ms 200    23028 B ttfb=248 identity h3 cc="public, max-age=604800" cdn=HIT _astro/space-grotesk-latin-wght-normal.BhU9QXUp.woff2
+    6182→  6986 ms 200    41145 B ttfb=529 identity h3 cc="public, max-age=604800" cdn=HIT _astro/jetbrains-mono-latin-wght-normal.B9CIFXIH.woff2
+    6182→  6756 ms 200     5661 B ttfb=310 br h3 cc="public, max-age=604800" cdn=HIT _astro/index.URH9kiNj.css
+    6182→  6740 ms 200     2315 B ttfb=520 br h3 cc="public, max-age=604800" cdn=HIT _astro/index.m8NV2k05.css
+    6182→  6863 ms 200     3806 B ttfb=640 br h3 cc="public, max-age=604800" cdn=HIT _astro/SpeciesBrowser.astro_astro_type_script_index_0_lang.BzS5pR6a.js
+    6182→  6848 ms 200     2088 B ttfb=640 br h3 cc="public, max-age=604800" cdn=HIT tutorial/tutorial.css
+    6959→  7238 ms 200    15678 B ttfb=168 br h3 cc="public, max-age=604800" cdn=HIT _astro/after-paint.CP7ejnrb.js
+    6960→  7206 ms 200     7802 B ttfb=167 br h3 cc="public, max-age=604800" cdn=HIT _astro/drawer.DAu2Ji3_.js
+    7511→  7720 ms 200     3719 B ttfb=178 br h3 cc="public, max-age=604800" cdn=HIT tutorial/tutorial.js
+    7517→  9787 ms 200   310823 B ttfb=186 br h3 cc="" cdn=DYNAMIC data/species-plantae.json
+    7519→  8842 ms 200    95135 B ttfb=375 br h3 cc="" cdn=DYNAMIC data/facets-plantae.json
+    7521→  7690 ms 200      970 B ttfb=168 br h3 cc="public, max-age=604800" cdn=HIT favicon.svg
+   14328→     - ms ---          B ttfb=- identity  cc="undefined" cdn=- data/species-fungi.json
+   14329→     - ms ---          B ttfb=- identity  cc="undefined" cdn=- data/facets-fungi.json
+   14379→     - ms ---          B ttfb=- identity  cc="undefined" cdn=- favicon.svg
+   15108→     - ms ---          B ttfb=- identity  cc="undefined" cdn=- favicon.svg
+   15600→     - ms ---          B ttfb=- identity  cc="undefined" cdn=- favicon.svg
+
+## filogenia/ throttle=true run=1: treePaintMs=8215
+       0→   645 ms 403     3028 B ttfb=188 br h2 cc="private, max-age=0, no-store, no-cache, must-revalidate, post-check=0, pre-check=0" cdn=- CHALLENGE filogenia/
+     662→  1172 ms 200      889 B ttfb=168 gzip h2 cc="private, max-age=86400, stale-while-revalidate=604800" cdn=- https://fonts.googleapis.com/css2?family=DM+Sans:wght@400;600&display=swap
+     664→   884 ms 200      758 B ttfb=206 zstd h2 cc="private, max-age=0, no-store, no-cache, must-revalidate, post-check=0, pre-check=0" cdn=- https://ichisieben.dev/hcdn-cgi/jschallenge
+    1186→  1711 ms 200    36964 B ttfb=198 identity h3 cc="public, max-age=31536000" cdn=- https://fonts.gstatic.com/s/dmsans/v17/rP2Yp2ywxg089UriI5-g4vlH9VoD8Cmcqbu0-K4.w
+    1785→  1958 ms 404     1904 B ttfb=171 br h3 cc="" cdn=- https://ichisieben.dev/favicon.ico
+    4191→  4416 ms 200      712 B ttfb=223 identity h3 cc="private, max-age=0, no-store, no-cache, must-revalidate, post-check=0, pre-check=0" cdn=- https://ichisieben.dev/hcdn-cgi/jschallenge-validate
+    4422→  4714 ms 200    26721 B ttfb=167 br h3 cc="" cdn=DYNAMIC filogenia/
+    4611→  5116 ms 200    23028 B ttfb=181 identity h3 cc="public, max-age=604800" cdn=HIT _astro/space-grotesk-latin-wght-normal.BhU9QXUp.woff2
+    4611→  5209 ms 200    41145 B ttfb=193 identity h3 cc="public, max-age=604800" cdn=HIT _astro/jetbrains-mono-latin-wght-normal.B9CIFXIH.woff2
+    4612→  4870 ms 200     5662 B ttfb=181 br h3 cc="public, max-age=604800" cdn=HIT _astro/index.URH9kiNj.css
+    4612→  4886 ms 200     2533 B ttfb=235 br h3 cc="public, max-age=604800" cdn=MISS _astro/index.er6-gQZP.css
+    4717→  4930 ms 200     2087 B ttfb=166 br h3 cc="public, max-age=604800" cdn=HIT tutorial/tutorial.css
+    4717→  5022 ms 200     7549 B ttfb=183 br h3 cc="public, max-age=604800" cdn=MISS _astro/Tree.astro_astro_type_script_index_0_lang.CKxcRbgF.js
+    5801→  6018 ms 200     3720 B ttfb=181 br h3 cc="public, max-age=604800" cdn=HIT tutorial/tutorial.js
+    6034→  6340 ms 200    15678 B ttfb=232 br h3 cc="public, max-age=604800" cdn=HIT _astro/after-paint.CP7ejnrb.js
+    6458→  6639 ms 200      971 B ttfb=172 br h3 cc="public, max-age=604800" cdn=HIT favicon.svg
+    6459→  7413 ms 200   153635 B ttfb=172 br h3 cc="public, max-age=604800" cdn=MISS _astro/echarts-tree.i7r937lq.js

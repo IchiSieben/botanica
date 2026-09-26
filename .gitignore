@@ -37,3 +37,6 @@ web/lh-report/
 
 # Auto-drafts written by the compaction hook; HANDOFF.md is the record
 docs/handoffs/
+
+# Lighthouse raw reports (medians are recorded in docs/PERF-v3.2.md)
+evidence/**/lh-*/

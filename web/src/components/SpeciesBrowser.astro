@@ -16,6 +16,9 @@
  */
 import { t, type Locale } from '../lib/i18n';
 import { departmentPaths } from '../lib/geo';
+import { speciesRowHtml, FIRST_SCREEN, ROW_H } from '../lib/species-row';
+import { readFileSync } from 'node:fs';
+import { fileURLToPath } from 'node:url';
 
 interface Props { locale: Locale }
 const { locale } = Astro.props;
@@ -24,6 +27,18 @@ const { locale } = Astro.props;
 // drawer's mini map on this page (which has no #map to clone paths from) matches.
 const { paths: deptPaths, width: mapW, height: mapH } = departmentPaths();
 const mapAsset = { paths: deptPaths.map((p) => ({ name: p.name, d: p.d })), width: mapW, height: mapH };
+
+// v3.2 B1: the first screen of the default view (Plants, by name) is in the HTML, so the first
+// row paints with the document instead of after the 1.2 MB index (docs/PERF-v3.2.md). The
+// client keeps these rows only while the URL asks for exactly that view.
+const readData = (f: string) => JSON.parse(readFileSync(fileURLToPath(new URL(`../../public/data/${f}`, import.meta.url)), 'utf8'));
+const plantIdx = readData('species-plantae.json') as { families: string[]; rows: [string, number, number, number][] };
+const plantYear = (readData('facets-plantae.json') as { year: number[] | null }).year;
+const total = plantIdx.rows.length;
+const firstRows = plantIdx.rows.slice(0, FIRST_SCREEN).map((r, i) => speciesRowHtml(locale, {
+  i, name: r[0], family: r[1] >= 0 ? plantIdx.families[r[1]] : null, records: r[3], year: plantYear?.[i] || null,
+  selected: false, posinset: i + 1, setsize: total,
+}, false)).join('');
 ---
 
 <div class="sp" data-species-root>
@@ -70,8 +85,8 @@ const mapAsset = { paths: deptPaths.map((p) => ({ name: p.name, d: p.d })), widt
   <div class="sp-body">
     <div class="sp-list-wrap" id="sp-list-wrap">
       <div class="sp-list" id="sp-list" role="listbox" aria-label={t(locale, 'species.results')} tabindex="0">
-        <div class="sp-spacer" id="sp-spacer">
-          <div class="sp-viewport" id="sp-viewport"></div>
+        <div class="sp-spacer" id="sp-spacer" style={`height:${total * ROW_H}px`}>
+          <div class="sp-viewport list" id="sp-viewport" data-ssr set:html={firstRows}></div>
         </div>
       </div>
     </div>
@@ -88,7 +103,9 @@ const mapAsset = { paths: deptPaths.map((p) => ({ name: p.name, d: p.d })), widt
   import { t, fmt, localePath, type Locale } from '../lib/i18n';
   import { deptName } from '../lib/depts';
   import { afterPaint } from '../lib/after-paint';
+  import { dataUrl } from '../lib/data-url';
   import { renderDrawer, yearHistogram, type DrawerMap, type DrawerSpecies, type DrawerYearDist } from '../lib/drawer';
+  import { speciesRowHtml, ROW_H, CARD_H } from '../lib/species-row';
 
   type Row = [string, number, number, number, [number, number][], number, number];
   interface Index {
@@ -125,10 +142,9 @@ const mapAsset = { paths: deptPaths.map((p) => ({ name: p.name, d: p.d })), widt
     const cache = new Map<K, Promise<{ idx: Index; f: Facets }>>();
     const load = (k: K) => {
       if (!cache.has(k)) {
-        const base = import.meta.env.BASE_URL;
         cache.set(k, Promise.all([
-          fetch(`${base}data/species-${k}.json`, { priority: 'low' }).then((r) => { if (!r.ok) throw new Error(`${r.status} species-${k}`); return r.json() as Promise<Index>; }),
-          fetch(`${base}data/facets-${k}.json`, { priority: 'low' }).then((r) => { if (!r.ok) throw new Error(`${r.status} facets-${k}`); return r.json() as Promise<Facets>; }),
+          fetch(dataUrl(`species-${k}`), { priority: 'low' }).then((r) => { if (!r.ok) throw new Error(`${r.status} species-${k}`); return r.json() as Promise<Index>; }),
+          fetch(dataUrl(`facets-${k}`), { priority: 'low' }).then((r) => { if (!r.ok) throw new Error(`${r.status} facets-${k}`); return r.json() as Promise<Facets>; }),
         ]).then(([idx, f]) => ({ idx, f })));
       }
       return cache.get(k)!;
@@ -137,7 +153,7 @@ const mapAsset = { paths: deptPaths.map((p) => ({ name: p.name, d: p.d })), widt
     let proto: Proto | null = null;
     let protoReq: Promise<void> | null = null;
     const loadProto = () => {
-      protoReq ??= fetch(`${import.meta.env.BASE_URL}data/protologue-plantae.json`, { priority: 'low' })
+      protoReq ??= fetch(dataUrl('protologue-plantae'), { priority: 'low' })
         .then((r) => { if (!r.ok) throw new Error(`${r.status} protologue`); return r.json() as Promise<Proto>; })
         .then((d) => { proto = d; renderDetail(store.get().sp); })
         .catch((e) => { protoReq = null; console.warn(e); });
@@ -149,27 +165,36 @@ const mapAsset = { paths: deptPaths.map((p) => ({ name: p.name, d: p.d })), widt
     let matched: number[] = [];
     const yearDist = new Map<K, DrawerYearDist | null>();
 
-    // ---- sort permutations, computed once per kingdom load, not per keystroke ----
-    let order: Record<SpSort, number[]> = { name: [], year: [], records: [], family: [] };
-    function buildOrder() {
+    // ---- sort permutations: built on first use, per kingdom, and kept ----
+    // v3.2 B1: they were three eager localeCompare sorts of 21,585 rows on every kingdom load
+    // (~1.8 s at 4x CPU) although only one is ever on screen. Ties break by row index: the
+    // index is already ORDER BY name, so that is the name order without comparing strings.
+    const orders = new Map<K, Partial<Record<SpSort, number[]>>>();
+    const collator = new Intl.Collator('en');
+    function orderOf(sort: SpSort): number[] {
+      const k = loadedFor!;
+      const memo = orders.get(k) ?? orders.set(k, {}).get(k)!;
+      if (memo[sort]) return memo[sort]!;
       const rows = idx!.rows;
       const all = rows.map((_, i) => i);
-      order = {
-        name: all, // species-*.json is already ORDER BY taxon_name
-        records: [...all].sort((a, b) => rows[b][3] - rows[a][3] || rows[a][0].localeCompare(rows[b][0])),
-        year: [...all].sort((a, b) => {
-          const ya = f!.year?.[a] || 0, yb = f!.year?.[b] || 0;
-          if (!ya && !yb) return rows[a][0].localeCompare(rows[b][0]);
-          if (!ya) return 1;
-          if (!yb) return -1;
-          return ya - yb || rows[a][0].localeCompare(rows[b][0]);
-        }),
-        family: [...all].sort((a, b) => {
-          const fa = rows[a][1] >= 0 ? idx!.families[rows[a][1]] : '￿';
-          const fb = rows[b][1] >= 0 ? idx!.families[rows[b][1]] : '￿';
-          return fa.localeCompare(fb) || rows[a][0].localeCompare(rows[b][0]);
-        }),
-      };
+      let o = all;
+      if (sort === 'records') o = all.sort((a, b) => rows[b][3] - rows[a][3] || a - b);
+      else if (sort === 'year') {
+        const y = f!.year;
+        o = all.sort((a, b) => {
+          const ya = y?.[a] || 0, yb = y?.[b] || 0;
+          if (!ya || !yb) return (ya ? -1 : yb ? 1 : 0) || a - b;
+          return ya - yb || a - b;
+        });
+      } else if (sort === 'family') {
+        // Rank families once (257 names), then sort rows by an integer.
+        const rank = idx!.families.map((_, i) => i).sort((a, b) => collator.compare(idx!.families[a], idx!.families[b]));
+        const pos = new Int32Array(idx!.families.length);
+        rank.forEach((fi, r) => { pos[fi] = r; });
+        const key = (i: number) => (rows[i][1] >= 0 ? pos[rows[i][1]] : 1e9);
+        o = all.sort((a, b) => key(a) - key(b) || a - b);
+      }
+      return (memo[sort] = o);
     }
 
     function populateFilters() {
@@ -189,7 +214,7 @@ const mapAsset = { paths: deptPaths.map((p) => ({ name: p.name, d: p.d })), widt
       const depIdx = s.dep[0] ? f.depts.indexOf(s.dep[0]) : -1;
       const endemicOnly = s.st === 'endemica';
       const F = idx.meta.flags;
-      const base = order[s.sort];
+      const base = orderOf(s.sort);
       const out: number[] = [];
       for (const i of base) {
         const r = idx.rows[i];
@@ -206,7 +231,6 @@ const mapAsset = { paths: deptPaths.map((p) => ({ name: p.name, d: p.d })), widt
     }
 
     // ---- virtual list: fixed row height, windowed rendering ----------------------
-    const ROW_H = 44;
     const CARD_MIN = 200;
     const OVERSCAN = 6;
     function cols(): number {
@@ -214,22 +238,15 @@ const mapAsset = { paths: deptPaths.map((p) => ({ name: p.name, d: p.d })), widt
       return Math.max(1, Math.floor($list.clientWidth / CARD_MIN));
     }
     function rowH(): number {
-      return store.get().view === 'grid' ? 120 : ROW_H;
+      return store.get().view === 'grid' ? CARD_H : ROW_H;
     }
 
     function rowHtml(i: number, posinset: number): string {
       const r = idx!.rows[i];
-      const fam = r[1] >= 0 ? idx!.families[r[1]] : '—';
-      const sel = r[0] === store.get().sp;
-      const grid = store.get().view === 'grid';
-      const year = f!.year?.[i];
-      if (grid) {
-        return `<button type="button" class="sp-card" role="option" tabindex="-1" id="sp-opt-${i}" data-i="${i}" aria-selected="${sel}" aria-posinset="${posinset}" aria-setsize="${matched.length}">
-          <span class="sci">${esc(r[0])}</span><span class="sp-fam">${esc(fam)}</span>
-          <span class="sp-meta mono">${r[3] ? n(r[3]) + ' ' + t(locale, 'species.grid.records') : t(locale, 'species.grid.records')} · ${year ? year : t(locale, 'species.grid.noYear')}</span></button>`;
-      }
-      return `<button type="button" class="sp-row" role="option" tabindex="-1" id="sp-opt-${i}" data-i="${i}" aria-selected="${sel}" aria-posinset="${posinset}" aria-setsize="${matched.length}">
-        <span class="sci">${esc(r[0])}</span><span class="sp-fam">${esc(fam)}</span><span class="sp-occ mono">${r[3] ? n(r[3]) : '·'}</span></button>`;
+      return speciesRowHtml(locale, {
+        i, name: r[0], family: r[1] >= 0 ? idx!.families[r[1]] : null, records: r[3], year: f!.year?.[i] || null,
+        selected: r[0] === store.get().sp, posinset, setsize: matched.length,
+      }, store.get().view === 'grid');
     }
 
     /** Keyboard cursor: an index into `matched`. -1 = none; reset whenever `matched` changes. */
@@ -259,6 +276,7 @@ const mapAsset = { paths: deptPaths.map((p) => ({ name: p.name, d: p.d })), widt
         }
       }
       $viewport.innerHTML = html;
+      delete $viewport.dataset.ssr;
     }
 
     function renderList() {
@@ -335,8 +353,8 @@ const mapAsset = { paths: deptPaths.map((p) => ({ name: p.name, d: p.d })), widt
         }
         if (store.get() !== s) return;
         loadedFor = s.k;
-        buildOrder();
         populateFilters();
+        prefetchOther(s.k);
       }
       // After populateFilters(): a family or department option only exists once its kingdom loaded.
       $sort.value = s.sort;
@@ -365,7 +383,10 @@ const mapAsset = { paths: deptPaths.map((p) => ({ name: p.name, d: p.d })), widt
 
     $list.addEventListener('click', (e) => {
       const b = (e.target as HTMLElement).closest<HTMLElement>('[data-i]');
-      if (!b || !idx) return;
+      if (!b) return;
+      // A build-time row clicked before the index arrived: select it by name; the detail
+      // pane renders when the data lands (render() awaits it).
+      if (!idx) { store.set({ sp: b.querySelector('.sci')?.textContent ?? null }); return; }
       // Keep focus on the listbox and move the keyboard cursor to the clicked row.
       active = matched.indexOf(Number(b.dataset.i));
       $list.focus({ preventScroll: true });
@@ -403,8 +424,27 @@ const mapAsset = { paths: deptPaths.map((p) => ({ name: p.name, d: p.d })), widt
     $list.addEventListener('scroll', () => requestAnimationFrame(renderWindow));
     addEventListener('resize', () => requestAnimationFrame(renderWindow));
 
+    // The other kingdom is small (Fungi: ~35 KB compressed): fetch it when idle, so the
+    // toggle does not wait on the network.
+    function prefetchOther(k: K) {
+      const other: K = k === 'plantae' ? 'fungi' : 'plantae';
+      if (cache.has(other)) return;
+      const idle = window.requestIdleCallback ?? ((cb: () => void) => setTimeout(cb, 1500));
+      idle(() => { void load(other).catch(() => cache.delete(other)); });
+    }
+
+    // Build-time rows are the default view (Plants, by name, no filter). Any other URL state
+    // would show the wrong rows until the index lands: drop them, the count says it is loading.
+    {
+      const s0 = store.get();
+      const isDefault = s0.k === 'plantae' && s0.sort === 'name' && s0.view === 'list' && !s0.fam && !s0.dep.length && !s0.st && !$q.value;
+      if (!isDefault) { $viewport.innerHTML = ''; delete $viewport.dataset.ssr; }
+    }
+
     store.subscribe(() => void render());
-    // The index (~1.6 MB combined) is fetched once the page has painted.
+    // The index is fetched once the page has painted. Starting it at boot instead (v3.2 B1
+    // A/B) moved Lighthouse's LCP 1.74 → 3.73 s: the 1.6 MB lands in the LCP path again (see
+    // HANDOFF "Tried and failed"). The build-time rows are what makes the first row fast.
     void afterPaint().then(render);
   }
 </script>

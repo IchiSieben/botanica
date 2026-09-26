@@ -1,0 +1,10 @@
+# Botánica (/botanica/) — headers only, no rewrites. The vhost's CSP and other headers come
+# from the landing's root .htaccess and still apply here.
+# v3.2 B1: content-hashed data exports (data/<name>.<10 hex>.json) never change under the same
+# URL. Without this they had no Cache-Control and the CDN served them DYNAMIC from the origin
+# on every visit (docs/PERF-v3.2.md).
+<IfModule mod_headers.c>
+  <FilesMatch "\.[0-9a-f]{10}\.json$">
+    Header set Cache-Control "public, max-age=31536000, immutable"
+  </FilesMatch>
+</IfModule>

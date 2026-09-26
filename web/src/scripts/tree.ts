@@ -26,6 +26,7 @@ import { aggregate, type Facets } from '../lib/facets';
 import { t, fmt, localePath, type Key, type Locale } from '../lib/i18n';
 import { deptName } from '../lib/depts';
 import { afterPaint } from '../lib/after-paint';
+import { dataUrl } from '../lib/data-url';
 import { GROUP_RANKS, nodeSize, type TreeNode } from '../lib/tree-model';
 import { pathIndex, sunburstData, seriesOption as sunburstSeriesOption, type Tokens as SunTokens } from './tree-sunburst';
 
@@ -128,7 +129,7 @@ export function bootTree() {
 
   const facets = new Map<K, Promise<Facets>>();
   const loadFacets = (k: K) => {
-    if (!facets.has(k)) facets.set(k, fetch(`${base}data/facets-${k}.json`, { priority: 'low' }).then((r) => {
+    if (!facets.has(k)) facets.set(k, fetch(dataUrl(`facets-${k}`), { priority: 'low' }).then((r) => {
       if (!r.ok) { facets.delete(k); throw new Error(`facets-${k}: ${r.status}`); }
       return r.json();
     }));
@@ -156,7 +157,11 @@ export function bootTree() {
     return ix;
   };
 
+  // v3.2 B1: the ECharts chunk (~154 KB br) starts downloading right after the first paint,
+  // not after the paint AND the IntersectionObserver. Starting it at boot (A/B) moved
+  // Lighthouse's LCP 1.84 → 2.8 s, so it stays behind the paint. 3D does not need it.
   let echartsMod: Promise<typeof import('../lib/echarts-tree')> | null = null;
+  if (boot !== '3d') void afterPaint().then(() => { echartsMod ??= import('../lib/echarts-tree'); });
   let tree3dMod: Promise<typeof import('./tree-3d')> | null = null;
   let T: Tokens;
 
