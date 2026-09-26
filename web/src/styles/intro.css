@@ -1,7 +1,7 @@
 /* Intro infographic (v3 item 1). Tokens from global.css only.
    Static by default: every element is fully visible without the motion guards below. */
 
-.intro { --in-gap: clamp(56px, 8vw, 104px); }
+.intro { --in-gap: clamp(40px, 6vh, 72px); }
 .intro h2 { font-size: clamp(1.5rem, 1.1rem + 1.6vw, 2.25rem); letter-spacing: -0.02em; }
 .intro h3 { font-size: 17px; }
 .in-sub { margin-top: 8px; max-width: 62ch; color: rgb(var(--muted)); }
@@ -19,11 +19,20 @@
 }
 .in-src::before { content: '↗ '; }
 
+/* v3.2 B3: one glance per section. Each block below reads whole in one viewport at
+   1440×900 and 2560×1080, and scrolling settles on it (scroll-snap proximity, never
+   mandatory). The opening no longer fills the viewport: at 2560×1080 it left a dead band
+   of ~400 px before "Peru, by the numbers". */
+@media (prefers-reduced-motion: no-preference) {
+  html:not(.has-state):has(.intro) { scroll-snap-type: y proximity; }
+}
+.intro > section, #explorar { scroll-snap-align: start; scroll-margin-top: 103px; }
+@media (min-width: 720px) { .intro > section, #explorar { scroll-margin-top: 61px; } }
+
 /* a. Opening screen ------------------------------------------------------- */
 .in-open {
-  min-height: calc(100svh - 103px);
   display: flex; flex-direction: column; justify-content: center; gap: 18px;
-  padding-top: 40px; padding-bottom: 48px;
+  padding-top: clamp(40px, 9vh, 112px); padding-bottom: clamp(24px, 4vh, 48px);
 }
 .in-kicker { color: rgb(var(--accent-strong)); }
 .in-open h1 { font-size: clamp(2.25rem, 1.2rem + 4.6vw, 4.5rem); line-height: 1; letter-spacing: -0.03em; max-width: 16ch; }
@@ -70,6 +79,12 @@
 /* c. Timeline ------------------------------------------------------------------ */
 .in-tl { padding-top: var(--in-gap); }
 .in-tl-list { list-style: none; margin: 24px 0 0; padding: 0; max-width: 760px; }
+/* Two columns from 1280 px: the 12 rows fit one screen, read top to bottom, then right. */
+@media (min-width: 1280px) {
+  .in-tl-list { max-width: none; columns: 2; column-gap: 56px; }
+  .in-tl-item { break-inside: avoid; padding-bottom: 18px; }
+  .in-tl-item:last-child { padding-bottom: 18px; }
+}
 .in-tl-item {
   position: relative; display: grid; grid-template-columns: 1fr; gap: 2px;
   padding: 0 0 22px 28px; border-left: 2px solid rgb(var(--border)); margin-left: 7px;
@@ -91,6 +106,9 @@
 .in-when:hover .in-v { text-decoration-color: currentColor; }
 @media (min-width: 720px) {
   .in-tl-item { grid-template-columns: 250px 1fr; gap: 16px; align-items: baseline; }
+}
+@media (min-width: 1280px) {
+  .in-tl-item { grid-template-columns: 190px 1fr; }
 }
 
 /* d. How the atlas works ------------------------------------------------------------ */
@@ -165,4 +183,4 @@
   to { transform: none; }
 }
 
-@media (min-width: 720px) { .in-open { min-height: calc(100svh - 61px); } }
+

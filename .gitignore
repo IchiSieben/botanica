@@ -40,3 +40,4 @@ docs/handoffs/
 
 # Lighthouse raw reports (medians are recorded in docs/PERF-v3.2.md)
 evidence/**/lh-*/
+web/.tmp/

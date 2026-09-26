@@ -28,7 +28,7 @@ const list: Source[] = sources.map((k) => SOURCES[k]);
     <H class="cf-title">{title}</H>
     {Astro.slots.has('tools') && <div class="cf-tools"><slot name="tools" /></div>}
   </div>
-  <p class="cf-howto"><span class="cf-k">{t(locale, 'frame.howto')}</span> <span data-cf-howto>{howto}</span></p>
+  <p class="cf-howto"><button type="button" class="cf-k cf-howto-k" aria-expanded="true">{t(locale, 'frame.howto')}</button> <span data-cf-howto>{howto}</span></p>
   <div class="cf-body"><slot /></div>
   <figcaption class="cf-foot">
     {Astro.slots.has('legend') && <div class="cf-legend" role="group" aria-label={t(locale, 'frame.legend')}><slot name="legend" /></div>}
@@ -40,3 +40,21 @@ const list: Source[] = sources.map((k) => SOURCES[k]);
     </p>
   </figcaption>
 </figure>
+
+<script>
+  // v3.2 B3: "How to read this" is whole on the first visit, then one line with an expand
+  // control (the label). Base.astro's head script sets .howto-seen before the first paint.
+  const seen = document.documentElement.classList.contains('howto-seen');
+  document.querySelectorAll<HTMLButtonElement>('.cf-howto-k').forEach((b) => {
+    const p = b.parentElement!;
+    p.toggleAttribute('data-open', !seen);
+    p.setAttribute('data-js', '');
+    b.setAttribute('aria-expanded', String(!seen));
+    b.addEventListener('click', () => {
+      const open = !p.hasAttribute('data-open');
+      p.toggleAttribute('data-open', open);
+      b.setAttribute('aria-expanded', String(open));
+    });
+  });
+  try { localStorage.setItem('botanica.howto.seen', '1'); } catch {}
+</script>

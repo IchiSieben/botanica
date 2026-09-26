@@ -83,6 +83,8 @@ const abs = (l: Locale) => new URL(localePath(l, slug), Astro.site).href;
         if (stored === 'light' || (!stored && matchMedia('(prefers-color-scheme: light)').matches)) {
           document.documentElement.classList.add('light');
         }
+        // v3.2 B3: after the first visit, chart "How to read this" lines start collapsed.
+        try { if (localStorage.getItem('botanica.howto.seen')) document.documentElement.classList.add('howto-seen'); } catch {}
       })();
     </script>
   </head>
