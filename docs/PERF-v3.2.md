@@ -89,3 +89,33 @@ Starting the index fetch and the ECharts import at boot put them back in the LCP
 result HANDOFF "Tried and failed" records for v2), so both stay behind `afterPaint()`. The
 ECharts import now starts right after the paint instead of after the paint *and* the
 IntersectionObserver.
+
+## Per item (local `dist`, Lighthouse mobile, median of 3)
+
+The build machine ran at 100 % CPU for the whole session (VS Code processes, not ours), so TBT
+and INP swing by hundreds of milliseconds between identical runs. Where a single run looked
+like a regression, the item was re-measured **interleaved** with the baseline on the same
+machine, and that pair is the number that counts.
+
+| Item | Page | Result | Baseline / note |
+|---|---|---|---|
+| B2 | `/especies/` | 99 · LCP 1.89 · CLS 0 | B1 99 |
+| B2 | `/es/especies/` | 93 · CLS 0.081 | v3.1 same CLS (font swap in the lede) |
+| B3 | `/` · `/es/` | 96 · 98 | B1 96 |
+| B3 | `/filogenia/` | 93 · CLS 0.073 | intermittent tool-row wrap, also in v3.1; fixed in B5 |
+| B5 | `/filogenia/` · `/es/filogenia/` | 96 · 94, CLS 0 | B3 93 |
+| B5 | tree order-list tap (INP gate) | median 160 / 128 ms | B3, interleaved: 160 / 104 ms |
+| B4 | `/` | 97 | B3 96 |
+| B4 | `/es/` | 90 (first run 52, TBT 856) | v3.1, interleaved: 88 |
+| B6 | `/especies/` | 99 | B2 99 |
+| B6 | `/filogenia/` · `/es/filogenia/` | 98 · 97, CLS 0 | B5 96 · 94 (after stacking the tree header below 600 px: the web font wrapped it after load, CLS 0.055) |
+| B6 | `/` · `/es/` | 96 · 98 | v3.1, interleaved: 99 · 94 (TBT 175/120 vs 35/225: each side wins one page; read as noise) |
+
+### Still to measure: live, after the mirror
+
+The budgets of B1 (first species row < 2.5 s, Fungi switch < 1 s cached, tree first paint
+< 2.5 s, cold, mobile throttle) are about the live site: the CDN challenge and the origin's
+DYNAMIC JSON are not reproducible locally. `node web/scripts/perf-live.mjs
+https://<domain>/botanica/ both 3 evidence/v3.2/perf-live-after.json` once the Landing mirror is
+pushed (see HANDOFF MIRROR-READY), and whether hCDN now serves `data/*.<hash>.json` with
+`immutable` (`x-hcdn-cache-status: HIT` on the second visit).

@@ -25,6 +25,10 @@ const nav = [
 ];
 const slug = { explore: '', species: 'especies/', tree: 'filogenia/', changes: 'cambios/' }[page];
 const other: Locale = locale === 'en' ? 'es' : 'en';
+// Way back to the portfolio (v3.2 B6): the landing serves /botanica/ from its own vhost, so these
+// are same-origin root paths (not under the /botanica/ base).
+const ic7Home = locale === 'en' ? '/' : `/${locale}/`;
+const ic7Ficha = `${ic7Home}projects/botanica/`;
 const abs = (l: Locale) => new URL(localePath(l, slug), Astro.site).href;
 ---
 
@@ -90,6 +94,12 @@ const abs = (l: Locale) => new URL(localePath(l, slug), Astro.site).href;
   </head>
   <body>
     <a class="skip" href="#main">{t(locale, 'skip')}</a>
+    <nav class="ic7" aria-label={t(locale, 'ic7.nav')}>
+      <div class="wrap ic7-row">
+        <a href={ic7Ficha}><span aria-hidden="true">←</span>IchiSieben<span class="sr-only">: {t(locale, 'ic7.back')}</span></a>
+        <a href={ic7Home}>{t(locale, 'ic7.home')}</a>
+      </div>
+    </nav>
     <header class="site">
       <div class="wrap bar">
         <a class="brand" href={localePath(locale)} aria-label={t(locale, 'site.brand')}>
@@ -181,6 +191,18 @@ const abs = (l: Locale) => new URL(localePath(l, slug), Astro.site).href;
     background: rgb(var(--accent)); color: rgb(var(--bg)); font-weight: 600;
   }
   .skip:focus { top: 8px; }
+  /* Not sticky: it scrolls away, so the sticky header (and every one-glance budget) keeps its height. */
+  /* scroll-snap-align: the intro's proximity snap (intro.css) would otherwise pull a fresh
+     page 33 px down to its first section and hide this strip. The top is a snap point too. */
+  .ic7 { scroll-snap-align: start; display: block; margin: 0; overflow: visible; background: rgb(var(--surface)); border-bottom: 1px solid rgb(var(--border)); font-size: 13px; }
+  .ic7-row { display: flex; align-items: center; justify-content: space-between; gap: 12px; min-height: 32px; }
+  .ic7 a {
+    display: inline-flex; align-items: center; min-height: 32px; padding: 0; border-radius: 0; font-size: 13px;
+    color: rgb(var(--muted)); text-decoration: none; white-space: nowrap;
+  }
+  .ic7 a:first-child { gap: 0.4em; color: rgb(var(--fg)); font-weight: 600; }
+  .ic7 a:hover { color: rgb(var(--fg)); text-decoration: underline; text-underline-offset: 3px; }
+  @media (pointer: coarse) { .ic7 a { min-height: 44px; } }
   header.site {
     position: sticky; top: 0; z-index: 40;
     background: rgb(var(--bg) / 0.86); backdrop-filter: blur(10px);
@@ -222,7 +244,7 @@ const abs = (l: Locale) => new URL(localePath(l, slug), Astro.site).href;
   :global(:root.light) .ic-dark, :global(:root.light) .txt-dark { display: none; }
   @media (max-width: 719px) {
     .bar { flex-wrap: wrap; row-gap: 0; padding-top: 4px; }
-    nav { order: 3; flex: 1 0 100%; margin-left: -10px; }
+    .bar nav { order: 3; flex: 1 0 100%; margin-left: -10px; }
   }
   @media (max-width: 399px) {
     .tg-k { position: absolute; width: 1px; height: 1px; overflow: hidden; clip: rect(0 0 0 0); white-space: nowrap; }
@@ -230,7 +252,7 @@ const abs = (l: Locale) => new URL(localePath(l, slug), Astro.site).href;
   }
   @media (max-width: 560px) {
     .brand span { display: none; }
-    nav a { padding: 0 8px; font-size: 14px; }
+    .bar nav a { padding: 0 8px; font-size: 14px; }
   }
   footer.site {
     margin-top: 64px; border-top: 1px solid rgb(var(--border)); padding: 24px 0 40px;

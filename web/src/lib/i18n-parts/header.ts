@@ -13,6 +13,10 @@ export default part(
     'hdr.light': 'light',
     'hdr.themeAriaDark': 'Theme: dark. Switch to light',
     'hdr.themeAriaLight': 'Theme: light. Switch to dark',
+    // Way back to the portfolio (v3.2 B6).
+    'ic7.nav': 'IchiSieben portfolio',
+    'ic7.back': 'Botánica project page',
+    'ic7.home': 'Portfolio home',
   },
   {
     'hdr.lang': 'Idioma',
@@ -24,5 +28,8 @@ export default part(
     'hdr.light': 'claro',
     'hdr.themeAriaDark': 'Tema: oscuro. Cambiar a claro',
     'hdr.themeAriaLight': 'Tema: claro. Cambiar a oscuro',
+    'ic7.nav': 'Portafolio IchiSieben',
+    'ic7.back': 'ficha del proyecto Botánica',
+    'ic7.home': 'Inicio del portafolio',
   },
 );

@@ -134,7 +134,9 @@ for (const locale of ['en', 'es']) {
     }
     const cls = [...clsRuns].sort((a, b) => a - b)[1];
     const reveal = await page.evaluate(() => { const a = document.querySelector('[data-intro-reveal]'); return a && getComputedStyle(a).display !== 'none'; });
-    check(top >= 0 && top <= 120, `?dep=LORETO → explorer at ${Math.round(top)} px`, `${url}?dep=LORETO: explorer top ${Math.round(top)} px`);
+    // v3.2 B6: a deep link does not scroll, so the portfolio strip above the header counts too.
+    const strip = await page.evaluate(() => document.querySelector('nav.ic7')?.getBoundingClientRect().height ?? 0);
+    check(top >= 0 && top <= 120 + strip, `?dep=LORETO → explorer at ${Math.round(top)} px (strip ${Math.round(strip)} px)`, `${url}?dep=LORETO: explorer top ${Math.round(top)} px (strip ${Math.round(strip)} px)`);
     const runs = clsRuns.map((v) => v.toFixed(3)).join(' ');
     check(cls <= 0.05, `CLS ${cls.toFixed(3)} (median of ${runs})`, `${url}?dep=LORETO: CLS ${cls.toFixed(3)} (median of ${runs})`);
     check(reveal, '"About this atlas" link shown', `${url}?dep=LORETO: reveal link hidden`);
