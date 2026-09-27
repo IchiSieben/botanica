@@ -112,24 +112,20 @@
 .zero-opt b { font-family: var(--font-mono); color: rgb(var(--accent-strong)); }
 @media (pointer: coarse) { .zero-opt { min-height: 44px; } }
 
-/* ---- change highlight (v3.1 item 1): compositor-only (opacity/transform of a
-   pseudo-element), so it never triggers layout. Off under reduced motion. ---- */
+/* ---- change highlight (v3.1 item 1, v3.2 B4): one neutral ring round the panel that
+   changed, fading out once. No fill: the v3.1 accent wash tinted the whole panel, and colour
+   in this explorer means data (order, quantile), not "something happened". Compositor-only
+   (opacity of a pseudo-element), so it never triggers layout. Off under reduced motion. ---- */
 .ex .cf, .ex #kpis { position: relative; }
 .ex .cf.cf-flash::after, .ex #kpis.cf-flash::after {
   content: ''; position: absolute; inset: -4px; z-index: 1; pointer-events: none;
-  border-radius: 12px; background: rgb(var(--accent) / 0.16); transform-origin: center;
-  animation: cf-flash-pulse 900ms ease-out;
+  border-radius: 12px; box-shadow: 0 0 0 2px rgb(var(--fg) / 0.35); opacity: 0;
+  animation: cf-flash-pulse 700ms ease-out;
 }
-@keyframes cf-flash-pulse {
-  from { opacity: 0.6; transform: scale(1); }
-  to { opacity: 0; transform: scale(1.015); }
-}
+@keyframes cf-flash-pulse { from { opacity: 1; } to { opacity: 0; } }
 /* Same pulse under a second name: explorer.ts swaps cf-flash-b to restart it without a reflow. */
 .ex .cf.cf-flash-b::after, .ex #kpis.cf-flash-b::after { animation-name: cf-flash-pulse-b; }
-@keyframes cf-flash-pulse-b {
-  from { opacity: 0.6; transform: scale(1); }
-  to { opacity: 0; transform: scale(1.015); }
-}
+@keyframes cf-flash-pulse-b { from { opacity: 1; } to { opacity: 0; } }
 @media (prefers-reduced-motion: reduce) {
   .ex .cf.cf-flash::after, .ex #kpis.cf-flash::after { animation: none; display: none; }
 }
@@ -257,7 +253,7 @@
 }
 .legend .lg i { display: block; width: 28px; height: 12px; border-radius: 3px; }
 .legend .lg span { font-family: var(--font-mono); font-size: 11px; color: rgb(var(--muted)); min-height: 1em; }
-.legend .lg.on { border-color: rgb(var(--accent)); }
+.legend .lg.on { border-color: rgb(var(--fg)); }
 .legend .lg.q0 i { background: var(--q0); } .legend .lg.q1 i { background: var(--q1); }
 .legend .lg.q2 i { background: var(--q2); } .legend .lg.q3 i { background: var(--q3); }
 .legend .lg.q4 i { background: var(--q4); } .legend .lg.q5 i { background: var(--q5); }
@@ -314,7 +310,13 @@
   .tile.smd .nm, .tile.smd .v { display: none; }
 }
 .tile:hover { border-color: rgb(var(--fg)); }
-.tile.on { border-color: rgb(var(--fg)); box-shadow: inset 0 0 0 2px rgb(var(--bg)); }
+.tile:hover { z-index: 1; }
+/* Selected (v3.2 B4): a ring in the tile's own order colour, framed by a hairline in --fg so
+   pale orders still clear 3:1 against the surface. z-index keeps later tiles off the ring. */
+.tile.on {
+  z-index: 2; border-color: rgb(var(--bg));
+  box-shadow: 0 0 0 3px var(--c), 0 0 0 4px rgb(var(--fg));
+}
 .tile.rest { cursor: default; background: rgb(var(--surface-2)); color: rgb(var(--muted)); }
 .tile.rest .nm { font-style: normal; }
 @media (max-width: 559px) {
@@ -332,7 +334,7 @@
   }
   .tm .tile.sm .nm, .tm .tile.sm .v { display: block; }
   .tm .tile .nm { font-size: 14px; }
-  .tm .tile.on { outline: 2px solid rgb(var(--accent)); outline-offset: -2px; }
+  .tm .tile.on { box-shadow: inset 0 0 0 2px var(--c), inset 0 0 0 3px rgb(var(--fg)); }
 }
 
 /* ---- bars ---- */
@@ -344,7 +346,9 @@
 }
 div.bar { cursor: default; }
 button.bar:hover { background: rgb(var(--surface-2)); }
-.bar.on { border-color: rgb(var(--accent)); background: rgb(var(--accent) / 0.08); }
+/* Selected (v3.2 B4): outline only, no wash; origin bars carry no category colour of their own,
+   so the ring is --fg. */
+.bar.on { border-color: rgb(var(--fg)); }
 .bar .bl { overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
 .bar .bv { font-family: var(--font-mono); font-size: 13px; color: rgb(var(--muted)); font-variant-numeric: tabular-nums; }
 .bar .bt { grid-column: 1 / -1; height: 6px; border-radius: 3px; background: rgb(var(--surface-2)); overflow: hidden; }
@@ -352,7 +356,7 @@ button.bar:hover { background: rgb(var(--surface-2)); }
   display: block; height: 100%; background: rgb(var(--muted) / 0.7); border-radius: 3px;
   transform-origin: left; transition: transform var(--ic7-t-enter) var(--ic7-ease-out);
 }
-.bar.on .bt i { background: rgb(var(--accent)); }
+.bar.on .bt i { background: rgb(var(--fg)); }
 .bar.muted .bl { color: rgb(var(--muted)); font-style: italic; }
 .bar.muted .bt i { background: repeating-linear-gradient(90deg, rgb(var(--muted) / 0.5) 0 4px, transparent 4px 7px); }
 /* Zero rows dim their text to --muted (still 4.5:1), not the whole row's opacity. */

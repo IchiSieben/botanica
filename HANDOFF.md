@@ -14,6 +14,18 @@ Landing mirror) still to do.
 - B4 finding so far: the panel tint is `.cf-flash::after` (explorer.css) — `rgb(var(--accent) /
   0.16)` over the whole panel, 900 ms pulse, added by explorer.ts `morphFlash()` on every
   panel whose HTML changed. The pink flash: see "B4 — pink flash" below once instrumented.
+- **B4 — pink flash, instrumented, not reproduced.** Script (kept out of the repo, `web/.tmp/pink.mjs`):
+  CDP `Animation.animationStarted` log + a rAF sampler of computed background/border/outline/
+  box-shadow/fill/stroke (and ::before/::after) on every `.ex` element for 1.5 s, flagging hue
+  300–360°/0–15° with saturation > 30 %, plus `document.activeElement` and its outline. Ran for
+  map click, family tile, origin bar, decade, chip ×, in light and dark, at 1440 and at 390
+  touch. Only animations: `cf-flash-pulse` (the accent wash) and the 320 ms bar transforms. The
+  only new pinkish values were order-coloured family tiles entering the treemap after a
+  department filter (Malpighiaceae, Chrysobalanaceae `#e15759`; Solanaceae is pink too) —
+  data, not a transient. No focus ring in a system colour (focus-visible false on clicks). Most
+  likely reading, NOT proven: a pink/red tile appearing under the accent wash as the panel
+  pulsed. B4 removes the wash either way. If the owner still sees pink: which page, which click,
+  which browser (Brave?) — see Open questions.
 - Filogenia CLS 0.077 (intermittent, also in v3.1): the tree tool row wrapped when JS set
   `data-view`; fixed in B5 by rendering `data-view="linear"` in the HTML.
 - INP gate checks fail at random under this machine's load (VS Code at 100 % CPU, not
