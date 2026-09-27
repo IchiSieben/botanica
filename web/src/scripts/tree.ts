@@ -26,7 +26,7 @@ import { aggregate, type Facets } from '../lib/facets';
 import { t, fmt, localePath, type Key, type Locale } from '../lib/i18n';
 import { deptName } from '../lib/depts';
 import { afterPaint } from '../lib/after-paint';
-import { dataUrl } from '../lib/data-url';
+import { fetchData } from '../lib/data-url';
 import { GROUP_RANKS, nodeSize, type TreeNode } from '../lib/tree-model';
 import { pathIndex, sunburstData, labelWidth, seriesOption as sunburstSeriesOption, type Tokens as SunTokens } from './tree-sunburst';
 
@@ -129,7 +129,7 @@ export function bootTree() {
 
   const facets = new Map<K, Promise<Facets>>();
   const loadFacets = (k: K) => {
-    if (!facets.has(k)) facets.set(k, fetch(dataUrl(`facets-${k}`), { priority: 'low' }).then((r) => {
+    if (!facets.has(k)) facets.set(k, fetchData(`facets-${k}`, { priority: 'low' }).then((r) => {
       if (!r.ok) { facets.delete(k); throw new Error(`facets-${k}: ${r.status}`); }
       return r.json();
     }));
@@ -356,8 +356,11 @@ export function bootTree() {
         ? `<span class="crumb-step"${cur}>${esc(node.name)}</span>`
         : `<button type="button" data-crumb-to="${esc(node.id)}"${cur}>${esc(node.name)}</button>`;
     });
+    // Rebuilding the crumb must not drop keyboard focus: note the focused step, restore it.
+    const had = box.contains(document.activeElement) ? (document.activeElement as HTMLElement).dataset.crumbTo : undefined;
     box.innerHTML = steps.join('<span class="crumb-sep" aria-hidden="true">›</span>')
       + (target ? `<button type="button" class="crumb-clear" data-clear>✕ ${esc(t(locale, 'tree.clear'))}</button>` : '');
+    if (had) box.querySelector<HTMLElement>(`[data-crumb-to="${CSS.escape(had)}"]`)?.focus();
   }
 
   /** `?view=` written back (replaceState) so a shared link opens the same view. The store
@@ -748,7 +751,12 @@ export function bootTree() {
       });
     }
     root.querySelector('[data-crumb]')?.addEventListener('click', (e) => {
-      if ((e.target as Element).closest('[data-clear]')) { store.set({ ord: null, fam: null }); return; }
+      if ((e.target as Element).closest('[data-clear]')) {
+        store.set({ ord: null, fam: null });
+        // The button is gone (and in the linear view the whole crumb hides): keep focus nearby.
+        root.querySelector<HTMLElement>('[data-reset]')?.focus();
+        return;
+      }
       const b = (e.target as Element).closest<HTMLButtonElement>('[data-crumb-to]');
       if (!b) return;
       const id = b.dataset.crumbTo!;
@@ -813,7 +821,7 @@ export function bootTree() {
     const group = s.fam ?? s.ord;
     root.querySelector('[data-side-title]')!.textContent = `${t(locale, 'tree.group')}: ${group ?? t(locale, 'tree.all')}`;
     const q: State = { ...EMPTY, k: s.k, ord: s.ord, fam: s.fam };
-    root.querySelector<HTMLAnchorElement>('[data-open]')!.href = `${localePath(locale)}${serialize(q)}`;
+    root.querySelector<HTMLAnchorElement>('[data-open-ex]')!.href = `${localePath(locale)}${serialize(q)}`;
 
     // Nothing selected: the build already rendered the whole-kingdom bars.
     if (!s.ord && !s.fam && !facets.has(s.k)) return;

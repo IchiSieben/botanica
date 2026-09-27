@@ -101,6 +101,21 @@ export function serialize(s: State): string {
   return q ? `?${q}` : '';
 }
 
+const OWNED = new Set(['k', 'dep', 'ord', 'fam', 'st', 'lf', 'y0', 'y1', 'sp', 'm', 'sort', 'view']);
+
+/** `query` plus the current URL's keys this store does not own, so a store write keeps them.
+ *  `view` is shared: list/grid belong to the species page, any other value (the tree's
+ *  sunburst/3d) to someone else. */
+function withForeign(query: string): string {
+  const out = new URLSearchParams(query);
+  for (const [k, v] of new URLSearchParams(location.search)) {
+    const foreign = !OWNED.has(k) || (k === 'view' && !VIEWS.includes(v as SpView));
+    if (foreign && !out.has(k)) out.set(k, v);
+  }
+  const q = out.toString();
+  return q ? `?${q}` : '';
+}
+
 /** True when any filter narrows the species set (the map metric is not a filter). */
 export const isFiltered = (s: State): boolean =>
   !!(s.dep.length || s.ord || s.fam || s.st || s.lf || s.y0 != null || s.y1 != null);
@@ -122,8 +137,11 @@ export function createStore() {
     const reset = patch.k && patch.k !== prev.k
       ? { ord: null, fam: null, lf: null, st: null, sp: null, y0: null, y1: null } : {};
     const next = { ...state, ...reset, ...patch };
-    const url = `${location.pathname}${serialize(next)}${location.hash}`;
-    if (url === `${location.pathname}${location.search}${location.hash}`) return;
+    // Same state, no history entry. Compared as serialized state, not as URLs: the URL can
+    // carry keys another script owns (the tree's ?view=sunburst|3d), which never round-trip.
+    const query = serialize(next);
+    if (query === serialize(state)) return;
+    const url = `${location.pathname}${withForeign(query)}${location.hash}`;
     state = next;
     history[push ? 'pushState' : 'replaceState'](null, '', url);
     emit(prev);

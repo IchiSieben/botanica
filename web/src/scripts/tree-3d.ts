@@ -179,13 +179,17 @@ export function mountTree3D(el: HTMLElement, root: TreeNode, T: Tree3DTokens): T
   let selLabel: HTMLSpanElement | null = null;
   let tipFor: Placed | null = null;
   const v = new THREE.Vector3();
+  // Canvas size read once per frame, not per label: each label write would otherwise force a
+  // style recalculation for the next read.
+  let W = w(), H = h();
   const place = (span: HTMLElement, pos: THREE.Vector3, dy: number) => {
     v.copy(pos).project(camera);
     const off = v.z > 1 || Math.abs(v.x) > 1.02 || Math.abs(v.y) > 1.02;
     span.style.visibility = off ? 'hidden' : '';
-    if (!off) span.style.transform = `translate(${((v.x + 1) / 2) * w()}px, ${((1 - v.y) / 2) * h() + dy}px) translate(-50%, -100%)`;
+    if (!off) span.style.transform = `translate(${((v.x + 1) / 2) * W}px, ${((1 - v.y) / 2) * H + dy}px) translate(-50%, -100%)`;
   };
   const placeOverlay = () => {
+    W = w(); H = h();
     for (const [id, span] of labels) place(span, byId.get(id)!.pos, -8);
     if (selLabel && selectedId) place(selLabel, byId.get(selectedId)!.pos, -8);
     if (tipFor) place(tip, tipFor.pos, -18);

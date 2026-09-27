@@ -353,7 +353,33 @@ Every page is lighter than baseline: 336→209, 412→395, 296→253 KB.
   the overflow. The gate measures overflow in a strict viewport, touch targets under emulation.
 - The "other families" tail as a treemap tile took a third of the area; it is now a caption.
 
-## Reviewer findings (Opus, read-only, over 1b97936..HEAD)
+## Reviewer findings v3.2 (Opus, read-only, over e18bf72..b672593) — all applied
+
+1. **Applied.** B3's `data-open` on "How to read this" collided with the tree's "Open in explorer"
+   link (`querySelector('[data-open]')`): on a first visit the selection went into the
+   paragraph, the link kept `../`. Renamed apart: `data-howto-open` (ChartFrame/frame.css),
+   `data-sheet-open` (species bottom sheet), `data-open-ex` (the link). gate-tree3d now checks
+   the link carries `?ord=` on a first visit.
+2. **Applied.** Duplicate Back entries on `?view=sunburst|3d`: the store compared URLs, and the
+   URL carries a key it does not own. It now compares serialized state and keeps foreign query
+   keys (`withForeign`, store.ts). gate-tree3d checks `history.length` over no-op clicks.
+3. **Applied.** Focus lost after "Clear selection" and crumb rebuilds: Clear moves focus to
+   Reset; a rebuild restores focus to the same `data-crumb-to` step. Gated (keyboard Enter).
+4. **Applied.** DECISIONES revert note for hashed data was wrong (must remove the integration
+   *and* `vite.define`); fixed. Stale hashes after a later deploy: `fetchData()` falls back to
+   the plain file on an error status.
+5. **Open, live check.** `.htaccess` in `/botanica/` sets headers only, inside `FilesMatch`;
+   parent/child header rules merge on Apache, the landing says LiteSpeed. After the mirror:
+   `curl -sI https://<domain>/botanica/` and one `data/*.<hash>.json` must show the parent's
+   CSP, nosniff, Referrer-Policy and X-Author next to the new `Cache-Control`.
+6. **Applied (3 of 4).** Escape on the species sheet ignores events already handled and returns
+   focus to the list; the detail aside has its own label (`species.detail.label`), not a
+   dangling `aria-labelledby`; the 3D overlay reads the canvas size once per frame. **Not
+   changed:** scroll-snap over the explorer re-snapping on re-render — with `proximity` Chrome
+   only re-snaps when the page sits at a snap position (then it stays aligned to `#explorar`);
+   not reproduced, no gate runs interactions with snap on. Recorded as a risk.
+
+## Reviewer findings v3.1 (Opus, read-only, over 1b97936..HEAD)
 Applied:
 1. Cross-kingdom search lost the species (store reset applied after the patch) → reset first, gate covers it.
 2. Year described used the accepted name, not the basionym → ETL fixed, note in EN/ES updated.
@@ -369,37 +395,53 @@ Applied:
 Not applied: `esc` and the species-detail HTML are duplicated across explorer / species page (refactor
 not asked for; small, noted here).
 
-## MIRROR-READY
+## MIRROR-READY (v3.2.0)
 
 Build: `cd web && npm run build` → mirror **`Botanica/web/dist/`** into `Landing/public/botanica/`
-(replace the folder's contents; old `_astro/*` hashes are no longer referenced).
+(replace the folder's contents). Prepared in the worktree `../Landing-botanica-v32`, branch
+`mirror/botanica-v3.2` (from `origin/main`); **not pushed** — see docs/DECISIONES.md, "Push del
+Landing", for the command.
 
 ```
-index.html                     EN explorer
-es/index.html                  ES explorer
-especies/index.html            EN species finder
-es/especies/index.html         ES species finder
-filogenia/index.html           EN tree
-es/filogenia/index.html        ES tree
-cambios/index.html             EN changelog (v3; from CHANGELOG.md + git tags)
-es/cambios/index.html          ES changelog (from CHANGELOG.es.md)
-fungi/index.html               redirect stub → ?k=fungi (keeps old links alive)
-favicon.svg
-_astro/*                       18 hashed JS/CSS/font files (self-hosted fonts, no Google Fonts)
-data/facets-plantae.json       fetched by the explorer (98 KB gz)
-data/facets-fungi.json
-data/species-plantae.json      fetched on search / species page
-data/species-fungi.json
-data/protologue-plantae.json   fetched when the species drawer opens (v3: IPNI id + authors)
-data/peru_departamentos.geojson  build-time only; not fetched, safe to omit
-tutorial/tutorial.js · tutorial.css · (library, byte-identical to radar-precios)
+index.html · es/index.html                 explorer (+ intro)
+especies/index.html · es/especies/index.html   species (first rows in the HTML)
+filogenia/index.html · es/filogenia/index.html tree (linear · sunburst · lazy 3D)
+cambios/index.html · es/cambios/index.html     changelog (3.2.0 on top)
+fungi/index.html                           redirect stub → ?k=fungi
+.htaccess                                  NEW in v3.2 — headers only (below)
+favicon.svg · tutorial/*
+_astro/*                                   hashed JS/CSS/fonts (three.js only in the lazy tree-3d chunk)
+data/<name>.<hash10>.json                  NEW — what the pages fetch (facets-, species-, protologue-)
+data/<name>.json                           plain copies, the fetchData() fallback
+data/peru_departamentos.geojson            build-time only
 ```
 
-`.htaccess`: **no change needed.** The landing's CSP already allows everything used: inline scripts
-('unsafe-inline' is present), same-origin fetches (`connect-src 'self'`), self-hosted fonts. No external
-image or API. Directory URLs (`/botanica/es/`) resolve to `index.html` with Apache's defaults.
+`.htaccess` (the whole file; no rewrites):
+
+```
+<IfModule mod_headers.c>
+  <FilesMatch "\.[0-9a-f]{10}\.json$">
+    Header set Cache-Control "public, max-age=31536000, immutable"
+  </FilesMatch>
+</IfModule>
+```
+
+CSP: no change. Everything is same-origin (`connect-src 'self'` covers the data and the
+hover prefetch); inline scripts/styles are already allowed; no external image, font or API.
+
+After the push: verify live (all pages 200, 0 console errors/CSP violations, the header check
+in finding 5, `x-hcdn-cache-status` on a hashed JSON twice) and run
+`node web/scripts/perf-live.mjs https://<domain>/botanica/ both 3 evidence/v3.2/perf-live-after.json`
+for the B1 "after" numbers (docs/PERF-v3.2.md).
 
 ## Open questions (for the owner)
+- **Push the Landing mirror?** Prepared, not pushed (auto-deploy + the global "MODO AUTÓNOMO"
+  rule). Command in docs/DECISIONES.md.
+- **hCDN browser challenge** ("Checking your browser", ~4 s on every new document from this
+  machine's IP; not from an outside IP). It is an hPanel setting (Security → bot protection /
+  CDN): worth turning down for `/botanica/data/`. Not touched.
+- **Pink flash (B4):** not reproduced after instrumenting (see the v3.2 section). If it is still
+  there after the mirror: which page, which click, which browser (Brave?), light or dark.
 - None. (The ES card now links `/botanica/es/`, done in Landing `43fb9bc`.)
 - hreflang URLs use the placeholder `site` (`atlas-botanico.example`) from astro.config; set it with the
   real domain (brief §9.1). The landing card says `ichisieben.dev`.

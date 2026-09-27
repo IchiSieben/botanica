@@ -41,6 +41,7 @@ export default part(
     'species.row.records': 'records',
     'species.card.depts': 'Recorded in {n} of {of} departments',
     'species.detail.close': 'Close the species details',
+    'species.detail.label': 'Species details',
     'dr.mapCap': 'Departments with records',
   },
   {
@@ -77,6 +78,7 @@ export default part(
     'species.row.records': 'registros',
     'species.card.depts': 'Registrada en {n} de {of} departamentos',
     'species.detail.close': 'Cerrar el detalle de la especie',
+    'species.detail.label': 'Detalle de la especie',
     'dr.mapCap': 'Departamentos con registros',
   },
 );

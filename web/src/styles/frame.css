@@ -8,9 +8,9 @@
 /* v3.2 B3: the label is the expand control; collapsed = one line with an ellipsis. */
 .cf-howto-k { font: inherit; font-weight: 600; background: none; border: 0; padding: 0; cursor: pointer; text-align: left; }
 .cf-howto-k::after { content: ' ▾'; color: rgb(var(--muted)); } /* in the CSS from the first paint: no shift when JS runs */
-.howto-seen .cf-howto:not([data-open]) .cf-howto-k::after, .cf-howto[data-js]:not([data-open]) .cf-howto-k::after { content: ' ▸'; color: rgb(var(--muted)); }
-.howto-seen .cf-howto:not([data-open]), .cf-howto[data-js]:not([data-open]) { display: flex; gap: 0.4em; align-items: baseline; min-width: 0; }
-.howto-seen .cf-howto:not([data-open]) [data-cf-howto], .cf-howto[data-js]:not([data-open]) [data-cf-howto] { min-width: 0; overflow: hidden; white-space: nowrap; text-overflow: ellipsis; }
+.howto-seen .cf-howto:not([data-howto-open]) .cf-howto-k::after, .cf-howto[data-js]:not([data-howto-open]) .cf-howto-k::after { content: ' ▸'; color: rgb(var(--muted)); }
+.howto-seen .cf-howto:not([data-howto-open]), .cf-howto[data-js]:not([data-howto-open]) { display: flex; gap: 0.4em; align-items: baseline; min-width: 0; }
+.howto-seen .cf-howto:not([data-howto-open]) [data-cf-howto], .cf-howto[data-js]:not([data-howto-open]) [data-cf-howto] { min-width: 0; overflow: hidden; white-space: nowrap; text-overflow: ellipsis; }
 .cf-howto-k { flex: none; }
 @media (pointer: coarse) { .cf-howto-k { min-height: 44px; } }
 .cf-body { min-width: 0; }

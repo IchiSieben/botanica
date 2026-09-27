@@ -16,7 +16,7 @@ import * as V from '../lib/views';
 import { t, fmt, type Locale } from '../lib/i18n';
 import { deptName } from '../lib/depts';
 import { afterPaint } from '../lib/after-paint';
-import { dataUrl } from '../lib/data-url';
+import { fetchData } from '../lib/data-url';
 import { mapZoom } from '../lib/map-zoom';
 import { renderDrawer, yearHistogram, type DrawerMap, type DrawerSpecies, type DrawerYearDist } from '../lib/drawer';
 
@@ -95,7 +95,7 @@ export function boot() {
   const facetReq = new Map<K, Promise<Facets>>();
   const loadFacets = (k: K) => {
     if (!facetReq.has(k)) {
-      facetReq.set(k, fetch(dataUrl(`facets-${k}`), { priority: 'low' }).then((r) => {
+      facetReq.set(k, fetchData(`facets-${k}`, { priority: 'low' }).then((r) => {
         if (!r.ok) throw new Error(`${r.status} facets-${k}`);
         return r.json();
       }));
@@ -105,7 +105,7 @@ export function boot() {
   const nameReq = new Map<K, Promise<Names>>();
   const loadNames = (k: K) => {
     if (!nameReq.has(k)) {
-      nameReq.set(k, fetch(dataUrl(`species-${k}`), { priority: 'low' }).then(async (r) => {
+      nameReq.set(k, fetchData(`species-${k}`, { priority: 'low' }).then(async (r) => {
         if (!r.ok) throw new Error(`${r.status} species-${k}`);
         const d = (await r.json()) as Names;
         d.byName = new Map(d.rows.map((row, i) => [row[0], i]));
@@ -314,7 +314,7 @@ export function boot() {
   let proto: Proto | null = null;
   let protoReq: Promise<void> | null = null;
   const loadProto = () => {
-    protoReq ??= fetch(dataUrl('protologue-plantae'), { priority: 'low' })
+    protoReq ??= fetchData('protologue-plantae', { priority: 'low' })
       .then((r) => { if (!r.ok) throw new Error(`${r.status} protologue`); return r.json() as Promise<Proto>; })
       .then((d) => { proto = d; drawer(store.get(), facets[store.get().k]!); })
       .catch((e) => { protoReq = null; console.warn(e); });

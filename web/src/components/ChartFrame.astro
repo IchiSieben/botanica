@@ -47,12 +47,12 @@ const list: Source[] = sources.map((k) => SOURCES[k]);
   const seen = document.documentElement.classList.contains('howto-seen');
   document.querySelectorAll<HTMLButtonElement>('.cf-howto-k').forEach((b) => {
     const p = b.parentElement!;
-    p.toggleAttribute('data-open', !seen);
+    p.toggleAttribute('data-howto-open', !seen);
     p.setAttribute('data-js', '');
     b.setAttribute('aria-expanded', String(!seen));
     b.addEventListener('click', () => {
-      const open = !p.hasAttribute('data-open');
-      p.toggleAttribute('data-open', open);
+      const open = !p.hasAttribute('data-howto-open');
+      p.toggleAttribute('data-howto-open', open);
       b.setAttribute('aria-expanded', String(open));
     });
   });

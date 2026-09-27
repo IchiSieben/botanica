@@ -51,8 +51,10 @@ const ready = (page) => page.waitForSelector(`${R} .chart-phylo[data-ready="1"]`
   await page.click(`${R} [data-ord="Malpighiales"]`);
   await page.waitForTimeout(300);
   check(qs(page, 'ord') === 'Malpighiales', 'list click selects');
-  await page.click(`${R} [data-clear]`);
+  await page.focus(`${R} [data-clear]`);
+  await page.keyboard.press('Enter');
   await page.waitForTimeout(300);
+  check(await page.evaluate(() => document.activeElement?.hasAttribute('data-reset')), 'focus moves to Reset after Clear selection (keyboard)', `focus after Clear: ${await page.evaluate(() => document.activeElement?.outerHTML.slice(0, 80))}`);
   check(qs(page, 'ord') == null && /whole kingdom/.test(await side(page)), 'Clear selection clears it', `after Clear: ${page.url()}`);
   check(!errors.length, 'no console errors', `console errors: ${errors.join(' | ')}`);
   await ctx.close();
@@ -67,6 +69,12 @@ const ready = (page) => page.waitForSelector(`${R} .chart-phylo[data-ready="1"]`
   await page.click(`${R} [data-view="sunburst"]`);
   await page.waitForTimeout(300);
   check(qs(page, 'view') === 'sunburst', '?view=sunburst written', `URL after sunburst: ${page.url()}`);
+  // No-op store writes on a foreign ?view= must not stack Back entries (v3.2 review #2).
+  const h0 = await page.evaluate(() => history.length);
+  for (let i = 0; i < 2; i++) await page.click('[data-kset="plantae"]');
+  await page.waitForTimeout(200);
+  const h1 = await page.evaluate(() => history.length);
+  check(h1 === h0 && qs(page, 'view') === 'sunburst', 'no-op clicks add no history entry and keep ?view=', `history ${h0} → ${h1}, URL ${page.url()}`);
   await page.click(`${R} [data-view="3d"]`);
   await page.waitForSelector(`${R} .chart-phylo canvas`, { timeout: 20_000 });
   await page.waitForFunction(() => window.__phylo?.plantae.point3d('Poales') != null, null, { timeout: 20_000 });
@@ -90,6 +98,9 @@ const ready = (page) => page.waitForSelector(`${R} .chart-phylo[data-ready="1"]`
   await page.waitForFunction((b) => document.querySelector('#phylo-plantae [data-depts]').innerHTML !== b, beforeDepts, { timeout: 5000 }).catch(() => {});
   check((await depts(page)) !== beforeDepts, 'department bars follow the 3D click', 'department bars unchanged after the 3D click');
   check(await page.$eval(`${R} .chart-phylo`, (e) => e.dataset.focus ?? '') === picked, 'chart data-focus is the picked order');
+  // First visit ("How to read this" open): the explorer link must carry the selection (v3.2 review #1).
+  const openEx = await page.$eval(`${R} a[data-open-ex]`, (a) => a.getAttribute('href'));
+  check(openEx.includes(`ord=${picked}`), `"Open in explorer" carries ?ord=${picked}`, `"Open in explorer" href is ${openEx}`);
   const dim = await page.$$eval(`${R} .t3-label.dim`, (ls) => ls.length);
   check(dim > 0, `the rest dims (${dim} labels dimmed)`, 'no label dimmed after selecting a branch');
 

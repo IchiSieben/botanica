@@ -7,7 +7,10 @@ import { join } from 'node:path';
 
 // v3.2 B1: the data files are fetched by content-hashed name (data/<name>.<hash>.json) so they
 // can be served `immutable` (public/.htaccess) and a new ETL export is a new URL. The unhashed
-// files stay in dist too: a page cached from the previous deploy still finds its data.
+// files stay in dist too: fetchData() (src/lib/data-url.ts) falls back to them when a tab
+// opened before a later deploy asks for a hash that is no longer there. Two parts: the
+// `hashedData` integration writes the copies, `vite.define.__DATA_HASHES__` tells the client
+// their names; reverting means removing both.
 const dataDir = fileURLToPath(new URL('./public/data/', import.meta.url));
 const dataHashes = Object.fromEntries(readdirSync(dataDir).filter((f) => f.endsWith('.json')).map((f) => [
   f.replace(/\.json$/, ''),

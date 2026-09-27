@@ -82,7 +82,7 @@ for (const loc of ['', 'es/']) {
 // How to read this: first visit whole, later one line; the label expands it.
 {
   const first = await open(BASE, { width: 1440, height: 900 }, { seen: false });
-  const h1 = await first.page.$eval('#cf-map .cf-howto', (p) => ({ h: p.getBoundingClientRect().height, open: p.hasAttribute('data-open') }));
+  const h1 = await first.page.$eval('#cf-map .cf-howto', (p) => ({ h: p.getBoundingClientRect().height, open: p.hasAttribute('data-howto-open') }));
   check(h1.open, `first visit: how-to open (${Math.round(h1.h)} px)`, 'first visit: how-to collapsed');
   await first.ctx.close();
   const later = await open(BASE, { width: 1440, height: 900 });

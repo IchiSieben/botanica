@@ -102,7 +102,7 @@ const firstRows = plantIdx.rows.slice(0, FIRST_SCREEN).map((r, i) => {
         </div>
       </div>
     </div>
-    <aside class="sp-detail" id="sp-detail-wrap" aria-labelledby="dr-title">
+    <aside class="sp-detail" id="sp-detail-wrap" aria-label={t(locale, 'species.detail.label')}>
       <button type="button" class="btn sp-close" id="sp-close" aria-label={t(locale, 'species.detail.close')}>✕</button>
       <div id="sp-detail" aria-live="polite"><p class="note">{t(locale, 'species.pick')}</p></div>
     </aside>
@@ -117,7 +117,7 @@ const firstRows = plantIdx.rows.slice(0, FIRST_SCREEN).map((r, i) => {
   import { t, fmt, localePath, type Locale } from '../lib/i18n';
   import { deptName } from '../lib/depts';
   import { afterPaint } from '../lib/after-paint';
-  import { dataUrl } from '../lib/data-url';
+  import { fetchData } from '../lib/data-url';
   import { renderDrawer, yearHistogram, type DrawerMap, type DrawerSpecies, type DrawerYearDist } from '../lib/drawer';
   import { speciesRowHtml, ROW_H, CARD_H } from '../lib/species-row';
 
@@ -159,8 +159,8 @@ const firstRows = plantIdx.rows.slice(0, FIRST_SCREEN).map((r, i) => {
     const load = (k: K) => {
       if (!cache.has(k)) {
         cache.set(k, Promise.all([
-          fetch(dataUrl(`species-${k}`), { priority: 'low' }).then((r) => { if (!r.ok) throw new Error(`${r.status} species-${k}`); return r.json() as Promise<Index>; }),
-          fetch(dataUrl(`facets-${k}`), { priority: 'low' }).then((r) => { if (!r.ok) throw new Error(`${r.status} facets-${k}`); return r.json() as Promise<Facets>; }),
+          fetchData(`species-${k}`, { priority: 'low' }).then((r) => { if (!r.ok) throw new Error(`${r.status} species-${k}`); return r.json() as Promise<Index>; }),
+          fetchData(`facets-${k}`, { priority: 'low' }).then((r) => { if (!r.ok) throw new Error(`${r.status} facets-${k}`); return r.json() as Promise<Facets>; }),
         ]).then(([idx, f]) => ({ idx, f })));
       }
       return cache.get(k)!;
@@ -169,7 +169,7 @@ const firstRows = plantIdx.rows.slice(0, FIRST_SCREEN).map((r, i) => {
     let proto: Proto | null = null;
     let protoReq: Promise<void> | null = null;
     const loadProto = () => {
-      protoReq ??= fetch(dataUrl('protologue-plantae'), { priority: 'low' })
+      protoReq ??= fetchData('protologue-plantae', { priority: 'low' })
         .then((r) => { if (!r.ok) throw new Error(`${r.status} protologue`); return r.json() as Promise<Proto>; })
         .then((d) => { proto = d; renderDetail(store.get().sp); })
         .catch((e) => { protoReq = null; console.warn(e); });
@@ -309,7 +309,7 @@ const firstRows = plantIdx.rows.slice(0, FIRST_SCREEN).map((r, i) => {
 
     function renderDetail(name: string | null) {
       const i = name && idx ? idx.rows.findIndex((r) => r[0] === name) : -1;
-      root!.toggleAttribute('data-open', i >= 0);
+      root!.toggleAttribute('data-sheet-open', i >= 0);
       if (!idx || !f || i < 0) {
         $detail.innerHTML = `<p class="note">${t(locale, 'species.pick')}</p>`;
         return;
@@ -418,7 +418,10 @@ const firstRows = plantIdx.rows.slice(0, FIRST_SCREEN).map((r, i) => {
       $list.focus({ preventScroll: true });
     });
     addEventListener('keydown', (e) => {
-      if (e.key === 'Escape' && root!.hasAttribute('data-open') && matchMedia('(max-width: 899px)').matches) store.set({ sp: null });
+      // Not when something else already handled Escape (the tour, an open <select>).
+      if (e.key !== 'Escape' || e.defaultPrevented || !root!.hasAttribute('data-sheet-open') || !matchMedia('(max-width: 899px)').matches) return;
+      store.set({ sp: null });
+      $list.focus({ preventScroll: true }); // same as the ✕ button
     });
     // Same-genus / family links inside the detail pane share the page's own store.
     $detail.addEventListener('click', (e) => {
@@ -575,12 +578,12 @@ const firstRows = plantIdx.rows.slice(0, FIRST_SCREEN).map((r, i) => {
   }
   @media (max-width: 899px) {
     .sp-detail { display: none; }
-    [data-open] .sp-detail {
+    [data-sheet-open] .sp-detail {
       display: block; position: fixed; z-index: 70; left: 0; right: 0; bottom: 0; max-height: 78vh; overflow-y: auto;
       overscroll-behavior: contain; border-radius: 16px 16px 0 0; border-bottom: 0; padding: 14px 16px calc(16px + env(safe-area-inset-bottom));
       box-shadow: 0 -12px 32px rgb(0 0 0 / 0.35);
     }
-    [data-open] .sp-close { display: grid; place-items: center; position: sticky; top: 0; float: right; width: 44px; height: 44px; margin: -6px -8px 0 8px; padding: 0; z-index: 1; }
+    [data-sheet-open] .sp-close { display: grid; place-items: center; position: sticky; top: 0; float: right; width: 44px; height: 44px; margin: -6px -8px 0 8px; padding: 0; z-index: 1; }
   }
   .sp-detail :global(h2) { font-size: 22px; font-weight: 500; margin: 4px 0 10px; }
   .sp-detail :global(.dr-head) { display: flex; gap: 12px; align-items: flex-start; }
