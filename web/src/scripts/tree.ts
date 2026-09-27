@@ -692,7 +692,10 @@ export function bootTree() {
     // default expansion fitted (linear), zoomed out (sunburst), camera home (3D).
     root.querySelector('[data-reset]')?.addEventListener('click', async () => {
       await mount(k);
-      store.set({ ord: null, fam: null });
+      // Guarded: on ?view=sunburst|3d every store URL differs from location (the store does not
+      // own `view`), so an unguarded no-op set would stack duplicate Back entries.
+      const s0 = store.get();
+      if (s0.ord || s0.fam) store.set({ ord: null, fam: null });
       const tr = treeOf(k);
       if (tr.view === 'sunburst') navigateSunburst(k, indexOf(k).root.id);
       else if (tr.view === '3d') tr.three?.home();
