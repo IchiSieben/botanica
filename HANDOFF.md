@@ -1,11 +1,11 @@
-# HANDOFF — Botánica (explorable atlas) · current: v3.1.0 live, v3.2 in progress
+# HANDOFF — Botánica (explorable atlas) · current: v3.2.0 tagged (v3.1.0 live; mirror prepared, not pushed)
 
 
-## v3.2 — in progress (2026-09-26, unattended run of docs/PROMPT-v3.2.md)
+## v3.2.0 (2026-09-26, unattended run of docs/PROMPT-v3.2.md)
 
-Pushed, one commit per item: B1 c31fc65 · B2 e3b44f0 · B3 463707b · B5 2568119.
-**B4 in progress** (selection colour). B6 and the close (tag, MIRROR-READY, reviewer,
-Landing mirror) still to do.
+Pushed, one commit per item: B1 c31fc65 · B2 e3b44f0 · B3 463707b · B4 b4467f8 · B5 2568119
+(+ 68a2685) · B6 b672593 · review fixes 74e4ab0 · tag **v3.2.0**. Landing mirror prepared in
+`../Landing-botanica-v32` (branch `mirror/botanica-v3.2`), **not pushed** — MIRROR-READY below.
 
 - Session servers (kill only these, by task id): 4400 `bxhj7wyh0` (dist), 4401 `b7ee0mya6`
   (dist-test), 4410 `boabqrir4` (Botanica-base dist), 4411 `b90aka2dr` (Botanica-base dist-test).

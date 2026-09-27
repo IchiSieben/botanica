@@ -4,6 +4,41 @@ Todos los cambios relevantes de Botánica se documentan aquí. Formato:
 [Keep a Changelog 1.1.0](https://keepachangelog.com/es-ES/1.1.0/). Versionado:
 [Versionado Semántico](https://semver.org/lang/es/).
 
+## [3.2.0] - 2026-09-26
+
+### Agregado
+- Una franja sobre la cabecera en todas las páginas: «← IchiSieben» lleva a la ficha del atlas
+  en el portafolio y otro enlace al inicio del portafolio. También en inglés.
+- La ruta del árbol taxonómico muestra el camino hasta el orden o la familia elegidos en todas las
+  vistas, con un botón «Quitar selección».
+- El árbol 3D nombra un nodo al pasar el ratón o tocarlo (rango y número de especies), lo
+  selecciona al hacer clic igual que el árbol lineal, ilumina su rama y atenúa el resto, y rotula
+  siempre los nodos más grandes.
+
+### Cambiado
+- La página de especies muestra sus primeras filas antes de que lleguen los datos, ordena solo
+  cuando se le pide y carga archivos de datos que el navegador puede guardar un año.
+- Las filas de especies muestran el nombre en cursiva, familia y orden, cifras alineadas y una
+  marca del color del orden; las tarjetas de la cuadrícula dicen en cuántos departamentos hay
+  registros y si la especie es endémica; el panel de detalle queda a la vista en pantallas anchas
+  y se abre como hoja inferior en el móvil, con el mapa y los datos clave primero.
+- Cada sección de la introducción cabe en una pantalla, la línea de tiempo va en dos columnas en
+  pantallas anchas y la introducción se ajusta suavemente a sus secciones (no con movimiento
+  reducido).
+- «Cómo leer esto» se muestra entero en la primera visita y luego en una línea que se despliega.
+- En el explorador, los indicadores, el mapa, las familias y el origen caben en una pantalla a
+  1440×900.
+- Un panel que cambió destella una vez con un anillo neutro en vez de volverse turquesa; la
+  familia elegida se enmarca en el color de su propio orden.
+- «Reencuadrar» en el árbol quita la selección y vuelve al reino completo; la vista elegida queda
+  en la dirección (`?view=`).
+- Las etiquetas del sunburst se ajustan a su anillo y se ocultan cuando se montarían.
+
+### Corregido
+- «Shrubs and subshrubsWCVP: shrub» en el panel de especie.
+- La fila de herramientas del árbol ya no salta cuando la página termina de cargar.
+- Contraste del acento del registro de cambios en el tema claro.
+
 ## [3.1.0] - 2026-09-25
 
 ### Agregado

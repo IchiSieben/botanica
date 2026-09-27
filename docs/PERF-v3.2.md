@@ -119,3 +119,14 @@ DYNAMIC JSON are not reproducible locally. `node web/scripts/perf-live.mjs
 https://<domain>/botanica/ both 3 evidence/v3.2/perf-live-after.json` once the Landing mirror is
 pushed (see HANDOFF MIRROR-READY), and whether hCDN now serves `data/*.<hash>.json` with
 `immutable` (`x-hcdn-cache-status: HIT` on the second visit).
+
+### Release build (v3.2.0, after the review fixes)
+
+| Page | Perf | LCP | TBT | CLS |
+|---|---|---|---|---|
+| `/` | 99 | 1.86 | 35 | 0 |
+| `/es/` | 99 | 1.87 | 90 | 0 |
+| `/especies/` | 99 | 1.83 | 0 | 0 |
+| `/filogenia/` | 96 | 1.82 | 196 | 0 |
+
+v3.1 base on the same machine the same day: `/` 86–99, `/especies/` 88, `/filogenia/` 91.

@@ -4,6 +4,38 @@ All notable changes to Botánica are documented here. Format:
 [Keep a Changelog 1.1.0](https://keepachangelog.com/en/1.1.0/). Versioning:
 [Semantic Versioning](https://semver.org/).
 
+## [3.2.0] - 2026-09-26
+
+### Added
+- A strip above the header on every page: "← IchiSieben" to the atlas's page in the portfolio,
+  and a link to the portfolio home. In Spanish too.
+- The taxonomy tree's breadcrumb shows the path to the selected order or family in every view,
+  with a "Clear selection" button.
+- The 3D tree names a node on hover or tap (rank and species count), selects it on click like the
+  linear tree, lights its branch and dims the rest, and always labels the largest nodes.
+
+### Changed
+- The species page shows its first rows before the data arrives, sorts only when asked, and
+  loads data files that browsers can cache for a year.
+- Species rows show the name in italics, family and order, aligned figures and a mark in the
+  order's colour; grid cards show in how many departments a species was recorded and whether it
+  is endemic; the detail panel stays in view on wide screens and opens as a bottom sheet on
+  phones, with the map and key facts first.
+- Each intro section fits one screen, the timeline runs in two columns on wide screens, and the
+  intro snaps gently to its sections (not with reduced motion).
+- "How to read this" is shown whole on the first visit, then as one line that expands.
+- The explorer's KPIs, map, families and origin fit one screen at 1440×900.
+- A panel that changed flashes a neutral ring once instead of turning turquoise; a selected
+  family tile is outlined in its own order colour.
+- Reset in the tree clears the selection and returns to the whole kingdom; the chosen view is
+  kept in the address (`?view=`).
+- Sunburst labels fit their ring and are hidden when they would overlap.
+
+### Fixed
+- "Shrubs and subshrubsWCVP: shrub" in the species panel.
+- The tree's tool row no longer jumps when the page finishes loading.
+- Contrast of the changelog's accent in the light theme.
+
 ## [3.1.0] - 2026-09-25
 
 ### Added

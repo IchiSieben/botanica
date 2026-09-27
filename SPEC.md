@@ -1,7 +1,39 @@
-# SPEC — Botánica v3.1 (clarity, tree, species)
+# SPEC — Botánica v3.2 (speed, species, one glance, selection, tree, way back)
 
-Contract for release **v3.1.0**. Brief: owner prompt of 2026-09-25 ("v3.1"). Baseline `4cb9cb3`
-(v3.0.0 = `5de89ac`). The v3.0 contract is in git history (`git show 5de89ac:SPEC.md`).
+Contract for release **v3.2.0**. Brief: `docs/PROMPT-v3.2.md` (items B1–B6), run unattended on
+2026-09-26. Baseline `e18bf72` (v3.1.0). The v3.1 contract is in git history
+(`git show e18bf72:SPEC.md`); its Outputs and Invariants below still hold unless changed here.
+
+## v3.2 outputs
+- **B1 · cold visit.** First species row < 2.5 s, Fungi switch < 1 s once cached, tree first
+  paint < 2.5 s (cold, mobile throttle). Waterfall in `docs/PERF-v3.2.md`. First screen of
+  species rows in the HTML; sorts computed lazily; `data/<name>.<hash>.json` + `.htaccess`
+  `immutable`; nav prefetch on hover.
+- **B2 · species.** Row: italic name, family and order, aligned figures, order-colour mark, real
+  separators. Grid: no sideways scroll, department presence and endemic badge per card. Detail:
+  sticky ≥ 900 px, bottom sheet below; name, taxonomy, status, year, records and mini map on the
+  first screen.
+- **B3 · one glance.** Each intro section ≤ one viewport at 1440×900 and 2560×1080; timeline in
+  two columns ≥ 1280 px; `scroll-snap-type: y proximity`, none under reduced motion; explorer
+  KPIs + map + families + origin in one 1440×900 viewport; "How to read this" collapses to one
+  line after the first visit. Gate: `scripts/gate-glance.mjs`.
+- **B4 · selection colour.** No whole-panel tint; a neutral, compositor-only ring may flash once.
+  Active filter = the chip + an outline on the selected element in its own colour (`--fg` where
+  the element has none). Pink-flash investigation recorded in HANDOFF.
+- **B5 · tree.** Reset clears selection and view; "Clear selection" in the crumb; `?view=`
+  written back. 3D: hover/tap name + species count, click selects like the linear tree, branch
+  lit and the rest dimmed, largest nodes always labelled; still opt-in, lazy, tier ≥ 2, not under
+  reduced motion. Sunburst labels only where they fit. Gate: `scripts/gate-tree3d.mjs`.
+- **B6 · way back.** "← IchiSieben" → `/projects/botanica/` (ES `/es/projects/botanica/`) and the
+  landing home, on every page, same-origin root paths. Gate: `scripts/gate-back.mjs`.
+
+## v3.2 constraints
+- Base path `/botanica/`, relative. Landing CSP: `'self'` plus Google Fonts; anything else goes
+  to HANDOFF "Open questions" with the exact CSP line. No new data sources.
+- Every item: build, `astro check` 0 errors, `npm test`, `npm run gate`, `npm run gate:v3`, axe
+  dark/light × 1280/360 × EN/ES, 360 px overflow, Lighthouse mobile A/B never below the item's
+  baseline (see HANDOFF for how INP/TBT noise from other processes on the build machine was
+  handled).
 
 ## Inputs
 - `docs/RESEARCH-PERU.md` — the owner's dossier (2026-09-24). Source of every non-own figure.
