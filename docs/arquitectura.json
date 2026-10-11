@@ -1,0 +1,18 @@
+{
+  "schema": 1,
+  "slug": "botanica",
+  "name": {"es": "Atlas Botánico del Perú", "en": "Botanical Atlas of Peru"},
+  "oneLiner": {
+    "es": "ETL reproducible sobre GBIF, Kew y geoBoundaries que deja marts JSON; un sitio estático los lee y el navegador solo trae archivos.",
+    "en": "A reproducible ETL over GBIF, Kew and geoBoundaries that leaves JSON marts; a static site reads them and the browser only fetches files."
+  },
+  "machines": ["PC Windows", "Hostinger", "Navegador del usuario", "GitHub"],
+  "containers": 13,
+  "calls": 15,
+  "flows": 3,
+  "views": ["c4", "flows", "data", "deploy", "decisions"],
+  "hasCore": false,
+  "updated": "2026-10-10",
+  "status": "done",
+  "landing": {"projectSlug": "botanica", "order": 10}
+}

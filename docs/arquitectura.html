@@ -1,0 +1,629 @@
+<!doctype html>
+<html lang="es"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1">
+<title>Arquitectura Atlas Botánico</title>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Archivo:wdth,wght@75..100,500..800&family=IBM+Plex+Sans:wght@400;500;600&family=IBM+Plex+Mono:wght@400;500&display=swap">
+<style>
+/* Layout: a drafting-table page. One sticky tab bar; each tab is a view of the same system
+   (C4 containers → hexagonal components → data → UML flows → deployment → user stories → repository).
+   Dark-first (control room / blueprint); light theme mirrors it. */
+:root{
+  --bg:#0a1020; --paper:#111a2e; --paper2:#162238; --ink:#e7edf8; --ink2:#9fb0cc; --line:#263654; --grid:rgba(127,166,234,.07);
+  --blue:#7fa6ea; --cyan:#4cc9f0; --amber:#f0b545; --green:#5fcf8f; --red:#f08a7c; --violet:#b58cf5;
+  --blue-soft:#18284a; --cyan-soft:#0f2b3a; --amber-soft:#3a2d0f; --green-soft:#12301f; --red-soft:#3b1a16; --violet-soft:#2a1f45;
+  --font-display:"Archivo","Archivo Narrow","Arial Narrow",system-ui,sans-serif;
+  --font-body:"IBM Plex Sans",system-ui,-apple-system,"Segoe UI",sans-serif;
+  --font-mono:"IBM Plex Mono",ui-monospace,Menlo,Consolas,monospace;
+  color-scheme:dark;
+}
+@media (prefers-color-scheme:light){:root:not([data-theme="dark"]){
+  --bg:#eef2f8; --paper:#ffffff; --paper2:#f5f8fd; --ink:#15213a; --ink2:#4b5873; --line:#d3dbea; --grid:rgba(31,78,156,.06);
+  --blue:#1f4e9c; --cyan:#0a7ea4; --amber:#b56f00; --green:#1d7a4b; --red:#b8382c; --violet:#6b3fc2;
+  --blue-soft:#e3ebfa; --cyan-soft:#dff3fa; --amber-soft:#fff3d6; --green-soft:#dff3e7; --red-soft:#fbe3df; --violet-soft:#ece3fb;
+  color-scheme:light}}
+:root[data-theme="light"]{
+  --bg:#eef2f8; --paper:#ffffff; --paper2:#f5f8fd; --ink:#15213a; --ink2:#4b5873; --line:#d3dbea; --grid:rgba(31,78,156,.06);
+  --blue:#1f4e9c; --cyan:#0a7ea4; --amber:#b56f00; --green:#1d7a4b; --red:#b8382c; --violet:#6b3fc2;
+  --blue-soft:#e3ebfa; --cyan-soft:#dff3fa; --amber-soft:#fff3d6; --green-soft:#dff3e7; --red-soft:#fbe3df; --violet-soft:#ece3fb;
+  color-scheme:light}
+
+*{box-sizing:border-box}
+body{background:var(--bg);background-image:linear-gradient(var(--grid) 1px,transparent 1px),linear-gradient(90deg,var(--grid) 1px,transparent 1px);background-size:28px 28px;color:var(--ink);font-family:var(--font-body);font-size:14.5px;line-height:1.5;padding-inline:clamp(16px,3vw,40px);padding-block:18px 70px}
+h1,h2,h3,h4{font-family:var(--font-display);text-wrap:balance;margin:0;line-height:1.1}
+h1{font-size:clamp(26px,3.6vw,42px);font-weight:800;font-stretch:85%;letter-spacing:-.01em}
+h2{font-size:clamp(19px,2.2vw,25px);font-weight:700;font-stretch:90%}
+h3{font-size:15.5px;font-weight:700;font-stretch:90%}
+h4{font-size:13.5px;font-weight:700;font-stretch:90%;color:var(--ink2)}
+p{margin:0}
+a{color:var(--cyan)}
+code,pre{font-family:var(--font-mono)}
+code{font-size:12.5px;background:var(--paper2);border:1px solid var(--line);padding:1px 5px;border-radius:4px}
+pre{font-size:12px;line-height:1.5;background:var(--paper2);border:1px solid var(--line);border-radius:8px;padding:12px 14px;overflow-x:auto;margin:0}
+pre code{background:none;border:0;padding:0;font-size:inherit}
+.eyebrow{font-family:var(--font-mono);font-size:11px;letter-spacing:.08em;text-transform:uppercase;color:var(--ink2)}
+button{font:inherit;cursor:pointer}
+button:focus-visible,[tabindex]:focus-visible{outline:2px solid var(--cyan);outline-offset:2px}
+.wrap{max-width:1280px;margin:0 auto;display:grid;gap:22px}
+.head{display:flex;flex-wrap:wrap;justify-content:space-between;align-items:end;gap:14px 30px}
+.head .sub{color:var(--ink2);max-width:66ch;margin-top:6px}
+.legend{display:flex;flex-wrap:wrap;gap:6px 14px;font-size:12px;color:var(--ink2)}
+.legend span::before{content:"";display:inline-block;width:10px;height:10px;border-radius:2px;margin-right:6px;vertical-align:-1px;background:var(--c)}
+
+/* tabs */
+.tabs{position:sticky;top:env(safe-area-inset-top,0px);z-index:5;display:flex;gap:4px;overflow-x:auto;background:color-mix(in srgb,var(--bg) 88%,transparent);backdrop-filter:blur(8px);border-bottom:1px solid var(--line);padding:8px 0;scrollbar-width:thin}
+.tab{appearance:none;border:1px solid transparent;background:none;color:var(--ink2);padding:7px 12px;border-radius:8px;white-space:nowrap;font-weight:500;display:flex;gap:8px;align-items:center}
+.tab .k{font-family:var(--font-mono);font-size:10.5px;color:var(--cyan);opacity:.9}
+.tab[aria-selected="true"]{background:var(--paper);border-color:var(--line);color:var(--ink)}
+.view{display:none;gap:18px}
+.view.active{display:grid}
+
+/* panels */
+.panel{background:var(--paper);border:1px solid var(--line);border-radius:14px;padding:16px 18px;display:grid;gap:10px;min-width:0;align-content:start}
+.panel.flush{padding:0;overflow:hidden}
+.two{display:grid;grid-template-columns:minmax(0,1.7fr) minmax(280px,.8fr);gap:16px}
+.grid2{display:grid;grid-template-columns:repeat(auto-fit,minmax(300px,1fr));gap:14px}
+.grid3{display:grid;grid-template-columns:repeat(auto-fit,minmax(240px,1fr));gap:14px}
+.chips{display:flex;flex-wrap:wrap;gap:6px}
+.chip{font-size:11.5px;padding:2px 8px;border-radius:99px;background:var(--blue-soft);color:var(--blue);font-weight:500;border:1px solid transparent}
+.chip.cyan{background:var(--cyan-soft);color:var(--cyan)}.chip.amber{background:var(--amber-soft);color:var(--amber)}.chip.green{background:var(--green-soft);color:var(--green)}.chip.violet{background:var(--violet-soft);color:var(--violet)}.chip.red{background:var(--red-soft);color:var(--red)}.chip.ghost{background:transparent;border-color:var(--line);color:var(--ink2)}
+.btn{border:1px solid var(--line);background:var(--paper2);color:var(--ink);border-radius:8px;padding:7px 12px;font-weight:500;font-size:13px}
+.btn[aria-pressed="true"]{border-color:var(--cyan);box-shadow:inset 0 0 0 1px var(--cyan);color:var(--cyan)}
+.btn.sm{padding:4px 9px;font-size:12px}
+table{border-collapse:collapse;width:100%;font-size:13px}
+th,td{text-align:left;vertical-align:top;padding:8px 10px;border-bottom:1px solid var(--line)}
+th{font-family:var(--font-mono);font-size:11px;letter-spacing:.06em;text-transform:uppercase;color:var(--ink2);font-weight:500}
+.tbl{overflow-x:auto}
+td .m{font-family:var(--font-mono);font-size:12px}
+.ok{color:var(--green)}.warn{color:var(--amber)}.bad{color:var(--red)}
+.kv{display:grid;grid-template-columns:110px 1fr;gap:4px 10px;font-size:13px}
+.kv dt{color:var(--ink2);font-family:var(--font-mono);font-size:11px;letter-spacing:.04em;text-transform:uppercase;padding-top:2px}
+.kv dd{margin:0;min-width:0}
+.note{border-left:3px solid var(--cyan);padding:8px 12px;background:var(--cyan-soft);border-radius:0 8px 8px 0;font-size:13.5px}
+.note.amber{border-color:var(--amber);background:var(--amber-soft)}
+.note.green{border-color:var(--green);background:var(--green-soft)}
+.verdict{display:inline-flex;align-items:center;gap:8px;padding:6px 12px;border-radius:8px;font-weight:600;font-family:var(--font-display);font-stretch:90%;font-size:15px}
+.verdict.ok{background:var(--green-soft);color:var(--green)}.verdict.warn{background:var(--amber-soft);color:var(--amber)}.verdict.bad{background:var(--red-soft);color:var(--red)}
+
+/* diagram */
+.dia{position:relative;background:var(--paper);border:1px solid var(--line);border-radius:14px;overflow:hidden}
+.dia svg{width:100%;height:auto;display:block;font-family:var(--font-body)}
+.dia text{fill:var(--ink)}
+.dia .mono{font-family:var(--font-mono)}
+.dia .muted{fill:var(--ink2)}
+.node{cursor:pointer}
+.node rect.box{fill:var(--paper2);stroke:var(--line);stroke-width:1.2;transition:stroke .2s,filter .2s}
+.node:hover rect.box,.node.sel rect.box{stroke:var(--cyan);stroke-width:1.8;filter:drop-shadow(0 0 8px color-mix(in srgb,var(--cyan) 45%,transparent))}
+.node.ext rect.box{stroke-dasharray:5 4}
+.node .kind{font-family:var(--font-mono);font-size:9.5px;letter-spacing:.06em;text-transform:uppercase;fill:var(--ink2)}
+.node .ttl{font-family:var(--font-display);font-weight:700;font-stretch:90%;font-size:14px}
+.node .tech{font-size:10.5px;fill:var(--ink2)}
+.node .tag{font-family:var(--font-mono);font-size:9.5px}
+.edge{fill:none;stroke:var(--line);stroke-width:1.6;transition:stroke .3s,stroke-width .3s}
+.edge.hot{stroke:var(--cyan);stroke-width:2.6;filter:drop-shadow(0 0 6px color-mix(in srgb,var(--cyan) 60%,transparent))}
+.edge.dim{opacity:.25}
+.elabel{font-family:var(--font-mono);font-size:9.5px;fill:var(--ink2);paint-order:stroke;stroke:var(--paper);stroke-width:3px;stroke-linejoin:round}
+.pk{fill:var(--cyan);opacity:.55}
+.pk.one{opacity:1;fill:var(--amber)}
+.dia .toolbar{display:flex;flex-wrap:wrap;gap:6px;padding:12px 12px 4px;border-bottom:1px dashed var(--line);align-items:center}
+.steps{display:grid;gap:6px;list-style:none;padding:0;margin:0;counter-reset:s}
+.steps li{display:grid;grid-template-columns:22px 1fr;gap:8px;font-size:13px;opacity:.45;transition:opacity .3s}
+.steps li.on{opacity:1}
+.steps li::before{counter-increment:s;content:counter(s);font-family:var(--font-mono);font-size:11px;color:var(--cyan);border:1px solid var(--line);border-radius:50%;width:20px;height:20px;display:grid;place-items:center}
+.steps li.on::before{background:var(--cyan);color:var(--bg);border-color:var(--cyan)}
+
+/* hexagonal view */
+.hex{display:grid;grid-template-columns:1fr 1fr 1.1fr 1fr 1fr;gap:10px;align-items:start}
+.col{display:grid;gap:8px}
+.col h4{text-align:center;padding-bottom:6px;border-bottom:1px dashed var(--line)}
+.cell{background:var(--paper2);border:1px solid var(--line);border-radius:10px;padding:9px 11px;font-size:12.5px;display:grid;gap:3px;transition:border-color .2s,box-shadow .2s}
+.cell b{font-family:var(--font-display);font-stretch:90%;font-size:13.5px;font-weight:700}
+.cell small{color:var(--ink2);font-size:11.5px}
+.cell.core{border-color:var(--blue);background:var(--blue-soft)}
+.cell.port{border-style:dashed}
+.cell.lit{border-color:var(--cyan);box-shadow:0 0 0 1px var(--cyan),0 0 14px color-mix(in srgb,var(--cyan) 35%,transparent)}
+.cell.off{opacity:.35}
+.routes{display:flex;flex-wrap:wrap;gap:6px}
+
+/* deploy */
+.deploy{display:grid;grid-template-columns:1fr auto 1fr;gap:12px;align-items:start}
+.deploy .arrow{align-self:center;font-family:var(--font-mono);color:var(--ink2);padding-top:40px}
+.svc{display:grid;gap:6px}
+.svc div{display:grid;grid-template-columns:1fr auto;gap:8px;align-items:center;background:var(--paper2);border:1px solid var(--line);border-radius:8px;padding:7px 10px;font-size:12.5px}
+.svc div .m{font-family:var(--font-mono);font-size:11px;color:var(--ink2);white-space:nowrap}
+.svc div.k{border-color:var(--cyan)}
+.svc div.x{border-color:var(--violet)}
+.hu{display:grid;gap:10px}
+.hu .card{background:var(--paper2);border:1px solid var(--line);border-radius:10px;padding:10px 12px;display:grid;gap:6px;font-size:13px}
+.hu .card .id{font-family:var(--font-mono);font-size:11px;color:var(--cyan)}
+.hu .card ul{margin:0;padding-left:18px;color:var(--ink2);font-size:12.5px}
+.mermaid{background:var(--paper2);border:1px solid var(--line);border-radius:10px;padding:10px;overflow-x:auto;font-family:var(--font-mono);font-size:12px;color:var(--ink2);white-space:pre}
+.foot{color:var(--ink2);font-size:12.5px;display:flex;flex-wrap:wrap;gap:8px 20px;justify-content:space-between}
+@media (max-width:980px){.two{grid-template-columns:1fr}.hex{grid-template-columns:1fr 1fr}.deploy{grid-template-columns:1fr}.deploy .arrow{display:none}}
+@media (max-width:560px){.hex{grid-template-columns:1fr}.kv{grid-template-columns:1fr}}
+@media (prefers-reduced-motion:reduce){.edge,.node rect.box,.cell{transition:none}}
+</style>
+</head><body>
+
+<div class="wrap">
+  <header class="head">
+    <div>
+      <div class="eyebrow">ichisieben.dev/botanica · ETL en Python · atlas estático en Astro</div>
+      <h1>Arquitectura del Atlas Botánico del Perú</h1>
+      <p class="sub">Un ETL reproducible convierte descargas de GBIF, Kew y geoBoundaries en unos pocos JSON pequeños; un sitio estático los lee en el build y el navegador solo trae archivos. Cinco vistas: contenedores, flujos, datos, despliegue y decisiones. Haz clic en cualquier caja; reproduce un flujo para ver el recorrido.</p>
+    </div>
+    <div class="legend">
+      <span style="--c:var(--blue)">este repo</span>
+      <span style="--c:var(--violet)">persona u otra herramienta</span>
+      <span style="--c:var(--amber)">servicio externo</span>
+      <span style="--c:var(--cyan)">tráfico</span>
+    </div>
+  </header>
+
+  <nav class="tabs" role="tablist" id="tabs">
+    <button class="tab" role="tab" data-v="c4" aria-selected="true"><span class="k">C4·2</span>Contenedores</button>
+    <button class="tab" role="tab" data-v="flows"><span class="k">UML</span>Flujos</button>
+    <button class="tab" role="tab" data-v="data"><span class="k">ER</span>Datos · DuckDB y carpetas</button>
+    <button class="tab" role="tab" data-v="deploy"><span class="k">OPS</span>Despliegue</button>
+    <button class="tab" role="tab" data-v="decisions"><span class="k">ADR</span>Decisiones</button>
+  </nav>
+
+  <section class="view active" data-v="c4">
+    <div class="two">
+      <div class="dia" id="c4dia">
+        <div class="toolbar" id="flowbar"></div>
+        <svg viewBox="0 0 1200 690" id="c4svg" aria-label="Diagrama de contenedores"></svg>
+      </div>
+      <div class="panel" id="c4panel">
+        <div class="eyebrow">Detalle</div>
+        <h3 id="pn-t">Haz clic en un contenedor</h3>
+        <p id="pn-r" style="color:var(--ink2)">Cada caja es una pieza que corre por separado: una fuente externa, el ETL, una carpeta de datos, el build del sitio o el navegador de quien visita. Las líneas son llamadas reales: protocolo y qué viaja.</p>
+        <dl class="kv" id="pn-kv"></dl>
+        <div class="chips" id="pn-chips"></div>
+        <div id="pn-steps-wrap" hidden>
+          <div class="eyebrow" style="margin-top:6px">Flujo en curso</div>
+          <ol class="steps" id="pn-steps"></ol>
+        </div>
+      </div>
+    </div>
+    <div class="grid3">
+      <div class="panel"><h3>Por qué todo se calcula antes</h3><p style="color:var(--ink2);font-size:13.5px">El sitio no tiene servidor de aplicación ni llama a ninguna API al ser visitado. El ETL deja los números hechos y el build los lee de archivos. Una visita cuesta lo que cuesta servir archivos, y una cifra del sitio se puede rastrear hasta la descarga que la produjo.</p></div>
+      <div class="panel"><h3>Por qué nombres aceptados</h3><p style="color:var(--ink2);font-size:13.5px">Los registros de GBIF mezclan sinónimos y errores de tipeo. El ETL los cruza contra el backbone de nombres aceptados antes de contar, por eso los totales son menores que los de fuentes que cuentan nombres crudos. Lo que no resuelve se reporta, no se descarta en silencio.</p></div>
+      <div class="panel"><h3>Por qué cada descarga lleva DOI</h3><p style="color:var(--ink2);font-size:13.5px">La descarga reproducible de GBIF devuelve un download key y un DOI citable. El manifiesto los guarda junto al sha256 del archivo, así que cualquier figura apunta a un extracto exacto y no a una consulta viva que cambie sin avisar.</p></div>
+    </div>
+  </section>
+
+  <section class="view" data-v="flows">
+    <div class="grid2">
+      <div class="panel">
+        <div class="eyebrow">Secuencia · ingesta de una descarga GBIF</div>
+        <pre class="mermaid">sequenceDiagram
+    autonumber
+    actor A as Autor (PC Windows)
+    participant E as ETL (etl/)
+    participant G as GBIF
+    participant R as data/raw
+    participant D as atlas.duckdb
+    A->>E: uv run atlas data --full
+    E->>G: occurrences.download (país, reino, con coordenadas)
+    G-->>E: download key
+    E->>R: manifest.json: key, DOI 10.15468/dl.KEY, predicado, fecha
+    Note over E,G: GBIF procesa la descarga por su lado (asíncrona)
+    A->>E: download_gbif_get(key, doi)
+    E->>G: GET del zip de la descarga
+    G-->>E: zip con un TSV
+    E->>R: extrae el TSV y sella zip_sha256 y tsv_sha256
+    E->>D: load, clean, match, model leen el TSV sellado
+    Note over E,R: sin credenciales de GBIF el ETL registra el predicado sin DOI y sigue con el search</pre>
+      </div>
+      <div class="panel">
+        <div class="eyebrow">Secuencia · del mart al sitio publicado</div>
+        <pre class="mermaid">sequenceDiagram
+    autonumber
+    actor A as Autor (PC Windows)
+    participant E as ETL (etl/)
+    participant X as data/exports
+    participant P as web/public/data
+    participant W as Astro (web/)
+    participant L as Repo del Landing
+    participant H as Hostinger
+    A->>E: uv run atlas export
+    E->>X: mart_*.json ordenados por todas las columnas
+    A->>E: python -m etl.build_species_index
+    E->>P: species, facets, protologue por reino (DuckDB solo lectura)
+    A->>W: npm run build
+    W->>X: readFileSync de los marts
+    W->>P: copia cada JSON como nombre.hash.json en dist/data
+    A->>L: copia web/dist a public/botanica y git push a main
+    L->>H: auto-deploy del Landing
+    Note over A,L: la copia al Landing es manual, no hay script</pre>
+      </div>
+      <div class="panel">
+        <div class="eyebrow">Secuencia · una visita</div>
+        <pre class="mermaid">sequenceDiagram
+    autonumber
+    actor V as Visitante
+    participant B as Navegador
+    participant H as Hostinger (/botanica/)
+    V->>B: abre el atlas
+    B->>H: GET / (HTML, CSS, JS con hash)
+    H-->>B: página ya construida, mapa en SVG
+    B->>H: fetch data/facets-plantae.HASH.json (prioridad baja)
+    H-->>B: JSON con Cache-Control immutable
+    V->>B: cambia a Hongos
+    B->>H: fetch data/species-fungi.HASH.json (solo si no está en caché)
+    V->>B: abre la filogenia
+    B->>H: import() de ECharts, y de Three.js solo para la vista 3D
+    Note over B,H: si un hash ya no existe, fetchData reintenta con el nombre sin hash</pre>
+      </div>
+    </div>
+  </section>
+
+  <section class="view" data-v="data">
+    <div class="two">
+      <div class="panel">
+        <div class="eyebrow">atlas.duckdb · esquema estrella y marts</div>
+        <pre class="mermaid">erDiagram
+    DIM_CLADE ||--o{ FACT_OCCURRENCE : "order_apg"
+    DIM_GEO ||--o{ FACT_OCCURRENCE : "department"
+    DIM_TIME ||--o{ FACT_OCCURRENCE : "year"
+    DIM_TAXON ||--o{ FACT_DISTRIBUTION : "taxon_id"
+    DIM_TAXON ||--o{ MART_KPIS : "alimenta"
+    FACT_OCCURRENCE ||--o{ MART_RICHNESS_BY_DEPARTMENT : "agrega"
+    FACT_OCCURRENCE ||--o{ MART_CLADE_BY_DEPARTMENT : "agrega"
+    DIM_TAXON {
+        varchar taxon_id
+        varchar kingdom
+        varchar taxon_name
+        varchar taxon_rank
+        boolean is_species
+        varchar genus
+        varchar family
+        varchar order_apg
+        varchar lifeform
+        varchar climate
+        boolean native
+        boolean introduced
+        boolean endemic
+    }
+    DIM_CLADE {
+        integer clade_id PK
+        varchar clade
+        varchar color
+    }
+    DIM_GEO {
+        bigint geo_id PK
+        varchar department
+        varchar area_l3
+    }
+    DIM_TIME {
+        integer year PK
+    }
+    FACT_OCCURRENCE {
+        varchar gbif_key
+        varchar kingdom
+        varchar species
+        varchar family
+        varchar order_apg FK
+        varchar department FK
+        varchar assign_method "contencion, snap o unassigned"
+        double elevation
+        integer year FK
+        varchar basis_of_record
+    }
+    FACT_DISTRIBUTION {
+        varchar taxon_id FK
+        varchar area_l3
+        boolean introduced
+        boolean extinct
+        boolean location_doubtful
+    }
+    MART_RICHNESS_BY_DEPARTMENT {
+        varchar kingdom
+        varchar department
+        bigint records
+        bigint species
+    }
+    MART_CLADE_BY_DEPARTMENT {
+        varchar kingdom
+        varchar clade
+        varchar color
+        varchar department
+        bigint records
+        bigint species
+    }
+    MART_KPIS {
+        varchar kingdom
+        integer species
+        integer families
+        integer genera
+        integer occurrences
+        double assigned_pct
+    }</pre>
+      </div>
+      <div class="panel">
+        <h3>Sin base de datos de aplicación: las carpetas son el contrato</h3>
+        <dl class="kv">
+          <dt>data/raw</dt><dd>Descargas crudas y <code>manifest.json</code>. Ignorado por git; se regenera con el ETL.</dd>
+          <dt>atlas.duckdb</dt><dd>Base de trabajo local. Ni el sitio ni el navegador la tocan.</dd>
+          <dt>data/exports</dt><dd>Marts en JSON, versionados. Es la única entrada del build del sitio. Los Parquet quedan fuera de git.</dd>
+          <dt>web/public/data</dt><dd>Lo que baja el navegador. Índice de especies columnar: las familias, órdenes y departamentos van en tablas de búsqueda y cada especie guarda enteros.</dd>
+          <dt>geometrías</dt><dd>Dos a propósito. La detallada asigna puntos a departamentos con ST_Contains y un ajuste de hasta 5 km; la simple solo dibuja el mapa.</dd>
+          <dt>orden</dt><dd>Cada export lleva un ORDER BY por todas las columnas, con NULLS LAST, para que dos corridas sobre los mismos datos escriban el mismo archivo.</dd>
+        </dl>
+<pre><code>Botanica/
+  etl/                    pasos del pipeline y CLI atlas
+  data/
+    raw/                  descargas + manifest.json   (git: no)
+    atlas.duckdb          base de trabajo             (git: no)
+    exports/
+      mart_*.json         8 JSON con los marts        (git: si)
+      *.parquet                                       (git: no)
+  web/
+    public/data/          species-*, facets-*, protologue-*
+    src/lib/data.ts       lee data/exports en el build
+    dist/                 salida del build            (git: no)</code></pre>
+      </div>
+    </div>
+  </section>
+
+  <section class="view" data-v="deploy">
+    <div class="panel">
+      <div class="eyebrow">Despliegue · lo que hay y lo que cambiaría</div>
+      <h2>Hoy una subcarpeta del Landing. El plan escrito es un subdominio propio, sin tocar el ETL.</h2>
+      <p style="color:var(--ink2);max-width:80ch">El atlas es un directorio de archivos. El build corre en el PC del autor, su salida se copia al repo del Landing y el auto-deploy de ese repo lo publica. Mover el atlas a otro destino cambia la base y la URL del sitio, no el pipeline de datos.</p>
+      <div class="deploy">
+        <div class="panel" style="background:var(--paper2)">
+          <h3>Hoy · subcarpeta /botanica/</h3>
+          <div class="svc">
+            <div class="k"><span>uv run atlas data: ETL en el PC</span><span class="m">DuckDB local</span></div>
+            <div class="k"><span>npm run build en web/ (base /botanica/)</span><span class="m">Astro estático</span></div>
+            <div class="k"><span>copia de web/dist a public/botanica/ del Landing</span><span class="m">manual</span></div>
+            <div class="k"><span>push a main del Landing y build en Hostinger</span><span class="m">auto-deploy</span></div>
+            <div><span>.htaccess: immutable para JSON con hash, sin rewrites</span><span class="m">Apache</span></div>
+            <div><span>gates de Playwright, axe y Lighthouse antes de copiar</span><span class="m">npm run gate</span></div>
+          </div>
+          <p style="font-size:12.5px;color:var(--ink2)">La salida lleva dos copias de cada JSON: con hash para la caché larga y sin hash como respaldo para pestañas abiertas antes de un deploy.</p>
+        </div>
+        <div class="arrow">→ mismo dist/ →</div>
+        <div class="panel" style="background:var(--paper2)">
+          <h3>Plan escrito · subdominio propio</h3>
+          <div class="svc">
+            <div class="k"><span>mismo ETL y mismos marts</span><span class="m">sin cambios</span></div>
+            <div class="x"><span>base de Astro pasa de /botanica/ a /</span><span class="m">astro.config</span></div>
+            <div class="x"><span>site, canonical y hreflang al subdominio</span><span class="m">cabecera de cada página</span></div>
+            <div class="x"><span>docroot propio, subido por la API de hosting</span><span class="m">sin copia al Landing</span></div>
+            <div class="x"><span>301 desde /botanica/ en el Landing</span><span class="m">.htaccess del Landing</span></div>
+            <div class="x"><span>comprobar que no quede /botanica/ en HTML ni en JS</span><span class="m">grep del dist</span></div>
+          </div>
+          <p style="font-size:12.5px;color:var(--ink2)">Qué gana: un despliegue independiente y sin copia manual. Qué no cambia: las cifras, que salen del ETL.</p>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <section class="view" data-v="decisions">
+    <div class="panel">
+      <div class="eyebrow">Decisiones · con la alternativa descartada</div>
+      <h2>Cada decisión dice qué se eligió, qué se dejó y por qué</h2>
+      <div class="tbl"><table>
+        <tr><th>Decisión</th><th>Por qué</th><th>Descartado</th></tr>
+        <tr><td>Estático primero: el sitio lee marts JSON en el build</td><td>Sin servidor ni APIs en vivo, el costo por visita es el de servir archivos y el sitio no puede caerse por una dependencia</td><td>Alojar en Vercel o Cloudflare, o consultar los datos en tiempo de ejecución</td></tr>
+        <tr><td>Contar solo nombres aceptados</td><td>Los sinónimos y errores de tipeo inflan la diversidad; resolverlos antes de contar da cifras defendibles</td><td>Contar los nombres crudos de GBIF</td></tr>
+        <tr><td>Esquema estrella en DuckDB</td><td>Separa el grano de registro (esfuerzo de colecta) del de distribución (presencia) y deja un mart por vista</td><td>Que el sitio lea tablas crudas o de hechos</td></tr>
+        <tr><td>Dos geometrías desacopladas</td><td>La simplificada recorta cientos de metros de costa y mandaría puntos legítimos a sin asignar; la detallada hace el join y la simple solo dibuja</td><td>Usar un solo GeoJSON para el join y para el render</td></tr>
+        <tr><td>Descarga de GBIF con DOI y manifiesto sellado</td><td>Cada cifra apunta a un extracto exacto y citable; el manifiesto guarda key, DOI y sha256</td><td>El search paginado como fuente final: no tiene DOI ni es reproducible</td></tr>
+        <tr><td>Export ordenado por todas las columnas</td><td>Sin ORDER BY el orden de filas queda a criterio del motor y cada corrida ensucia el repo con diffs que no significan nada. Inferida; que la corrida repetida salga idéntica sigue por confirmar</td><td>Dejar el orden por defecto de DuckDB</td></tr>
+        <tr><td>Mapa familia a orden derivado de datos</td><td>Sale del árbol de Tree of Life y del backbone de GBIF; los conflictos se resuelven por soporte y se reportan. El orden es la unidad de color del clado</td><td>Una tabla escrita a mano</td></tr>
+        <tr><td>JSON con hash en el nombre y caché immutable</td><td>Un export nuevo es una URL nueva y el CDN puede servirlo de caché un año; el nombre sin hash queda como respaldo</td><td>Servir los JSON sin cabecera de caché, como antes</td></tr>
+        <tr><td>Primeras filas de especies dentro del HTML</td><td>La primera fila esperaba un JSON de 1,6 MB; con 26 filas en el build aparece antes de bajar nada</td><td>Un Web Worker para parsear: no quita la descarga del camino</td></tr>
+        <tr><td>Three.js solo como chunk perezoso del árbol</td><td>La página principal no carga ECharts ni Three.js; el 3D es opcional y cae al sunburst en dispositivos modestos o con movimiento reducido</td><td>Cargar el motor 3D en el bundle inicial</td></tr>
+      </table></div>
+    </div>
+  </section>
+
+  <footer class="foot">
+    <span>Arquitectura v1 · 2026-10-10 · Atlas Botánico del Perú</span>
+    <span>C4 · UML (secuencia) · ER · despliegue · decisiones</span>
+  </footer>
+</div>
+
+<script>
+const $ = (s, r=document) => r.querySelector(s);
+const reduce = matchMedia("(prefers-reduced-motion: reduce)").matches;
+
+/* ---------- tabs ---------- */
+const tabs = [...document.querySelectorAll(".tab")], views = [...document.querySelectorAll(".view")];
+function showTab(v){
+  tabs.forEach(t=>t.setAttribute("aria-selected", String(t.dataset.v===v)));
+  views.forEach(s=>s.classList.toggle("active", s.dataset.v===v));
+  try{ localStorage.setItem("arq-tab", v); }catch(e){}
+}
+tabs.forEach(t=>t.addEventListener("click", ()=>showTab(t.dataset.v)));
+let initial = "c4"; try{ initial = localStorage.getItem("arq-tab") || "c4"; }catch(e){}
+if(location.hash && tabs.some(t=>t.dataset.v===location.hash.slice(1))) initial = location.hash.slice(1);
+if(!tabs.some(t=>t.dataset.v===initial)) initial = tabs[0].dataset.v; // stored tab may belong to another page on this origin
+showTab(initial);
+
+/* ---------- C4 containers ---------- */
+const N = {
+  gbif: {x:20,y:30,w:210,h:90,kind:"externo · api http",ttl:"GBIF",tech:"occurrences.download · search",color:"amber",ext:true,
+         resp:"Fuente de las ocurrencias de plantas y hongos con coordenadas en Perú. La descarga reproducible queda sellada con un download key y su DOI; el search paginado sirve para muestras y para el set completo de hongos.",
+         kv:{"Plantae":"taxonKey 6","Fungi":"taxonKey 5","Licencia":"según el dataset, mayormente CC BY o CC0","Credenciales":"cuenta propia de GBIF, leídas del entorno; no se publican"}},
+  kew:  {x:20,y:135,w:210,h:90,kind:"externo · descargas http",ttl:"Kew: WCVP y Tree of Life",tech:"wcvp.zip · Newick PAFTOL",color:"amber",ext:true,
+         resp:"WCVP da los nombres aceptados y la distribución por país botánico de las plantas vasculares. Tree of Life da el árbol de géneros, con orden y familia en cada etiqueta.",
+         kv:{"Licencia":"CC BY 4.0","Se usa para":"nombres aceptados, nativa o introducida, endémica y el mapa familia a orden"}},
+  geo:  {x:20,y:240,w:210,h:90,kind:"externo · descargas http",ttl:"Límites departamentales",tech:"geoBoundaries ADM1 · GeoJSON simple",color:"amber",ext:true,
+         resp:"Dos geometrías a propósito. La detallada asigna cada punto a su departamento; la simplificada solo dibuja el mapa en el navegador.",
+         kv:{"Detallada":"geoBoundaries, 25 departamentos, 5 decimales, para el join espacial","Simple":"4 decimales, solo para dibujar","Licencia":"CC BY 4.0 (geoBoundaries)"}},
+  dev:  {x:20,y:440,w:210,h:120,kind:"pc windows · sesión de trabajo",ttl:"Autor",tech:"uv · npm · git",color:"violet",ext:true,
+         resp:"Lanza el ETL, el índice de especies y el build del sitio, y copia el resultado al repo del Landing. Es quien hace el push.",
+         kv:{"Corre en":"PC Windows","Comandos":"uv run atlas data · python -m etl.build_species_index · npm run build","Disparo":"manual, desde la línea de comandos"}},
+  etl:  {x:320,y:200,w:210,h:150,kind:"python 3.11+ · cli atlas",ttl:"ETL de 11 pasos",tech:"DuckDB · requests · shapely · pygbif",color:"blue",
+         resp:"Descarga, carga, limpia, cruza los nombres contra el backbone aceptado, modela en estrella, agrega, analiza y exporta. Cada paso es idempotente y se puede invocar por separado.",
+         kv:{"Pasos":"download, load, clean, build_apg, match, match_fungi, model, aggregate, analyze, export, profile","Entrada":"descargas selladas por fecha y DOI","Salida":"tablas en DuckDB y marts JSON","Prueba":"tests/test_export_ordering.py, solo stdlib"}},
+  raw:  {x:620,y:30,w:210,h:90,kind:"carpeta · fuera de git",ttl:"data/raw",tech:"zip · TSV · Newick · manifest.json",color:"blue",
+         resp:"Descargas crudas y el manifiesto que las sella: URL, fecha UTC, sha256 y el DOI cuando aplica. Se regenera con el ETL.",
+         kv:{"Caché":"si el archivo ya existe no se vuelve a bajar; --force lo ignora","Manifiesto":"manifest.json, una entrada por fuente"}},
+  db:   {x:620,y:150,w:210,h:110,kind:"base analítica · duckdb",ttl:"atlas.duckdb",tech:"esquema estrella · marts",color:"blue",
+         resp:"Archivo local de DuckDB, de alrededor de 1 GB. Guarda las tablas crudas y limpias, las dimensiones, los hechos y los marts. El sitio nunca lo lee.",
+         kv:{"Dimensiones":"dim_taxon, dim_clade, dim_geo, dim_time","Hechos":"fact_occurrence, fact_distribution","Marts":"mart_kpis, richness, clade, family, lifeform, status, described_per_year","Extensión":"spatial, para unir puntos con departamentos"}},
+  exp:  {x:620,y:285,w:210,h:90,kind:"carpeta · json versionado",ttl:"data/exports",tech:"marts JSON · Parquet fuera de git",color:"blue",
+         resp:"El contrato entre el pipeline y el sitio: marts pequeños en JSON, ordenados por todas las columnas, más Parquet ignorado por git.",
+         kv:{"Archivos":"mart_*.json, stats_diversity.json e index.json","Sin filas":"mart_described_per_year, que necesita datos de IPNI"}},
+  pub:  {x:620,y:400,w:210,h:90,kind:"carpeta · json columnar",ttl:"web/public/data",tech:"species · facets · protologue",color:"blue",
+         resp:"Lo que el navegador descarga: un índice de especies por reino con enteros que apuntan a tablas de familias, órdenes y departamentos, más facetas y protólogos.",
+         kv:{"Archivos":"species-plantae, species-fungi, facets-plantae, facets-fungi, protologue-plantae","Se genera con":"python -m etl.build_species_index, a mano, con DuckDB en solo lectura","También":"peru_departamentos.geojson para el mapa"}},
+  site: {x:920,y:480,w:210,h:100,kind:"astro 5 · build estático",ttl:"Sitio web (web/)",tech:"Astro 5 · ECharts · Three.js perezoso",color:"blue",
+         resp:"Genera el HTML del explorador, la filogenia, las especies y los cambios, en inglés y español. Lee los marts en el build; en el navegador solo se piden los JSON de especies y facetas.",
+         kv:{"Páginas":"/ · /fungi/ · /filogenia/ · /especies/ · /cambios/, y sus versiones en /es/","Base":"/botanica/","Guardias":"npm test · npm run gate · check:dois","Salida":"dist/ con copias con hash de cada JSON"}},
+  gh:   {x:920,y:330,w:210,h:90,kind:"externo · git",ttl:"Repo del Landing",tech:"public/botanica/ · rama main",color:"amber",ext:true,
+         resp:"El Landing aloja una copia del build en public/botanica/. Un push a main dispara su despliegue.",
+         kv:{"Copia":"manual, no hay script","Rama":"main publica"}},
+  host: {x:920,y:170,w:210,h:110,kind:"hostinger · node.js y archivos",ttl:"Hostinger",tech:"build del Landing · Apache · .htaccess",color:"amber",ext:true,
+         resp:"Construye el Landing en cada push y sirve los archivos estáticos. El .htaccess de Botánica solo añade Cache-Control immutable a los JSON con hash; no reescribe rutas.",
+         kv:{"Ruta":"/botanica/","Cabeceras":"immutable para data/&lt;nombre&gt;.&lt;hash&gt;.json"}},
+  vis:  {x:920,y:30,w:210,h:90,kind:"persona · navegador",ttl:"Visitante",tech:"cualquier navegador",color:"violet",
+         resp:"Abre el atlas sin cuenta. Guarda en localStorage el tema, el idioma y si ya vio la ayuda de apertura.",
+         kv:{"Recibe":"HTML, CSS, JS y JSON","Perezoso":"ECharts y Three.js se cargan al usarlos; el 3D es opcional y va en un chunk aparte"}},
+};
+const E = [
+  {id:"e1",a:"gbif",as:"r",b:"etl",bs:"l",l:"zip + DOI",ay:0,by:-55},
+  {id:"e2",a:"kew",as:"r",b:"etl",bs:"l",l:"WCVP + Newick",ay:0,by:-25},
+  {id:"e3",a:"geo",as:"r",b:"etl",bs:"l",l:"GeoJSON",ay:0,by:5},
+  {id:"e4",a:"dev",as:"r",b:"etl",bs:"b",l:"uv run atlas data",ay:-30,by:0},
+  {id:"e5",a:"etl",as:"r",b:"raw",bs:"l",l:"zip + manifest",ay:-60,by:0},
+  {id:"e6",a:"etl",as:"r",b:"db",bs:"l",l:"load + SQL",ay:-20,by:0},
+  {id:"e7",a:"etl",as:"r",b:"exp",bs:"l",l:"export JSON",ay:20,by:0},
+  {id:"e8",a:"etl",as:"r",b:"pub",bs:"l",l:"índice JSON",ay:60,by:0},
+  {id:"e9",a:"dev",as:"r",b:"site",bs:"l",l:"npm run build",ay:25,by:35},
+  {id:"e10",a:"exp",as:"r",b:"site",bs:"l",l:"readFileSync",ay:0,by:-35},
+  {id:"e11",a:"pub",as:"r",b:"site",bs:"l",l:"copia con hash",ay:0,by:0},
+  {id:"e12",a:"site",as:"t",b:"gh",bs:"b",l:"dist/ + push",ay:0,by:0},
+  {id:"e13",a:"gh",as:"t",b:"host",bs:"b",l:"auto-deploy",ay:0,by:0},
+  {id:"e14",a:"vis",as:"b",b:"host",bs:"t",l:"GET HTML",ay:-50,by:-50},
+  {id:"e15",a:"vis",as:"b",b:"host",bs:"t",l:"fetch JSON",ay:50,by:50},
+];
+const FLOWS = [
+  {id:"ingesta",t:"Ingesta de una descarga GBIF",steps:[["e4","El autor lanza uv run atlas data --full desde el PC"],["e1","El ETL pide a GBIF la descarga (país, reino, con coordenadas) y recibe el download key; el DOI es 10.15468/dl.&lt;key&gt;"],["e2","En la misma corrida baja WCVP y el árbol de Tree of Life"],["e3","Y los límites departamentales, el detallado y el simple"],["e5","Sella en manifest.json la key, el DOI, el predicado y la fecha; cuando GBIF termina, download_gbif_get baja el zip y guarda sha256 del zip y del TSV"],["e6","load, clean, match y model cargan el TSV sellado en DuckDB"]]},
+  {id:"build",t:"Build del atlas",steps:[["e6","aggregate y analyze dejan los marts en DuckDB"],["e7","export escribe los marts JSON ordenados por todas las columnas"],["e8","build_species_index abre DuckDB en solo lectura y escribe especies, facetas y protólogos"],["e9","El autor corre npm run build en web/"],["e10","Astro lee los marts con readFileSync"],["e11","Copia cada JSON a dist/data con el hash en el nombre, y deja también el nombre sin hash"],["e12","El autor copia web/dist a public/botanica/ del Landing y hace push a main"],["e13","Hostinger construye el Landing y publica la copia"]]},
+  {id:"visita",t:"Una visita",steps:[["e14","El navegador pide la página: HTML ya construido, con el mapa dibujado"],["e15","Pide los JSON de facetas y especies con prioridad baja; llegan con Cache-Control immutable"]]},
+];
+const svg = $("#c4svg"), NS = "http://www.w3.org/2000/svg";
+function el(tag, attrs={}, parent=svg){ const e=document.createElementNS(NS,tag); for(const k in attrs) e.setAttribute(k, attrs[k]); parent.appendChild(e); return e; }
+function anchor(n, side, off=0){ const c=N[n]; const m={l:[c.x,c.y+c.h/2+off],r:[c.x+c.w,c.y+c.h/2+off],t:[c.x+c.w/2+off,c.y],b:[c.x+c.w/2+off,c.y+c.h]}; return m[side]; }
+function pathFor(e){
+  const [x1,y1]=anchor(e.a,e.as,e.ay), [x2,y2]=anchor(e.b,e.bs,e.by);
+  const h = (e.as==="l"||e.as==="r"), k = Math.max(40, Math.abs(h?x2-x1:y2-y1)/2);
+  const c1 = h ? [x1+(e.as==="r"?k:-k), y1] : [x1, y1+(e.as==="b"?k:-k)];
+  const c2 = (e.bs==="l"||e.bs==="r") ? [x2+(e.bs==="l"?-k:k), y2] : [x2, y2+(e.bs==="t"?-k:k)];
+  return {d:`M${x1},${y1} C${c1[0]},${c1[1]} ${c2[0]},${c2[1]} ${x2},${y2}`, mid:[(x1+x2)/2,(y1+y2)/2]};
+}
+const defs = el("defs");
+const mk = el("marker",{id:"arr",viewBox:"0 0 10 10",refX:"9",refY:"5",markerWidth:"7",markerHeight:"7",orient:"auto-start-reverse"},defs);
+el("path",{d:"M0,0 L10,5 L0,10 z",fill:"var(--line)"},mk);
+const gE = el("g"), gL = el("g"), gN = el("g"), gP = el("g");
+E.forEach(e=>{
+  const p = pathFor(e);
+  const path = el("path",{id:"p-"+e.id,d:p.d,class:"edge","marker-end":"url(#arr)"},gE);
+  if(e.dash) path.setAttribute("stroke-dasharray","4 4");
+  e.path = path;
+  if(e.l){ el("text",{x:p.mid[0],y:p.mid[1]-6,class:"elabel","text-anchor":"middle"},gL).textContent = e.l; }
+  if(!reduce && !e.dash){ // ambient traffic
+    const c = el("circle",{r:"3.2",class:"pk"},gP);
+    const am = el("animateMotion",{dur:(2.8+Math.random()*1.6).toFixed(1)+"s",repeatCount:"indefinite",begin:(Math.random()*3).toFixed(1)+"s"},c);
+    const mp = el("mpath",{},am); mp.setAttribute("href","#p-"+e.id); mp.setAttributeNS("http://www.w3.org/1999/xlink","xlink:href","#p-"+e.id);
+  }
+});
+const COL = {blue:"var(--blue)",violet:"var(--violet)",amber:"var(--amber)"};
+Object.entries(N).forEach(([id,n])=>{
+  const g = el("g",{class:"node"+(n.ext?" ext":""),"data-id":id,tabindex:"0",role:"button"},gN);
+  el("rect",{class:"box",x:n.x,y:n.y,width:n.w,height:n.h,rx:"10"},g);
+  el("rect",{x:n.x,y:n.y,width:"5",height:n.h,rx:"2.5",fill:COL[n.color]},g);
+  el("text",{x:n.x+16,y:n.y+18,class:"kind"},g).textContent = n.kind;
+  el("text",{x:n.x+16,y:n.y+38,class:"ttl"},g).textContent = n.ttl;
+  // wrap tech line
+  const words = n.tech.split(" "); let line="", ly=n.y+56, lines=[];
+  words.forEach(w=>{ if((line+" "+w).length>Math.max(18,Math.floor(n.w/6.2))){lines.push(line);line=w;} else line=(line?line+" ":"")+w; }); lines.push(line);
+  lines.slice(0, Math.floor((n.h-60)/14)).forEach((t,i)=>{ el("text",{x:n.x+16,y:ly+i*14,class:"tech"},g).textContent=t; });
+  if(id==="usr"){ ["Operador","Revisor","Validador ×4","Analista","Auditor","Admin plantillas"].forEach((r,i)=>{ const y=n.y+90+i*19; el("rect",{x:n.x+16,y:y-11,width:"110",height:"16",rx:"8",fill:"var(--violet-soft)"},g); el("text",{x:n.x+24,y:y+1,class:"tag",fill:"var(--violet)"},g).textContent=r; }); }
+  if(id==="wrk"){ ["normalizar","clasificar","extraer"].forEach((r,i)=>{ const x=n.x+16+i*64; el("rect",{x:x,y:n.y+118,width:"58",height:"18",rx:"9",fill:"var(--blue-soft)"},g); el("text",{x:x+29,y:n.y+130,class:"tag","text-anchor":"middle",fill:"var(--blue)"},g).textContent=r; }); }
+  if(id==="api"){ ["dominio","reglas","puertos"].forEach((r,i)=>{ const x=n.x+16+i*64; el("rect",{x:x,y:n.y+100,width:"58",height:"18",rx:"9",fill:"var(--blue-soft)"},g); el("text",{x:x+29,y:n.y+112,class:"tag","text-anchor":"middle",fill:"var(--blue)"},g).textContent=r; }); }
+  g.addEventListener("click", ()=>selectNode(id));
+  g.addEventListener("keydown", e=>{ if(e.key==="Enter"||e.key===" "){e.preventDefault();selectNode(id);} });
+});
+// frame labels
+el("text",{x:20,y:640,class:"mono muted","font-size":"10"}).textContent = "C4 · nivel 2 (contenedores) · tráfico ambiente = llamadas reales · clic en una caja para el detalle";
+el("text",{x:20,y:660,class:"mono muted","font-size":"10"}).textContent = "línea continua = HTTP/SQL · punteada = adaptador elegido por configuración · caja punteada = existe fuera del proyecto";
+
+function selectNode(id){
+  document.querySelectorAll(".node").forEach(n=>n.classList.toggle("sel", n.dataset.id===id));
+  const n = N[id];
+  $("#pn-t").textContent = n.ttl; $("#pn-r").textContent = n.resp;
+  $("#pn-kv").innerHTML = Object.entries(n.kv||{}).map(([k,v])=>`<dt>${k}</dt><dd>${v}</dd>`).join("");
+  $("#pn-chips").innerHTML = `<span class="chip ${n.color==='violet'?'violet':n.color==='amber'?'amber':''}">${n.kind}</span>` + n.tech.split("·").map(t=>`<span class="chip ghost">${t.trim()}</span>`).join("");
+  $("#pn-steps-wrap").hidden = true;
+  // dim unrelated edges
+  E.forEach(e=>{ e.path.classList.toggle("dim", !(e.a===id||e.b===id)); e.path.classList.remove("hot"); });
+}
+let flowTimers = [];
+function runFlow(f){
+  flowTimers.forEach(clearTimeout); flowTimers=[];
+  document.querySelectorAll(".node").forEach(n=>n.classList.remove("sel"));
+  document.querySelectorAll("#flowbar .btn").forEach(b=>b.setAttribute("aria-pressed", String(b.dataset.f===f.id)));
+  E.forEach(e=>{ e.path.classList.remove("hot"); e.path.classList.toggle("dim", true); });
+  $("#pn-t").textContent = f.t; $("#pn-r").textContent = "Mira el recorrido en el diagrama. Cada paso enciende la llamada real que lo cumple.";
+  $("#pn-kv").innerHTML = ""; $("#pn-chips").innerHTML = "";
+  const ol = $("#pn-steps"); ol.innerHTML = f.steps.map(s=>`<li>${s[1]}</li>`).join(""); $("#pn-steps-wrap").hidden = false;
+  const gap = reduce ? 150 : 1100;
+  f.steps.forEach((s,i)=>{
+    flowTimers.push(setTimeout(()=>{
+      const e = E.find(x=>x.id===s[0]); e.path.classList.remove("dim"); e.path.classList.add("hot");
+      [...ol.children].forEach((li,k)=>li.classList.toggle("on", k===i));
+      [e.a,e.b].forEach(id=>document.querySelector(`.node[data-id="${id}"]`).classList.add("sel"));
+      if(!reduce){
+        const c = el("circle",{r:"5",class:"pk one"},gP);
+        const am = el("animateMotion",{dur:"1s",begin:"indefinite",fill:"freeze"},c);
+        const mp = el("mpath",{},am); mp.setAttribute("href","#p-"+e.id); mp.setAttributeNS("http://www.w3.org/1999/xlink","xlink:href","#p-"+e.id);
+        am.beginElement(); setTimeout(()=>c.remove(), 1200);
+      }
+    }, i*gap));
+  });
+  flowTimers.push(setTimeout(()=>{ E.forEach(e=>e.path.classList.remove("dim")); }, f.steps.length*gap+800));
+}
+$("#flowbar").innerHTML = `<span class="chip cyan" style="align-self:center">reproducir flujo</span>` + FLOWS.map(f=>`<button class="btn sm" data-f="${f.id}" aria-pressed="false">${f.t}</button>`).join("");
+$("#flowbar").addEventListener("click", e=>{ const b=e.target.closest("button"); if(!b) return; runFlow(FLOWS.find(f=>f.id===b.dataset.f)); });
+if(reduce && svg.pauseAnimations) svg.pauseAnimations();
+
+/* ---------- hexagonal ---------- */
+const HEX = {cols:[],cells:[],routes:[]};
+if($("#hex")){ // the hex view is optional (manual §1.5): its section may be deleted
+$("#hex").innerHTML = HEX.cols.map((c,i)=>`<div class="col"><h4>${c}</h4>${HEX.cells[i].map(x=>`<div class="cell ${x.core?'core':''} ${x.port?'port':''}" data-id="${x.id}"><b>${x.b}</b><small>${x.s}</small></div>`).join("")}</div>`).join("");
+$("#routes").innerHTML = HEX.routes.map(r=>`<button class="btn sm" data-r="${r.id}" aria-pressed="false">${r.t}</button>`).join("");
+$("#routes").addEventListener("click", e=>{
+  const b=e.target.closest("button"); if(!b) return;
+  const r = HEX.routes.find(x=>x.id===b.dataset.r);
+  const same = b.getAttribute("aria-pressed")==="true";
+  document.querySelectorAll("#routes .btn").forEach(x=>x.setAttribute("aria-pressed","false"));
+  document.querySelectorAll("#hex .cell").forEach(c=>{ c.classList.remove("lit","off"); });
+  if(same) return;
+  b.setAttribute("aria-pressed","true");
+  document.querySelectorAll("#hex .cell").forEach(c=>{ c.classList.toggle("lit", r.on.includes(c.dataset.id)); c.classList.toggle("off", !r.on.includes(c.dataset.id)); });
+});
+}
+
+/* ---------- user stories ---------- */
+const HU = [];
+if($("#hulist")) $("#hulist").innerHTML = HU.map(h=>`<div class="card"><div style="display:flex;justify-content:space-between;gap:8px;flex-wrap:wrap"><span class="id">${h.id} · semana ${h.w.slice(1)}</span><span class="chips">${h.comp.map(c=>`<span class="chip ghost">${c}</span>`).join("")}</span></div><div><b>Como</b> ${h.como}, <b>quiero</b> ${h.quiero}, <b>para</b> ${h.para}.</div><ul>${h.crit.map(c=>`<li>${c}</li>`).join("")}</ul></div>`).join("");
+</script>
+
+<script src="https://cdnjs.cloudflare.com/ajax/libs/mermaid/10.9.1/mermaid.min.js"></script>
+<script>
+(function(){
+  const dark = matchMedia('(prefers-color-scheme: dark)').matches;
+  mermaid.initialize({startOnLoad:false, theme: dark?'dark':'default', securityLevel:'loose'});
+  function render(){ const v=document.querySelector('.view.active'); if(!v) return;
+    const n=[...v.querySelectorAll('pre.mermaid:not([data-processed])')]; if(n.length) mermaid.run({nodes:n}); }
+  document.querySelectorAll('.tab').forEach(t=>t.addEventListener('click',()=>setTimeout(render,30)));
+  window.addEventListener('load',render);
+})();
+</script>
+</body></html>
