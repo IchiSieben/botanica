@@ -8,7 +8,7 @@
   },
   "machines": ["PC Windows", "Hostinger", "Navegador del usuario", "GitHub"],
   "containers": 13,
-  "calls": 15,
+  "calls": 16,
   "flows": 3,
   "views": ["c4", "flows", "data", "deploy", "decisions"],
   "hasCore": false,
